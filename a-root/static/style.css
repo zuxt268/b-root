@@ -24,3 +24,9 @@ nav ul li a, nav ul li span, header .action { display: block; padding: 0.5rem; }
 .content textarea { min-height: 12em; resize: vertical; }
 input.danger { color: #cc2f2e; }
 input[type=submit] { align-self: start; min-width: 10em; }
+.facebook-link{
+    font-size: 1.5rem;
+    margin-top: 3rem;
+    width: 10rem;
+    height: 5rem;
+}
