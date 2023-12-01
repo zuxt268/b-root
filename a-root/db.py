@@ -25,6 +25,7 @@ def init_db():
             if command.strip():
                 db.cursor().execute(command)
     db.commit()
+    db.close()
 
 
 @click.command("init-db")

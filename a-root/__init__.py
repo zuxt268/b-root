@@ -8,10 +8,10 @@ def create_app(test_config=None):
     app.config.from_mapping(
         SECRET_KEY='dev',
         DATABASE={
-            'user': 'username',
-            'password': 'password',
+            'user': 'yuki',
+            'password': 'ike35268',
             'host': 'localhost',
-            'database': 'database_name'
+            'database': 'b_root'
         },
     )
 
@@ -32,4 +32,8 @@ def create_app(test_config=None):
     from . import auth
     app.register_blueprint(auth.bp)
 
+    from . import blog
+    app.register_blueprint(blog.bp)
+
+    app.add_url_rule("/", endpoint="index")
     return app
