@@ -29,4 +29,8 @@ RUN pip install -r requirements.txt
 # define the port number the container should expose
 EXPOSE 8000
 
-CMD ["python", "app.py"]
+ENV FLASK_APP=a-root
+ENV FLASK_ENV=development
+
+# アプリケーションを実行するためのコマンド
+CMD ["flask", "run", "--host=0.0.0.0"]

@@ -13,8 +13,9 @@
         {% if customer["facebook_token"] %}
             <button disabled class="facebook-link btn btn-primary"><i class="mx-1 fa fa-facebook" aria-hidden="true"></i>Linked</button>
         {% else %}
-            <button class="facebook-link btn btn-primary"><i class="mx-1 fa fa-facebook" aria-hidden="true"></i>Facebook</button>
+            <button id="facebook_login" class="facebook-link btn btn-primary"><i class="mx-1 fa fa-facebook" aria-hidden="true"></i>Facebook</button>
         {% endif %}
     </div>
 
 {% endblock %}
+

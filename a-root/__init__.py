@@ -1,18 +1,24 @@
 import os
 
 from flask import Flask
+from dotenv import load_dotenv
 
 
 def create_app(test_config=None):
+    load_dotenv()
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(
         SECRET_KEY='dev',
         DATABASE={
-            'user': 'yuki',
-            'password': 'ike35268',
-            'host': 'localhost',
-            'database': 'b_root'
+            'user': os.getenv("DATABASE_USER"),
+            'password': os.getenv("DATABASE_PASSWORD"),
+            'host': os.getenv("DATABASE_HOST"),
+            'database': os.getenv("DATABASE_SCHEME")
         },
+        META={
+            'client_id': os.getenv("META_CLIENT_ID"),
+            'client_secret': os.getenv("META_CLIENT_SECRET")
+        }
     )
 
     if test_config is None:
@@ -32,10 +38,12 @@ def create_app(test_config=None):
     from . import auth
     from . import blog
     from . import customer
+    from . import facebook
 
     app.register_blueprint(auth.bp)
     app.register_blueprint(blog.bp)
     app.register_blueprint(customer.bp)
+    app.register_blueprint(facebook.bp)
 
     app.add_url_rule("/", endpoint="index")
     return app
