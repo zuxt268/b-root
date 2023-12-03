@@ -18,6 +18,10 @@ def create_app(test_config=None):
         META={
             'client_id': os.getenv("META_CLIENT_ID"),
             'client_secret': os.getenv("META_CLIENT_SECRET")
+        },
+        WORDPRESS={
+            'admin_id': os.getenv("WORDPRESS_ADMIN_ID"),
+            'admin_password': os.getenv("WORDPRESS_ADMIN_PASSWORD"),
         }
     )
 

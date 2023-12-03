@@ -82,7 +82,6 @@ def load_logged_in_user():
             'SELECT * FROM user WHERE id = %s', (user_id,)
         )
         g.user = db.fetchone()
-        print(g.user)
         db.close()
 
 
