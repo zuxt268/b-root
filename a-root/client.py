@@ -15,7 +15,7 @@ class Client:
         self.base_url = base_url
 
     def get(self, path, params=None, headers=None, auth=None):
-        return requests.get(self.base_url + path, params=params, headers=headers).json()
+        return requests.get(self.base_url + path, params=params, headers=headers, auth=auth).json()
 
     def post(self, path, data=None, headers=None, auth=None):
         return requests.post(self.base_url + path, json=data, headers=headers, auth=auth).json()
@@ -56,7 +56,16 @@ class Meta(Client):
         params = dict()
         params["access_token"] = access_token
         params['fields'] = "caption,media_url"
-        return self.get(f"/{id}")
+        return self.get(path=f"/{id}", params=params)
+
+    def get_posts(self, access_token):
+        media_id = self.get_instagram_account(access_token)
+        ids = self.get_media_ids(access_token, media_id)
+        posts = []
+        for id in ids:
+            post = self.get_post(access_token, id)
+            posts.append(post)
+        return posts
 
 
 class SendGrid(Client):
@@ -68,7 +77,7 @@ class FileDownloader(Client):
         super().__init__(image_url)
 
     def download_file(self, local_path="temp.jpg"):
-        response = self.get("/")
+        response = self.get("")
         if response.status_code == 200:
             with open(local_path, 'wb') as file:
                 response.raw.decode_content = True
