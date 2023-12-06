@@ -17,8 +17,8 @@ class Client:
     def get(self, path, params=None, headers=None, auth=None):
         return requests.get(self.base_url + path, params=params, headers=headers, auth=auth).json()
 
-    def post(self, path, data=None, headers=None, auth=None):
-        return requests.post(self.base_url + path, json=data, headers=headers, auth=auth).json()
+    def post(self, path, data=None, json=None, headers=None, auth=None):
+        return requests.post(self.base_url + path, json=json, data=data, headers=headers, auth=auth).json()
 
 
 class Meta(Client):
@@ -72,29 +72,24 @@ class SendGrid(Client):
     pass
 
 
-class FileDownloader(Client):
-    def __init__(self, image_url):
-        super().__init__(image_url)
-
-    def download_file(self, local_path="temp.jpg"):
-        response = self.get("")
-        if response.status_code == 200:
-            with open(local_path, 'wb') as file:
-                response.raw.decode_content = True
-                shutil.copyfileobj(response.raw, file)
-        return local_path
-
-
 class Wordpress(Client):
     def __init__(self, wordpress_url):
         super().__init__(wordpress_url)
+        print(current_app.config["WORDPRESS"]["admin_password"])
         self.auth = HTTPBasicAuth(current_app.config["WORDPRESS"]["admin_id"], current_app.config["WORDPRESS"]["admin_password"])
+        print(self.auth)
 
     def upload_image(self, image_path):
-        headers = {'Content-Type': 'image/jpeg'}  # 画像の種類によって変更
+        file_name = str(image_path).split("/")[-1]
+        headers = {
+            'Content-Type': 'image/jpeg',
+            'Content-Disposition': f'attachment; filename="{file_name}"'
+        }
         with open(image_path, 'rb') as img:
-            response = self.post('/wp-json/wp/v2/media', headers=headers, data=img, auth=self.auth)
-        return response["id"]
+            binary = img.read()
+            response = self.post('/wp-json/wp/v2/media', headers=headers, data=binary, auth=self.auth)
+        print(response)
+        return response
 
     def post_with_image(self, title, content, media_id):
         headers = {'Content-Type': 'application/json'}
@@ -104,5 +99,15 @@ class Wordpress(Client):
             'status': 'publish',
             'featured_media': media_id
         }
-        return self.post("/wp-json/wp/v2/posts", headers=headers, data=data, auth=self.auth)
+        return self.post("/wp-json/wp/v2/posts", headers=headers, json=data, auth=self.auth)
 
+    def create_post(self, title, content):
+        headers = {
+            'Content-Type': 'application/json',
+        }
+        data = {
+            'title': title,
+            'content': content,
+            'status': 'publish'
+        }
+        return self.post("/wp-json/wp/v2/posts", headers=headers, json=data, auth=self.auth)

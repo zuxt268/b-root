@@ -4,8 +4,9 @@ from werkzeug.exceptions import abort
 import shutil
 from .auth import login_required
 from .db import get_db
-from .client import get_meta_client, FileDownloader
+from .client import get_meta_client, Wordpress
 from urllib.request import urlretrieve
+from jinja2 import Template
 
 bp = Blueprint("customer", __name__)
 
@@ -37,16 +38,35 @@ def execute():
         access_token = customer["facebook_token"]
         posts = meta_client.get_posts(access_token)
         files = []
+        index = 0
         for post in posts:
-            urlretrieve(post["media_url"], f"a-root/image_files/{post['caption']}.jpeg")
-            files.append(f"{post['caption']}.jpeg")
+            # pngの場合のも対応すること
+            urlretrieve(post["media_url"], f"a-root/image_files/{index}.jpeg")
+            files.append({
+                "caption": post["caption"],
+                "file_path": f"a-root/image_files/{index}.jpeg" # pngの場合のも対応すること
+            })
+            index += 1
         print(files)
+
+        wordpress = Wordpress("https://uezmxogq.sv533.com")
+        for post in files:
+            resp = wordpress.upload_image(post["file_path"])
+            html = f"""
+            <h1>{post['caption']}</h1>
+            <img src="{resp['source_url']}" />
+            """
+            resp = wordpress.post_with_image(post["caption"], Template(html).render(), resp["id"])
+            print(resp)
     return {"status": "ok"}
+
 
 @bp.route("/execute2", methods=("GET",))
 def execute2():
-    url = "https://scontent-nrt1-2.cdninstagram.com/v/t51.29350-15/405802719_1374697259879389_5665102769271576175_n.heic?stp=dst-jpg&_nc_cat=102&ccb=1-7&_nc_sid=c4dd86&_nc_ohc=v5dF42glmpwAX8MFD25&_nc_oc=AQnq4zLJawCCm3q_iA6V5EJqBmUAbmcpS-b1vxuzPcpchvMhsWAQv0ouzf7InOu6a9Q&_nc_ht=scontent-nrt1-2.cdninstagram.com&edm=AEQ6tj4EAAAA&oh=00_AfDEf-dpokNejo_1aYpyGRW80FEHW4Ul7E7FART35bVRvQ&oe=65727A77"
-    response = requests.get(url)
-    if response.status_code == 200:
-        urlretrieve(url, "a-root/image_files/aiueo.jpeg")
+    ary = [{'caption': 'テストテスト', 'file_path': 'a-root/image_files/0.jpeg'}, {'caption': '#test_strategy_drive', 'file_path': 'a-root/image_files/1.jpeg'}]
+    wordpress = Wordpress("https://uezmxogq.sv533.com")
+    resp = wordpress.create_post("こんにちは", "こんにちは")
+    print(resp)
+    # todo データベース比較ロジック
+
     return {"status": "ok2"}
