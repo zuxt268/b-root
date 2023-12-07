@@ -1,3 +1,4 @@
+import os
 import requests
 from flask import Blueprint, flash, g, redirect, render_template, request, url_for
 from werkzeug.exceptions import abort
@@ -41,13 +42,15 @@ def execute():
         index = 0
         for post in posts:
             # pngの場合のも対応すること
+            print("==========start")
+            print(post)
+            print("==========end")
             urlretrieve(post["media_url"], f"a-root/image_files/{index}.jpeg")
             files.append({
                 "caption": post["caption"],
                 "file_path": f"a-root/image_files/{index}.jpeg" # pngの場合のも対応すること
             })
             index += 1
-        print(files)
 
         wordpress = Wordpress("https://uezmxogq.sv533.com")
         for post in files:
@@ -57,16 +60,9 @@ def execute():
             <img src="{resp['source_url']}" />
             """
             resp = wordpress.post_with_image(post["caption"], Template(html).render(), resp["id"])
-            print(resp)
+        shutil.rmtree("a-root/image_files")
+        os.mkdir("a-root/image_files")
+
     return {"status": "ok"}
 
 
-@bp.route("/execute2", methods=("GET",))
-def execute2():
-    ary = [{'caption': 'テストテスト', 'file_path': 'a-root/image_files/0.jpeg'}, {'caption': '#test_strategy_drive', 'file_path': 'a-root/image_files/1.jpeg'}]
-    wordpress = Wordpress("https://uezmxogq.sv533.com")
-    resp = wordpress.create_post("こんにちは", "こんにちは")
-    print(resp)
-    # todo データベース比較ロジック
-
-    return {"status": "ok2"}

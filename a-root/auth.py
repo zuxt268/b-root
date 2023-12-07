@@ -64,6 +64,7 @@ def login():
             session.clear()
             session["user_id"] = user["id"]
             return redirect(url_for("index"))
+        # todo ログイン試行回数を追跡。
 
         flash(error)
 
