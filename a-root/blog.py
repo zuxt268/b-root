@@ -57,7 +57,7 @@ def get_post(id, check_author=True):
     cursor.execute(
         'SELECT p.id, title, body, created, author_id, username'
         ' FROM post p JOIN user u ON p.author_id = u.id'
-        ' WHERE p.id = ?',
+        ' WHERE p.id = %s',
         (id,)
     )
     post = cursor.fetchone()
@@ -73,8 +73,7 @@ def get_post(id, check_author=True):
 @bp.route("/<int:id>/update", methods=('GET', 'POST'))
 @login_required
 def update(id):
-    post = get_post(id)
-
+    print(id)
     if request.method == "POST":
         title = request.form["title"]
         body = request.form["body"]
@@ -82,12 +81,12 @@ def update(id):
 
         if not title:
             error = "Title is required."
-
         if error is not None:
             flash(error)
         else:
             db = get_db()
-            db.cursor(dictionary=True).execute(
+            cursor = db.cursor(dictionary=True)
+            cursor.execute(
                 "UPDATE post SET title = %s, body = %s"
                 " WHERE id = %s",
                 (title, body, id)
@@ -95,7 +94,7 @@ def update(id):
             db.commit()
             db.close()
             return redirect(url_for("blog.index"))
-
+    post = get_post(id)
     return render_template("blog/update.html", post=post)
 
 

@@ -13,6 +13,7 @@ bp = Blueprint("customer", __name__)
 
 
 @bp.route("/customer")
+@login_required
 def index():
     print(g.user["id"])
     user_id = g.user["id"]
