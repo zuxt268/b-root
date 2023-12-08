@@ -47,24 +47,30 @@ def login():
         username = request.form["username"]
         password = request.form["password"]
         db = get_db()
-        error = None
-
         cursor = db.cursor(dictionary=True)
         cursor.execute("SELECT * FROM user WHERE username = %s", (username,))
         user = cursor.fetchone()
         cursor.close()
 
-        print(user)
+        error = None
         if user is None:
-            error = "Incorrect username."
+            error = "メールアドレスかパスワードが間違っています"
         elif not check_password_hash(user["password"], password):
-            error = "Incorrect password."
+            error = "メールアドレスかパスワードが間違っています"
+
+        attempts = int(user["login_attempts"]) + 1
+        db = get_db()
+        db.cursor(dictionary=True).execute(
+            "UPDATE user SET login_attempts = %s WHERE id = %s",
+            (attempts, user["id"]),
+        )
+        db.commit()
+        db.cursor().close()
 
         if error is None:
             session.clear()
             session["user_id"] = user["id"]
             return redirect(url_for("index"))
-        # todo ログイン試行回数を追跡。
 
         flash(error)
 
