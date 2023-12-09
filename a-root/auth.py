@@ -1,9 +1,7 @@
 import functools
 
 import mysql.connector.errors
-from flask import (
-    Blueprint, flash, g, redirect, render_template, request, session, url_for
-)
+from flask import Blueprint, flash, g, redirect, render_template, request, session, url_for
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from .db import get_db
@@ -79,8 +77,10 @@ def login():
 
 @bp.before_app_request
 def load_logged_in_user():
-    user_id = session.get("user_id")
+    if request.path.startswith("/static"):
+        return
 
+    user_id = session.get("user_id")
     if user_id is None:
         g.user = None
     else:
