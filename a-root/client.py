@@ -88,7 +88,6 @@ class Wordpress(Client):
         with open(image_path, 'rb') as img:
             binary = img.read()
             response = self.post('/wp-json/wp/v2/media', headers=headers, data=binary, auth=self.auth)
-        print(response)
         return response
 
     def post_with_image(self, title, content, media_id):

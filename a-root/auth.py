@@ -9,100 +9,56 @@ from .db import get_db
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
 
-@bp.route('/register', methods=('GET', 'POST'))
-def register():
-    if request.method == "POST":
-        username = request.form["username"]
-        password = request.form["password"]
-        db = get_db()
-        error = None
-        if not username:
-            error = "Username is required."
-        elif not password:
-            error = "Password is required."
-
-        if error is None:
-            try:
-                db.cursor(dictionary=True).execute(
-                    "INSERT INTO user (username, password) VALUES (%s, %s)",
-                    (username, generate_password_hash(password)),
-                )
-                db.commit()
-                db.cursor().close()
-            except mysql.connector.errors.IntegrityError as e:
-                error = f"User {username} is already registered."
-            else:
-                return redirect(url_for("auth.login"))
-
-        flash(error)
-
-    return render_template("auth/register.html")
-
-
-@bp.route("/login", methods=('GET', 'POST'))
-def login():
-    if request.method == "POST":
-        username = request.form["username"]
-        password = request.form["password"]
-        db = get_db()
-        cursor = db.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM user WHERE username = %s", (username,))
-        user = cursor.fetchone()
-        cursor.close()
-
-        error = None
-        if user is None:
-            error = "メールアドレスかパスワードが間違っています"
-        elif not check_password_hash(user["password"], password):
-            error = "メールアドレスかパスワードが間違っています"
-
-        attempts = int(user["login_attempts"]) + 1
-        db = get_db()
-        db.cursor(dictionary=True).execute(
-            "UPDATE user SET login_attempts = %s WHERE id = %s",
-            (attempts, user["id"]),
-        )
-        db.commit()
-        db.cursor().close()
-
-        if error is None:
-            session.clear()
-            session["user_id"] = user["id"]
-            return redirect(url_for("index"))
-
-        flash(error)
-
-    return render_template("auth/login.html")
-
-
 @bp.before_app_request
 def load_logged_in_user():
     if request.path.startswith("/static"):
         return
-
-    user_id = session.get("user_id")
-    if user_id is None:
-        g.user = None
+    elif request.path.startswith("/admin"):
+        """管理者ページ"""
+        admin_user_id = session.get("admin_user_id")
+        if admin_user_id is None:
+            g.user = None
+        else:
+            db = get_db().cursor(dictionary=True)
+            db.execute(
+                'SELECT * FROM admin_users WHERE id = %s', (admin_user_id,)
+            )
+            g.user = db.fetchone()
+            db.close()
     else:
-        db = get_db().cursor(dictionary=True)
-        db.execute(
-            'SELECT * FROM user WHERE id = %s', (user_id,)
-        )
-        g.user = db.fetchone()
-        db.close()
+        """顧客ページ"""
+        customer_id = session.get("customer_id")
+        if customer_id is None:
+            g.customer = None
+        else:
+            db = get_db().cursor(dictionary=True)
+            db.execute(
+                'SELECT * FROM customers WHERE id = %s', (customer_id,)
+            )
+            g.customer = db.fetchone()
+            db.close()
 
 
 @bp.route("/logout")
 def logout():
     session.clear()
-    return redirect(url_for("index"))
+    return redirect(url_for("customer.login"))
 
 
 def login_required(view):
     @functools.wraps(view)
     def wrapped_view(**kwargs):
+        if g.customer is None:
+            return redirect(url_for("customer.login"))
+        return view(**kwargs)
+    return wrapped_view
+
+
+def admin_login_required(view):
+    @functools.wraps(view)
+    def wrapped_view(**kwargs):
         if g.user is None:
-            return redirect(url_for("auth.login"))
+            return redirect(url_for("admin.login"))
         return view(**kwargs)
     return wrapped_view
 

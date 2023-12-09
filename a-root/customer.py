@@ -1,69 +1,79 @@
 import os
 import requests
-from flask import Blueprint, flash, g, redirect, render_template, request, url_for
+from flask import Blueprint, flash, g, session, redirect, render_template, request, url_for
 from werkzeug.exceptions import abort
+import mysql.connector
 import shutil
 from .auth import login_required
 from .db import get_db
 from .client import get_meta_client, Wordpress
 from urllib.request import urlretrieve
 from jinja2 import Template
+from werkzeug.security import check_password_hash, generate_password_hash
 
 bp = Blueprint("customer", __name__)
 
 
-@bp.route("/customer")
+@bp.route("/")
 @login_required
 def index():
-    print(g.user["id"])
-    user_id = g.user["id"]
+    print(g.customer["id"])
+    customer_id = g.customer["id"]
     cursor = get_db().cursor(dictionary=True)
     cursor.execute(
-        "SELECT * FROM customers WHERE user_id = %s", (user_id,)
+        "SELECT * FROM customers WHERE id = %s", (customer_id,)
     )
     customer = cursor.fetchone()
     cursor.close()
     return render_template("customer/index.html", customer=customer)
 
 
-@bp.route("/execute", methods=("GET",))
-def execute():
-    cursor = get_db().cursor(dictionary=True)
-    cursor.execute(
-        "select * from customers where status = 1"
+@bp.route("/facebook/auth", methods=("POST",))
+@login_required
+def auth():
+    access_token = request.form["accessToken"]
+    client = get_meta_client()
+    long_token = client.get_long_term_token(access_token)
+    db = get_db()
+    db.cursor().execute(
+        "UPDATE customers SET facebook_token = %s"
+        " WHERE user_id = %s",
+        (long_token, g.user["id"])
     )
-    customers = cursor.fetchall()
-    cursor.close()
-    meta_client = get_meta_client()
+    db.commit()
+    db.close()
+    return redirect(url_for("customer.index"))
 
-    for customer in customers:
-        access_token = customer["facebook_token"]
-        posts = meta_client.get_posts(access_token)
-        files = []
-        index = 0
-        for post in posts:
-            # pngの場合のも対応すること
-            print("==========start")
-            print(post)
-            print("==========end")
-            urlretrieve(post["media_url"], f"a-root/image_files/{index}.jpeg")
-            files.append({
-                "caption": post["caption"],
-                "file_path": f"a-root/image_files/{index}.jpeg" # pngの場合のも対応すること
-            })
-            index += 1
 
-        wordpress = Wordpress("https://uezmxogq.sv533.com")
-        for post in files:
-            resp = wordpress.upload_image(post["file_path"])
-            html = f"""
-            <h1>{post['caption']}</h1>
-            <img src="{resp['source_url']}" />
-            """
-            resp = wordpress.post_with_image(post["caption"], Template(html).render(), resp["id"])
-        shutil.rmtree("a-root/image_files")
-        os.mkdir("a-root/image_files")
+@bp.route("/login", methods=('GET', 'POST'))
+def login():
+    if request.method == "POST":
+        email = request.form["email"]
+        password = request.form["password"]
 
-    return {"status": "ok"}
+        error = None
+        if not email or not password:
+            error = "メールアドレスかパスワードが間違っています"
+        else:
+            db = get_db()
+            cursor = db.cursor(dictionary=True)
+            cursor.execute("SELECT * FROM customers WHERE email = %s", (email,))
+            customer = cursor.fetchone()
+            cursor.close()
+
+            if customer is None:
+                error = "メールアドレスかパスワードが間違っています"
+            elif not check_password_hash(customer["password"], password):
+                error = "メールアドレスかパスワードが間違っています"
+
+            if error is None:
+                session.clear()
+                session["customer_id"] = customer["id"]
+                return redirect(url_for("index"))
+
+        flash(error)
+    return render_template("customer/login.html")
+
+
 
 

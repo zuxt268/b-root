@@ -2,28 +2,24 @@ import functools
 from flask import Blueprint, flash, redirect, url_for, g, render_template, request, session
 from werkzeug.security import check_password_hash, generate_password_hash
 from .db import get_db
+from .auth import admin_login_required
+import mysql.connector
 
 bp = Blueprint("admin", __name__)
 
 
-def login_required(view):
-    @functools.wraps(view)
-    def wrapped_view(**kwargs):
-        if g.user is None or g.user["admin"] != 1:
-            return redirect(url_for("admin.login"))
-        return view(**kwargs)
-    return wrapped_view
-
-
-class User:
+class AdminUser:
     def __init__(self):
+        self.name = ""
         self.email = ""
         self.password = ""
-        self.admin = 0
+        self.repeat_password = ""
 
     def set_param(self, req):
+        self.name = req.form["name"]
         self.email = req.form["email"]
         self.password = req.form["password"]
+        self.repeat_password = req.form["repeat_password"]
 
     def validate(self):
         error = None
@@ -31,18 +27,18 @@ class User:
             error = "Emailは必須です。"
         elif not self.password:
             error = "Passwordは必須です。"
+        elif len(self.password) < 8:
+            error = "Passwordは8文字以上入力してください。"
+        elif not self.password == self.repeat_password:
+            error = "Repeat Passwordと一致していません。"
         return error
 
     def authorization(self, exist_user):
-        print(exist_user)
         error = None
         if not exist_user:
             error = "Email、またはPasswordが間違っています。"
         elif not check_password_hash(exist_user["password"], self.password):
             error = "Email、またはPasswordが間違っています。"
-        elif exist_user["admin"] == 0:
-            error = "管理者権限がありません。"
-        self.admin = 1
         return error
 
     def __str__(self):
@@ -52,31 +48,40 @@ class User:
 # ログイン
 @bp.route("/admin/login", methods=("GET", "POST"))
 def login():
-    user = User()
+
     if request.method == "POST":
-        user.set_param(request)
-        error = user.validate()
-        if error is None:
+        email = request.form["email"]
+        password = request.form["password"]
+
+        error = None
+        if not email or not password:
+            error = "Email、またはPasswordが間違っています。"
+        else:
             db = get_db()
             cursor = db.cursor(dictionary=True)
             cursor.execute(
-                "SELECT * FROM user WHERE email = %s",
-                (user.email,)
+                "SELECT * FROM admin_users WHERE email = %s",
+                (email,)
             )
             exist_user = cursor.fetchone()
             cursor.close()
-            error = user.authorization(exist_user)
+            if not exist_user:
+                error = "Email、またはPasswordが間違っています。"
+            elif not check_password_hash(exist_user["password"], password):
+                error = "Email、またはPasswordが間違っています。"
+
             if error is None:
                 session.clear()
-                session["user_id"] = exist_user["id"]
+                session["admin_user_id"] = exist_user["id"]
                 return redirect(url_for("admin.index"))
+
         flash(error)
-    return render_template("admin/login.html", user=user)
+    return render_template("admin/login.html")
 
 
 # 一覧表示
-@bp.route("/admin/index", methods=("GET",))
-@login_required
+@bp.route("/admin", methods=("GET",))
+@admin_login_required
 def index():
     cursor = get_db().cursor(dictionary=True)
     cursor.execute(
@@ -107,7 +112,7 @@ class Customer:
             error = "Passwordは入力必須です。"
         elif self.password != self.repeat_password:
             error = "Repeat Passwordと一致していません。"
-        elif len(self.password) > 7:
+        elif len(self.password) < 8:
             error = "Passwordは8文字以上入力してください。"
         return error
 
@@ -118,19 +123,58 @@ class Customer:
         self.password = req.form["password"]
         self.repeat_password = req.form["repeat_password"]
 
+    def authorization(self, exist_customer):
+        error = None
+        if not exist_customer:
+            error = "Email、またはPasswordが間違っています。"
+        elif not check_password_hash(exist_customer["password"], self.password):
+            error = "Email、またはPasswordが間違っています。"
+        return error
+
 
 # カスタマー登録
 @bp.route("/admin/register_customer", methods=("GET", "POST"))
-@login_required
+@admin_login_required
 def create_customer():
     customer = Customer()
     if request.method == "POST":
         customer.set_param(request)
         error = customer.validate()
         if error is None:
-            return redirect(url_for("admin.index"))
+            try:
+                db = get_db()
+                db.cursor(dictionary=True).execute(
+                    "INSERT INTO customers (name, email, password, wordpress_url) VALUES (%s, %s, %s, %s)",
+                    (customer.name, customer.email, generate_password_hash(customer.password), customer.wordpress_url),
+                )
+                db.commit()
+                db.cursor().close()
+                return redirect(url_for("admin.index"))
+            except mysql.connector.errors.IntegrityError as e:
+                error = f"{customer.email}はすでに登録されています。"
         flash(error)
     return render_template("admin/register_customer.html", customer=customer)
+
+
+@bp.route('/admin/register_user', methods=('GET', 'POST'))
+def register():
+    admin_user = AdminUser()
+    if request.method == "POST":
+        error = admin_user.validate()
+        if error is None:
+            try:
+                db = get_db()
+                db.cursor(dictionary=True).execute(
+                    "INSERT INTO admin_users (name, email, password) VALUES (%s, %s, %s)",
+                    (admin_user.name, admin_user.email, generate_password_hash(password)),
+                )
+                db.commit()
+                db.cursor().close()
+                return redirect(url_for("index"))
+            except mysql.connector.errors.IntegrityError as e:
+                error = f"{admin_user.email}はすでに登録されています。"
+        flash(error)
+    return render_template("auth/register_user.html")
 
 
 # カスタマーパスワード再設定
