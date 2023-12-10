@@ -14,9 +14,7 @@
                 <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
                     <!-- Topbar Navbar -->
                     <ul class="navbar-nav ml-auto">
-
                         <div class="topbar-divider d-none d-sm-block"></div>
-
                         <!-- Nav Item - User Information -->
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
@@ -60,7 +58,8 @@
                                             <th>ID</th>
                                             <th>Name</th>
                                             <th>Wordpress</th>
-                                            <th>Status</th>
+                                            <th>Facebook</th>
+                                            <th></th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -68,8 +67,19 @@
                                             <tr>
                                                 <td>{{ customer["id"] }}</td>
                                                 <td>{{ customer["name"] }}</td>
-                                                <td>{{ customer["wordpress_url"] }}</td>
-                                                <td>{{ customer["status"] }}</td>
+                                                <td>
+                                                    {{ customer["wordpress_url"] }}
+                                                </td>
+                                                <td>
+                                                    {% if not customer.facebook_token %}
+                                                        <span class="p-2 badge badge-secondary">未連携</span>
+                                                    {% else %}
+                                                        <span class="p-2 badge badge-primary">連携済</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    <button type="button" style="width: 6rem;" class="btn btn-outline-danger btn-sm">削除ボタン</button>
+                                                </td>
                                             </tr>
                                         {% endfor %}
                                     </tbody>
@@ -107,4 +117,9 @@
         </div>
     </div>
 
+<script>
+    console.log("wwww")
+</script>
+
 {% endblock %}
+
