@@ -135,7 +135,7 @@ class Customer:
 # カスタマー登録
 @bp.route("/admin/register_customer", methods=("GET", "POST"))
 @admin_login_required
-def create_customer():
+def register_customer():
     customer = Customer()
     if request.method == "POST":
         customer.set_param(request)
@@ -156,8 +156,27 @@ def create_customer():
     return render_template("admin/register_customer.html", customer=customer)
 
 
+@bp.route("/admin/delete_customer", methods=("POST",))
+@admin_login_required
+def delete_customer():
+    customer_id = request.form["customer_id"]
+    print(customer_id)
+    if customer_id:
+        try:
+            db = get_db()
+            db.cursor(dictionary=True).execute(
+                "DELETE FROM customers WHERE id = %s",
+                (customer_id,),
+            )
+            db.commit()
+            db.cursor().close()
+        except mysql.connector.errors.Error as e:
+            flash(e)
+    return redirect(url_for("admin.index"))
+
+
 @bp.route('/admin/register_user', methods=('GET', 'POST'))
-def register():
+def register_user():
     admin_user = AdminUser()
     if request.method == "POST":
         error = admin_user.validate()
@@ -174,11 +193,6 @@ def register():
             except mysql.connector.errors.IntegrityError as e:
                 error = f"{admin_user.email}はすでに登録されています。"
         flash(error)
-    return render_template("auth/register_user.html")
-
-
-# カスタマーパスワード再設定
-def reset_password():
-    pass
+    return render_template("admin/register_user.html", admin_user=admin_user)
 
 

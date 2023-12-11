@@ -4,7 +4,30 @@
 {% endblock %}
 
 {% block content %}
-
+<nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+                    <!-- Topbar Navbar -->
+                    <ul class="navbar-nav ml-auto">
+                        <div class="topbar-divider d-none d-sm-block"></div>
+                        <!-- Nav Item - User Information -->
+                        <li class="nav-item dropdown no-arrow">
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">Douglas McGee</span>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                                aria-labelledby="userDropdown">
+                                <a class="dropdown-item" href="{{ url_for('admin.register_user') }}">
+                                    管理者追加
+                                </a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
+                                    <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+                                    ログアウト
+                                </a>
+                            </div>
+                        </li>
+                    </ul>
+                </nav>
 <div class="container">
     <div class="card o-hidden border-0 shadow-lg my-5">
         <div class="card-body p-0">
@@ -16,28 +39,28 @@
                         </div>
                         <form method="post" class="user">
                             <div class="form-group">
-                                <input value="{{ customer.name }}" name="name" type="text" class="form-control form-control-user" id="inputName"
+                                <input value="{{ customer.name }}" name="name" type="text" class="form-control form-control-user" id="name"
                                     placeholder="Name">
                             </div>
                             <div class="form-group">
-                                <input value="{{ customer.email }}" name="email" type="email" class="form-control form-control-user" id="inputEmail"
+                                <input value="{{ customer.email }}" name="email" type="email" class="form-control form-control-user" id="email"
                                     placeholder="Email Address">
                             </div>
                             <div class="form-group">
-                                <input value="{{ customer.wordpress_url }}" name="wordpress_url" type="text" class="form-control form-control-user" id="inputWordpress"
+                                <input value="{{ customer.wordpress_url }}" name="wordpress_url" type="text" class="form-control form-control-user" id="wordpress_url"
                                     placeholder="Wordpress URL">
                             </div>
                             <div class="form-group row">
                                 <div class="col-sm-6 mb-3 mb-sm-0">
                                     <input name="password" type="password" class="form-control form-control-user"
-                                        id="exampleInputPassword" placeholder="Password">
+                                        id="password" placeholder="Password">
                                 </div>
                                 <div class="col-sm-6">
                                     <input name="repeat_password" type="password" class="form-control form-control-user"
-                                        id="exampleRepeatPassword" placeholder="Repeat Password">
+                                        id="repeat_password" placeholder="Repeat Password">
                                 </div>
                             </div>
-                            <input type="submit" value="Save" class="btn btn-primary btn-user btn-block" />
+                            <input id="save" type="submit" value="登録" class="btn btn-primary btn-user btn-block" />
                         </form>
                         <hr>
                     </div>
@@ -46,5 +69,17 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.getElementById("save").addEventListener("click", (event) => {
+        document.getElementById("save").disabled = true;
+        const name = document.getElementById("name").value;
+        const email = document.getElementById("email").value;
+        const wordpress_url = document.getElementById("wordpress_url").value;
+        const password = document.getElementById("password").value;
+        const repeat_password = document.getElementById("repeat_password").value;
+        post("/admin/register_customer", { name, email, wordpress_url, password, repeat_password })
+    });
+</script>
 
 {% endblock %}

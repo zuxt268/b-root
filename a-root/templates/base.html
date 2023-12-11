@@ -18,6 +18,7 @@
 </head>
 
 <body>
+
   <header>
     {% block header %}{% endblock %}
   </header>
@@ -30,7 +31,8 @@
     </div>
   {% endfor %}
 
-  <div class="lds-ring"><div></div><div></div><div></div><div></div></div>
+
+<!--  <div class="lds-ring"><div></div><div></div><div></div><div></div></div>-->
 
 
   {% block content %}{% endblock %}
@@ -43,7 +45,6 @@
         </div>
     </footer>
 
-
     <div id="fb-root"></div>
     <script async defer crossorigin="anonymous" src="https://connect.facebook.net/ja_JP/sdk.js#xfbml=1&version=v18.0&appId=1499558264220625" nonce="f2Xbvzub"></script>
 
@@ -53,19 +54,23 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
+                    <h5 class="modal-title" id="exampleModalLabel">ログアウトしますか？</h5>
                     <button class="close" type="button" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">×</span>
                     </button>
                 </div>
-                <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
                 <div class="modal-footer">
-                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                    <a class="btn btn-primary" href="login.html">Logout</a>
+                    <a class="btn btn-primary" href="/auth/logout">Logout</a>
                 </div>
             </div>
         </div>
     </div>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+<script src="{{ url_for('static', filename='javascript/common.js') }}"></script>
 
 </body>
 </html>

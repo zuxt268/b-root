@@ -23,23 +23,23 @@
                             </a>
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
                                 aria-labelledby="userDropdown">
+                                <a class="dropdown-item" href="{{ url_for('admin.register_user') }}">
+                                    管理者追加
+                                </a>
                                 <div class="dropdown-divider"></div>
                                 <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
                                     <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Logout
+                                    ログアウト
                                 </a>
                             </div>
                         </li>
                     </ul>
                 </nav>
                 <!-- End of Topbar -->
-
                 <!-- Begin Page Content -->
                 <div class="container-fluid">
-
                     <!-- Page Heading -->
                     <h1 class="h3 mb-2 text-gray-800">顧客一覧</h1>
-
                     <!-- DataTales Example -->
                     <div class="card shadow mb-4">
                         <div class="card-header py-3">
@@ -47,7 +47,7 @@
                                 DataTables
                             </h6>
                             <div class="text-right">
-                              <a href="{{ url_for('admin.create_customer') }}" type="button" class="btn btn-sm btn-primary">顧客追加</a>
+                              <a style="width: 5rem" id="register_customer" href="{{ url_for('admin.register_customer') }}" type="button" class="btn btn-sm btn-primary">顧客追加</a>
                             </div>
                         </div>
                         <div class="card-body">
@@ -78,7 +78,7 @@
                                                     {% endif %}
                                                 </td>
                                                 <td>
-                                                    <button type="button" style="width: 6rem;" class="btn btn-outline-danger btn-sm">削除ボタン</button>
+                                                    <button value="{{ customer.id }}" type="button" style="width: 6rem;" class="delete_btn btn btn-outline-danger btn-sm">削除ボタン</button>
                                                 </td>
                                             </tr>
                                         {% endfor %}
@@ -96,29 +96,25 @@
     </div>
     <!-- End of Page Wrapper -->
 
-
-    <!-- Logout Modal-->
-    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
-                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">×</span>
-                    </button>
-                </div>
-                <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                    <a class="btn btn-primary" href="login.html">Logout</a>
-                </div>
-            </div>
-        </div>
-    </div>
-
 <script>
-    console.log("wwww")
+    document.getElementById("register_customer").addEventListener("click", (event) => {
+        document.getElementById("register_customer").innerHTML = `
+            <span class="spinner-border spinner-border-sm text-light" role="status">
+              <span class="sr-only">Loading...</span>
+            </span>`;
+    });
+
+    document.querySelectorAll(".delete_btn").forEach((ele) => {
+        ele.addEventListener("click", (event) => {
+            const customer_id = event.target.value;
+            console.log(customer_id);
+            if (window.confirm(`ID: ${customer_id}の顧客を削除します。よろしいですか？`)) {
+                event.target.disabled = true;
+                post("/admin/delete_customer", {customer_id});
+            }
+        })
+    })
+
 </script>
 
 {% endblock %}

@@ -16,24 +16,24 @@
                         </div>
                         <form method="post" class="user">
                             <div class="form-group">
-                                <input value="{{ admin_user.name }}" name="name" type="text" class="form-control form-control-user" id="inputName"
+                                <input value="{{ admin_user.name }}" name="name" type="text" class="form-control form-control-user" id="name"
                                     placeholder="Name">
                             </div>
                             <div class="form-group">
-                                <input value="{{ admin_user.email }}" name="email" type="email" class="form-control form-control-user" id="inputEmail"
+                                <input value="{{ admin_user.email }}" name="email" type="email" class="form-control form-control-user" id="email"
                                     placeholder="Email Address">
                             </div>
                             <div class="form-group row">
                                 <div class="col-sm-6 mb-3 mb-sm-0">
                                     <input name="password" type="password" class="form-control form-control-user"
-                                        id="exampleInputPassword" placeholder="Password">
+                                        id="password" placeholder="Password">
                                 </div>
                                 <div class="col-sm-6">
                                     <input name="repeat_password" type="password" class="form-control form-control-user"
-                                        id="exampleRepeatPassword" placeholder="Repeat Password">
+                                        id="repeat_password" placeholder="Repeat Password">
                                 </div>
                             </div>
-                            <input type="submit" value="Save" class="btn btn-primary btn-user btn-block" />
+                            <input id="save_user" type="submit" value="Save" class="btn btn-primary btn-user btn-block" />
                         </form>
                         <hr>
                     </div>
@@ -42,5 +42,16 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.getElementById("save_user").addEventListener("click", (event) => {
+        document.getElementById("save_user").disabled = true;
+        const name = document.getElementById("name").value;
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
+        const repeat_password = document.getElementById("repeat_password").value;
+        post("/admin/register_user", { name, email, password, repeat_password });
+    })
+</script>
 
 {% endblock %}
