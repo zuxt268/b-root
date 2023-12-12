@@ -55,7 +55,7 @@ class Meta(Client):
     def get_post(self, access_token, id):
         params = dict()
         params["access_token"] = access_token
-        params['fields'] = "caption,media_url"
+        params['fields'] = "id,caption,media_url,timestamp,media_type"
         return self.get(path=f"/{id}", params=params)
 
     def get_posts(self, access_token):
