@@ -40,12 +40,10 @@ def create_app(test_config=None):
         return "こんにちは、にっぽん"
 
     from . import auth
-    # from . import blog
     from . import customer
     from . import admin
 
     app.register_blueprint(auth.bp)
-    # app.register_blueprint(blog.bp)
     app.register_blueprint(customer.bp)
     app.register_blueprint(admin.bp)
 

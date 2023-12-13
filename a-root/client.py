@@ -6,7 +6,7 @@ from requests.auth import HTTPBasicAuth
 
 def get_meta_client():
     if "meta" not in g:
-        g.meta = Meta()
+        g.meta = Meta(current_app.config["META"]["client_id"], current_app.config["META"]["client_secret"])
     return g.meta
 
 
@@ -22,10 +22,10 @@ class Client:
 
 
 class Meta(Client):
-    def __init__(self):
+    def __init__(self, client_id, client_secret):
         super().__init__("https://graph.facebook.com/v18.0")
-        self.client_id = current_app.config["META"]["client_id"]
-        self.client_secret = current_app.config["META"]["client_secret"]
+        self.client_id = client_id
+        self.client_secret = client_secret
 
     def get_long_term_token(self, access_token):
         params = dict()
@@ -52,20 +52,20 @@ class Meta(Client):
         response = self.get(f"/{media_id}/media", params=params)
         return map(lambda x: x["id"], response["data"])
 
-    def get_post(self, access_token, id):
+    def get_media(self, access_token, id):
         params = dict()
         params["access_token"] = access_token
         params['fields'] = "id,caption,media_url,timestamp,media_type"
         return self.get(path=f"/{id}", params=params)
 
-    def get_posts(self, access_token):
+    def get_media_list(self, access_token):
         media_id = self.get_instagram_account(access_token)
         ids = self.get_media_ids(access_token, media_id)
-        posts = []
+        media_list = []
         for id in ids:
-            post = self.get_post(access_token, id)
-            posts.append(post)
-        return posts
+            media = self.get_media(access_token, id)
+            media_list.append(media)
+        return media_list
 
 
 class SendGrid(Client):
@@ -73,10 +73,10 @@ class SendGrid(Client):
 
 
 class Wordpress(Client):
-    def __init__(self, wordpress_url):
+    def __init__(self, wordpress_url, admin_id, admin_password):
         super().__init__(wordpress_url)
-        print(current_app.config["WORDPRESS"]["admin_password"])
-        self.auth = HTTPBasicAuth(current_app.config["WORDPRESS"]["admin_id"], current_app.config["WORDPRESS"]["admin_password"])
+        print(admin_id)
+        self.auth = HTTPBasicAuth(admin_id, admin_password)
         print(self.auth)
 
     def upload_image(self, image_path):
@@ -91,6 +91,7 @@ class Wordpress(Client):
         return response
 
     def post_with_image(self, title, content, media_id):
+        print("post_with_image")
         headers = {'Content-Type': 'application/json'}
         data = {
             'title': title,

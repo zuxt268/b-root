@@ -1,61 +1,92 @@
 import os
 import shutil
+import mysql.connector
+import dotenv
 
 from urllib.request import urlretrieve
-from .db import get_db
-from .client import get_meta_client, Wordpress
-from flask import Template
+from client import Meta, Wordpress
+from jinja2 import Template
 
 
-def is_target(post):
-    if post["media_type"] != "IMAGE":
-        return False
-    cursor = get_db().cursor(dictionary=True)
-    cursor.execute(
-        "select * from posts where media_id = %s", (post["id"],)
-    )
-    exist = cursor.fetchone()
-    cursor.close()
-    if exist:
-        return False
-    return True
+class MySQL:
+    def __init__(self):
+        self.db = None
 
+    def get_db_connection(self):
+        if self.db is None:
+            con = mysql.connector.connect(
+                user=os.getenv("DATABASE_USER"),
+                password=os.getenv("DATABASE_PASSWORD"),
+                host=os.getenv("DATABASE_HOST"),
+                database=os.getenv("DATABASE_SCHEME")
+            )
+            con.autocommit = True
+            self.db = con
+        return self.db
 
-def save_target(post):
-    db = get_db()
-    db.cursor().execute(
+    def get_customers(self):
+        print("Getting customers...")
+        cursor = self.get_db_connection().cursor(dictionary=True)
+        cursor.execute(
+            "SELECT * FROM customers WHERE facebook_token IS NOT NULL"
+        )
+        customers = cursor.fetchall()
+        cursor.close()
+        return customers
 
-    )
+    def is_target(self, customer, media):
+        print("is_target", media)
+        if media["media_type"] != "IMAGE":
+            return False
+        cursor = self.get_db_connection().cursor(dictionary=True)
+        cursor.execute(
+            "SELECT * FROM posts WHERE customer_id =%s AND media_id = %s", (customer["id"], media["id"],)
+        )
+        exist = cursor.fetchone()
+        cursor.close()
+        if exist:
+            return False
+        return True
+
+    def save_target(self, post):
+        print("save_target", post)
+        try:
+            db = self.get_db_connection()
+            db.cursor().execute(
+                "INSERT INTO posts (user_id, media_id, timestamp, caption, media_url) VALUES (%s, %s, %s, %s)",
+                (post["user_id"], post["media_id"], post["timestamp"], post["caption"], post["media_url"])
+            )
+            db.commit()
+            db.cursor().close()
+        except mysql.connector.errors as e:
+            print(e)
 
 
 def execute():
-    cursor = get_db().cursor(dictionary=True)
-    cursor.execute(
-        "select * from customers where status = 1"
-    )
-    customers = cursor.fetchall()
-    cursor.close()
-    meta_client = get_meta_client()
-
+    mysql_cli = MySQL()
+    meta_cli = Meta(os.getenv("WORDPRESS_ADMIN_ID"), os.getenv("WORDPRESS_ADMIN_PASSWORD"))
+    customers = mysql_cli.get_customers()
     for customer in customers:
         access_token = customer["facebook_token"]
-        posts = meta_client.get_posts(access_token)
+        media_list = meta_cli.get_media_list(access_token)
         files = []
         index = 0
-        for post in posts:
-            if not is_target(post):
+        for media in media_list:
+            if not mysql_cli.is_target(customer, media):
                 continue
             # pngの場合のも対応すること
-            urlretrieve(post["media_url"], f"a-root/image_files/{index}.jpeg")
+            urlretrieve(media["media_url"], f"image_files/{index}.jpeg")
             files.append({
-                "media_id": post["id"],
-                "timestamp": post["timestamp"],
-                "caption": post["caption"],
-                "file_path": f"a-root/image_files/{index}.jpeg"
+                "user_id": customer["id"],
+                "media_id": media["id"],
+                "timestamp": media["timestamp"],
+                "caption": media["caption"],
+                "file_path": f"image_files/{index}.jpeg",
+                "media_url": media["media_url"]
             })
             index += 1
 
-        wordpress = Wordpress("https://uezmxogq.sv533.com")
+        wordpress = Wordpress(f"https://{customer['wordpress_url']}", os.getenv("WORDPRESS_ADMIN_ID"), os.getenv("WORDPRESS_ADMIN_PASSWORD"))
         for post in files:
             resp = wordpress.upload_image(post["file_path"])
             html = f"""
@@ -63,15 +94,15 @@ def execute():
             <img src="{resp['source_url']}" />
             """
             resp = wordpress.post_with_image(post["caption"], Template(html).render(), resp["id"])
-            # wordpress投稿response start ========
+            print("wordpress投稿response start ========")
             print(resp)
-            # wordpress投稿response end  =========
+            print("wordpress投稿response end  =========")
+            mysql_cli.save_target(post)
 
-
-
-        shutil.rmtree("a-root/image_files")
-        os.mkdir("a-root/image_files")
+        shutil.rmtree("image_files")
+        os.mkdir("image_files")
 
 
 if __name__ == "__main__":
-    print("wao")
+    dotenv.load_dotenv("../.env")
+    execute()
