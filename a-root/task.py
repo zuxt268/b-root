@@ -48,13 +48,13 @@ class MySQL:
             return False
         return True
 
-    def save_target(self, post):
+    def save_target(self, post, wordpress_link):
         print("save_target", post)
         try:
             db = self.get_db_connection()
             db.cursor().execute(
-                "INSERT INTO posts (user_id, media_id, timestamp, caption, media_url) VALUES (%s, %s, %s, %s)",
-                (post["user_id"], post["media_id"], post["timestamp"], post["caption"], post["media_url"])
+                "INSERT INTO posts (customer_id, media_id, timestamp, media_url, permalink, wordpress_link) VALUES (%s, %s, %s, %s, %s, %s)",
+                (post["customer_id"], post["media_id"], post["timestamp"], post["media_url"], post["permalink"], wordpress_link)
             )
             db.commit()
             db.cursor().close()
@@ -77,12 +77,13 @@ def execute():
             # pngの場合のも対応すること
             urlretrieve(media["media_url"], f"image_files/{index}.jpeg")
             files.append({
-                "user_id": customer["id"],
+                "customer_id": customer["id"],
                 "media_id": media["id"],
                 "timestamp": media["timestamp"],
                 "caption": media["caption"],
                 "file_path": f"image_files/{index}.jpeg",
-                "media_url": media["media_url"]
+                "media_url": media["media_url"],
+                "permalink": media["permalink"]
             })
             index += 1
 
@@ -97,7 +98,7 @@ def execute():
             print("wordpress投稿response start ========")
             print(resp)
             print("wordpress投稿response end  =========")
-            mysql_cli.save_target(post)
+            mysql_cli.save_target(post, resp["link"])
 
         shutil.rmtree("image_files")
         os.mkdir("image_files")

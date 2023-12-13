@@ -11,6 +11,11 @@
             <div id="content">
                 <!-- Topbar -->
                 <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+                    <ul class="navbar">
+                        <a href="/" style="font-weight: bolder; text-decoration: none; font-family: 'BIZ UDPゴシック'; font-size: 2rem; cursor: pointer" class="mt-3">
+                            <img class="mr-1" style="vertical-align: sub;height: 2.3rem;" src="{{ url_for('static', filename='image/sd.png') }}" />
+                            A-Root</a>
+                    </ul>
                     <!-- Topbar Navbar -->
                     <ul class="navbar-nav ml-auto">
                         <div class="topbar-divider d-none d-sm-block"></div>
@@ -44,7 +49,7 @@
                             <!-- Circle Buttons -->
                             <div class="card shadow mb-4">
                                 <div class="card-header py-3">
-                                    <h6 class="m-0 font-weight-bold text-primary">連携状況 - {{ customer.wordpress_url }}</h6>
+                                    <h6 class="m-0 font-weight-bold text-primary">{{ customer.wordpress_url }}</h6>
                                 </div>
                                 <div class="card-body">
                                     <div class="row">
@@ -57,6 +62,35 @@
                                         </div>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-12">
+                            <div class="card-header pt-3">
+                                <h6 class="m-0 font-weight-bold text-primary">instagram-wordpress 連携状況</h6>
+                            </div>
+                            <div class="card-body">
+                                <table class="table table-sm">
+                                  <thead class="thead-light">
+                                    <tr>
+                                      <th scope="col">連携日時</th>
+                                      <th scope="col">InstagramURL</th>
+                                      <th scope="col">WordpressURL</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                  {% for post in posts %}
+                                    <tr>
+                                      <th scope="row">{{ post["created_at"] }}</th>
+                                      <td>
+                                          <a href="{{ post['permalink'] }}" target="_blank">{{ post["permalink"] }}</a>
+                                      </td>
+                                      <td>
+                                          <a href="{{ post['wordpress_link'] }}" target="_blank">{{ post["wordpress_link"] }}</a>
+                                      </td>
+                                    </tr>
+                                  {% endfor %}
+                                  </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>

@@ -55,7 +55,7 @@ class Meta(Client):
     def get_media(self, access_token, id):
         params = dict()
         params["access_token"] = access_token
-        params['fields'] = "id,caption,media_url,timestamp,media_type"
+        params['fields'] = "id,caption,media_url,timestamp,media_type,permalink"
         return self.get(path=f"/{id}", params=params)
 
     def get_media_list(self, access_token):

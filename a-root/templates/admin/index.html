@@ -12,6 +12,11 @@
             <div id="content">
                 <!-- Topbar -->
                 <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+                    <ul class="navbar">
+                        <a href="/admin" style="font-weight: bolder; text-decoration: none; font-family: 'BIZ UDPゴシック'; font-size: 2rem; cursor: pointer" class="mt-3">
+                            <img class="mr-1" style="vertical-align: sub;height: 2.3rem;" src="{{ url_for('static', filename='image/sd.png') }}" />
+                            A-Root</a>
+                    </ul>
                     <!-- Topbar Navbar -->
                     <ul class="navbar-nav ml-auto">
                         <div class="topbar-divider d-none d-sm-block"></div>
@@ -43,16 +48,18 @@
                     <!-- DataTales Example -->
                     <div class="card shadow mb-4">
                         <div class="card-header py-3">
-                            <h6 class="m-0 font-weight-bold text-primary">
-                                DataTables
-                            </h6>
-                            <div class="text-right">
-                              <a style="width: 5rem" id="register_customer" href="{{ url_for('admin.register_customer') }}" type="button" class="btn btn-sm btn-primary">顧客追加</a>
+                            <div class="row">
+                                <h6 class="col m-0 font-weight-bold text-primary">
+                                    DataTables
+                                </h6>
+                                <div class="col text-right">
+                                  <a style="width: 5rem" id="register_customer" href="{{ url_for('admin.register_customer') }}" type="button" class="btn btn-sm btn-primary">顧客追加</a>
+                                </div>
                             </div>
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
-                                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                                <table class="table" id="dataTable" width="100%" cellspacing="0">
                                     <thead>
                                         <tr>
                                             <th>ID</th>
@@ -97,13 +104,6 @@
     <!-- End of Page Wrapper -->
 
 <script>
-    document.getElementById("register_customer").addEventListener("click", (event) => {
-        document.getElementById("register_customer").innerHTML = `
-            <span class="spinner-border spinner-border-sm text-light" role="status">
-              <span class="sr-only">Loading...</span>
-            </span>`;
-    });
-
     document.querySelectorAll(".delete_btn").forEach((ele) => {
         ele.addEventListener("click", (event) => {
             const customer_id = event.target.value;

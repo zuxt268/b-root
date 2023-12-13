@@ -120,6 +120,8 @@ class Customer:
         self.name = req.form["name"]
         self.email = req.form["email"]
         self.wordpress_url = req.form["wordpress_url"]
+        if self.wordpress_url.startswith("https://"):
+            self.wordpress_url = self.wordpress_url.replace("https://", "")
         self.password = req.form["password"]
         self.repeat_password = req.form["repeat_password"]
 

@@ -1,14 +1,8 @@
-import os
-import requests
+
 from flask import Blueprint, flash, g, session, redirect, render_template, request, url_for
-from werkzeug.exceptions import abort
-import mysql.connector
-import shutil
 from .auth import login_required
 from .db import get_db
-from .client import get_meta_client, Wordpress
-from urllib.request import urlretrieve
-from jinja2 import Template
+from .client import get_meta_client
 from werkzeug.security import check_password_hash, generate_password_hash
 
 bp = Blueprint("customer", __name__)
@@ -24,8 +18,14 @@ def index():
         "SELECT * FROM customers WHERE id = %s", (customer_id,)
     )
     customer = cursor.fetchone()
+
+    cursor.execute(
+        "SELECT * FROM posts WHERE customer_id = %s", (customer_id,)
+    )
+    posts = cursor.fetchall()
+
     cursor.close()
-    return render_template("customer/index.html", customer=customer)
+    return render_template("customer/index.html", customer=customer, posts=posts)
 
 
 @bp.route("/facebook/auth", methods=("POST",))
