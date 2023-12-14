@@ -24,7 +24,7 @@
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">Douglas McGee</span>
+                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{ login_name }}</span>
                             </a>
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
                                 aria-labelledby="userDropdown">
@@ -64,6 +64,7 @@
                                         <tr>
                                             <th>ID</th>
                                             <th>Name</th>
+                                            <th>Email</th>
                                             <th>Wordpress</th>
                                             <th>Facebook</th>
                                             <th></th>
@@ -74,9 +75,8 @@
                                             <tr>
                                                 <td>{{ customer["id"] }}</td>
                                                 <td>{{ customer["name"] }}</td>
-                                                <td>
-                                                    {{ customer["wordpress_url"] }}
-                                                </td>
+                                                <td>{{ customer["email"] }}</td>
+                                                <td>{{ customer["wordpress_url"] }}</td>
                                                 <td>
                                                     {% if not customer.facebook_token %}
                                                         <span class="p-2 badge badge-secondary">未連携</span>

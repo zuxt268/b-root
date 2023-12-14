@@ -17,13 +17,13 @@ def load_logged_in_user():
         """管理者ページ"""
         admin_user_id = session.get("admin_user_id")
         if admin_user_id is None:
-            g.user = None
+            g.admin_user = None
         else:
             db = get_db().cursor(dictionary=True)
             db.execute(
                 'SELECT * FROM admin_users WHERE id = %s', (admin_user_id,)
             )
-            g.user = db.fetchone()
+            g.admin_user = db.fetchone()
             db.close()
     else:
         """顧客ページ"""
@@ -57,7 +57,7 @@ def login_required(view):
 def admin_login_required(view):
     @functools.wraps(view)
     def wrapped_view(**kwargs):
-        if g.user is None:
+        if g.admin_user is None:
             return redirect(url_for("admin.login"))
         return view(**kwargs)
     return wrapped_view

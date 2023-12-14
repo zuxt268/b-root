@@ -102,9 +102,14 @@
 
 <script>
     document.getElementById("facebook_btn").addEventListener("click", (event) => {
+        document.getElementById("facebook_btn").disabled = true;
         FB.login(function(response){
-            const accessToken = response.authResponse.accessToken;
-            post("/facebook/auth", {accessToken})
+            if (response.status === "connected") {
+                const accessToken = response.authResponse.accessToken;
+                post("/facebook/auth", {accessToken})
+            } else {
+                document.getElementById("facebook_btn").disabled = false;
+            }
         }, {scope: 'public_profile,email,pages_show_list,instagram_basic,pages_read_engagement'});
     })
 </script>

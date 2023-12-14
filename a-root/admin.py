@@ -1,9 +1,9 @@
-import functools
+import mysql.connector
+
 from flask import Blueprint, flash, redirect, url_for, g, render_template, request, session
 from werkzeug.security import check_password_hash, generate_password_hash
 from .db import get_db
 from .auth import admin_login_required
-import mysql.connector
 
 bp = Blueprint("admin", __name__)
 
@@ -85,7 +85,7 @@ def index():
     )
     customers = cursor.fetchall()
     cursor.close()
-    return render_template("admin/index.html", customers=customers)
+    return render_template("admin/index.html", customers=customers, login_name=g.admin_user["name"])
 
 
 class Customer:
@@ -147,7 +147,7 @@ def register_customer():
             except mysql.connector.errors.IntegrityError as e:
                 error = f"{customer.email}はすでに登録されています。"
         flash(error)
-    return render_template("admin/register_customer.html", customer=customer)
+    return render_template("admin/register_customer.html", customer=customer, login_name=g.admin_user["name"])
 
 
 @bp.route("/admin/delete_customer", methods=("POST",))
@@ -170,6 +170,7 @@ def delete_customer():
 
 
 @bp.route('/admin/register_user', methods=('GET', 'POST'))
+@admin_login_required
 def register_user():
     admin_user = AdminUser()
     if request.method == "POST":
@@ -187,6 +188,6 @@ def register_user():
             except mysql.connector.errors.IntegrityError as e:
                 error = f"{admin_user.email}はすでに登録されています。"
         flash(error)
-    return render_template("admin/register_user.html", admin_user=admin_user)
+    return render_template("admin/register_user.html", admin_user=admin_user, login_name=g.admin_user["name"])
 
 

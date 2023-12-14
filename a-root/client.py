@@ -1,5 +1,5 @@
 import requests
-import shutil
+
 from flask import current_app, g
 from requests.auth import HTTPBasicAuth
 

@@ -37,8 +37,8 @@ def auth():
     db = get_db()
     db.cursor().execute(
         "UPDATE customers SET facebook_token = %s"
-        " WHERE user_id = %s",
-        (long_token, g.user["id"])
+        " WHERE id = %s",
+        (long_token, g.customer["id"])
     )
     db.commit()
     db.close()
