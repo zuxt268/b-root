@@ -13,13 +13,11 @@ class AdminUser:
         self.name = ""
         self.email = ""
         self.password = ""
-        self.repeat_password = ""
 
     def set_param(self, req):
         self.name = req.form["name"]
         self.email = req.form["email"]
         self.password = req.form["password"]
-        self.repeat_password = req.form["repeat_password"]
 
     def validate(self):
         error = None
@@ -29,8 +27,6 @@ class AdminUser:
             error = "Passwordは必須です。"
         elif len(self.password) < 8:
             error = "Passwordは8文字以上入力してください。"
-        elif not self.password == self.repeat_password:
-            error = "Repeat Passwordと一致していません。"
         return error
 
     def authorization(self, exist_user):
@@ -98,7 +94,6 @@ class Customer:
         self.email = ""
         self.wordpress_url = ""
         self.password = ""
-        self.repeat_password = ""
 
     def validate(self):
         error = None
@@ -110,8 +105,6 @@ class Customer:
             error = "Wordpressは入力必須です。"
         elif not self.password:
             error = "Passwordは入力必須です。"
-        elif self.password != self.repeat_password:
-            error = "Repeat Passwordと一致していません。"
         elif len(self.password) < 8:
             error = "Passwordは8文字以上入力してください。"
         return error
@@ -123,7 +116,6 @@ class Customer:
         if self.wordpress_url.startswith("https://"):
             self.wordpress_url = self.wordpress_url.replace("https://", "")
         self.password = req.form["password"]
-        self.repeat_password = req.form["repeat_password"]
 
     def authorization(self, exist_customer):
         error = None
@@ -187,7 +179,7 @@ def register_user():
                 db = get_db()
                 db.cursor(dictionary=True).execute(
                     "INSERT INTO admin_users (name, email, password) VALUES (%s, %s, %s)",
-                    (admin_user.name, admin_user.email, generate_password_hash(password)),
+                    (admin_user.name, admin_user.email, generate_password_hash(admin_user.password)),
                 )
                 db.commit()
                 db.cursor().close()

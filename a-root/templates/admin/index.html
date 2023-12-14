@@ -107,7 +107,6 @@
     document.querySelectorAll(".delete_btn").forEach((ele) => {
         ele.addEventListener("click", (event) => {
             const customer_id = event.target.value;
-            console.log(customer_id);
             if (window.confirm(`ID: ${customer_id}の顧客を削除します。よろしいですか？`)) {
                 event.target.disabled = true;
                 post("/admin/delete_customer", {customer_id});
