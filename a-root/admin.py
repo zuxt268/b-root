@@ -1,4 +1,5 @@
 import mysql.connector
+import requests
 
 from flask import Blueprint, flash, redirect, url_for, g, render_template, request, session
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -107,6 +108,14 @@ class Customer:
             error = "Passwordは入力必須です。"
         elif len(self.password) < 8:
             error = "Passwordは8文字以上入力してください。"
+
+        try:
+            if requests.get(f"https://{self.wordpress_url}").status_code != 200:
+                error = "wordpressのURLが不正です。"
+        except Exception as e:
+            print(e)
+            error = "wordpressのURLが不正です。"
+
         return error
 
     def set_param(self, req):
