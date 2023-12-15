@@ -36,7 +36,7 @@ class MySQL:
 
     def is_target(self, customer, media):
         print("is_target", media)
-        if media["media_type"] != "IMAGE":
+        if media["media_type"] != "IMAGE" and media["media_type"] != "CAROUSEL_ALBUM":
             return False
         cursor = self.get_db_connection().cursor(dictionary=True)
         cursor.execute(
@@ -62,6 +62,45 @@ class MySQL:
             print(e)
 
 
+def get_title(caption):
+    return str(caption).split("/n")[0]
+
+
+def get_contents_html(caption):
+    contents = "<p>"
+    for row in str(caption).split("/n"):
+        contents += f"{row}<br>"
+    contents += "</p>"
+    return contents
+
+
+def get_html_for_image(caption, media_dict):
+    contents = get_contents_html(caption)
+    return f"<p><img src={media_dict['source_url']} width='1080' height='1080'/></p>{contents}"
+
+
+def get_html_for_carousel(caption, media_dict_list):
+    html = '<div class="your-class">'
+    for media_dict in media_dict_list:
+        html += f"<div><img src={media_dict['source_url']} width='1080' height='1080'/></div>"
+    html += "</div>"
+    html += """
+<script src="https://code.jquery.com/jquery-3.6.0.min.js" type="text/javascript"></script>
+<script src="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js" type="text/javascript"></script>
+<script type="text/javascript">
+    $(document).ready(function(){
+        $('.your-class').slick({
+            dots: true
+        });
+    });
+</script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.css"/>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick-theme.css"/>
+    """
+    html += get_contents_html(caption)
+    return html
+
+
 def execute():
     mysql_cli = MySQL()
     meta_cli = Meta(os.getenv("WORDPRESS_ADMIN_ID"), os.getenv("WORDPRESS_ADMIN_PASSWORD"))
@@ -75,31 +114,58 @@ def execute():
             if not mysql_cli.is_target(customer, media):
                 continue
             # pngの場合のも対応すること
-            urlretrieve(media["media_url"], f"image_files/{index}.jpeg")
-            files.append({
-                "customer_id": customer["id"],
-                "media_id": media["id"],
-                "timestamp": media["timestamp"],
-                "caption": media["caption"],
-                "file_path": f"image_files/{index}.jpeg",
-                "media_url": media["media_url"],
-                "permalink": media["permalink"]
-            })
-            index += 1
-
+            if media["media_type"] == "IMAGE":
+                urlretrieve(media["media_url"], f"image_files/{index}.jpeg")
+                files.append({
+                    "customer_id": customer["id"],
+                    "media_id": media["id"],
+                    "timestamp": media["timestamp"],
+                    "caption": media["caption"],
+                    "file_path": f"image_files/{index}.jpeg",
+                    "media_url": media["media_url"],
+                    "permalink": media["permalink"],
+                    "media_type": media["media_type"]
+                })
+                index += 1
+            elif media["media_type"] == "CAROUSEL_ALBUM":
+                file_urls = []
+                for m in media["children"]["data"]:
+                    f_path = f"image_files/{index}.jpeg"
+                    urlretrieve(m["media_url"], f_path)
+                    file_urls.append(f_path)
+                    index += 1
+                files.append({
+                    "customer_id": customer["id"],
+                    "media_id": media["id"],
+                    "timestamp": media["timestamp"],
+                    "caption": media["caption"],
+                    "file_path": file_urls,
+                    "media_url": media["media_url"],
+                    "permalink": media["permalink"],
+                    "media_type": media["media_type"]
+                })
         wordpress = Wordpress(f"https://{customer['wordpress_url']}", os.getenv("WORDPRESS_ADMIN_ID"), os.getenv("WORDPRESS_ADMIN_PASSWORD"))
         for post in files:
-            resp = wordpress.upload_image(post["file_path"])
-            html = f"""
-            <h1>{post['caption']}</h1>
-            <img src="{resp['source_url']}" />
-            """
-            resp = wordpress.post_with_image(post["caption"], Template(html).render(), resp["id"])
-            print("wordpress投稿response start ========")
-            print(resp)
-            print("wordpress投稿response end  =========")
+            if post["media_type"] == "IMAGE":
+                media_dict = wordpress.upload_image(post["file_path"])
+                print(media_dict)
+                html = get_html_for_image(post["caption"], media_dict)
+                resp = wordpress.post_with_image(get_title(post["caption"]), Template(html).render(), media_dict["media_id"])
+                print("wordpress投稿response start ========")
+                print(resp)
+                print("wordpress投稿response end  =========")
+            elif post["media_type"] == "CAROUSEL_ALBUM":
+                media_dict_list = wordpress.upload_images(post["file_path"])
+                print(media_dict_list)
+                html = get_html_for_carousel(post["caption"], media_dict_list)
+                resp = wordpress.post_with_image(get_title(post["caption"]), Template(html).render(), media_dict_list[0]["media_id"])
+                print("wordpress投稿response start ========")
+                print(resp)
+                print("wordpress投稿response end  =========")
+            else:
+                print(post["media_type"])
+                continue
             mysql_cli.save_target(post, resp["link"])
-
         shutil.rmtree("image_files")
         os.mkdir("image_files")
 
@@ -107,3 +173,5 @@ def execute():
 if __name__ == "__main__":
     dotenv.load_dotenv("../.env")
     execute()
+
+

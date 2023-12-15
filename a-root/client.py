@@ -55,7 +55,7 @@ class Meta(Client):
     def get_media(self, access_token, id):
         params = dict()
         params["access_token"] = access_token
-        params['fields'] = "id,caption,media_url,timestamp,media_type,permalink"
+        params['fields'] = "id,caption,media_url,timestamp,media_type,permalink,children{media_url}"
         return self.get(path=f"/{id}", params=params)
 
     def get_media_list(self, access_token):
@@ -88,7 +88,14 @@ class Wordpress(Client):
         with open(image_path, 'rb') as img:
             binary = img.read()
             response = self.post('/wp-json/wp/v2/media', headers=headers, data=binary, auth=self.auth)
-        return response
+        return {"source_url": response["source_url"], "media_id": response["id"]}
+
+    def upload_images(self, image_paths):
+        source_urls = []
+        for image_path in image_paths:
+            source_url = self.upload_image(image_path)
+            source_urls.append(source_url)
+        return source_urls
 
     def post_with_image(self, title, content, media_id):
         print("post_with_image")
@@ -111,3 +118,5 @@ class Wordpress(Client):
             'status': 'publish'
         }
         return self.post("/wp-json/wp/v2/posts", headers=headers, json=data, auth=self.auth)
+
+# https://kenwheeler.github.io/slick/
