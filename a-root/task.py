@@ -80,25 +80,18 @@ def get_html_for_image(caption, media_dict):
 
 
 def get_html_for_carousel(caption, media_dict_list):
-    html = '<div class="your-class">'
+    html = '<div class="your-slider">'
     for media_dict in media_dict_list:
         html += f"<div><img src={media_dict['source_url']} width='1080' height='1080'/></div>"
     html += "</div>"
     html += """
-<script
-  src="https://code.jquery.com/jquery-3.7.1.min.js"
-  integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
-  crossorigin="anonymous"></script>
 <script type="text/javascript">
-    $(document).ready(function(){
-        $('.your-class').slick({
+    jQuery(document).ready(function(){
+        jQuery('.your-slider').slick({
             dots: true
         });
     });
 </script>
-    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.css"/>
-    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick-theme.css"/>
-    <script type="text/javascript" src="//cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"></script>
     """
     html += get_contents_html(caption)
     return html
