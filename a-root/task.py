@@ -1,3 +1,4 @@
+import datetime
 import os
 import shutil
 import mysql.connector
@@ -46,6 +47,10 @@ class MySQL:
         cursor.close()
         if exist:
             return False
+        media_timestamp = datetime.datetime.strptime(media["timestamp"], "%Y-%m-%dT%H:%M:%S%z")
+        start_date = datetime.datetime.strptime(customer["start_date"], "%Y-%m-%dT%H:%M:%S%z")
+        if media_timestamp < start_date:
+            return False
         return True
 
     def save_target(self, post, wordpress_link):
@@ -76,23 +81,14 @@ def get_contents_html(caption):
 
 def get_html_for_image(caption, media_dict):
     contents = get_contents_html(caption)
-    return f"<p><img src={media_dict['source_url']} width='1080' height='1080'/></p>{contents}"
+    return f"<div><img src={media_dict['source_url']} style='margin: 0 auto;' width='500px' height='500px'/></div>{contents}"
 
 
 def get_html_for_carousel(caption, media_dict_list):
     html = '<div class="your-slider">'
     for media_dict in media_dict_list:
-        html += f"<div><img src={media_dict['source_url']} width='1080' height='1080'/></div>"
+        html += f"<div><img src={media_dict['source_url']} style='margin: 0 auto;' width='500px' height='500px'/></div>"
     html += "</div>"
-    html += """
-<script type="text/javascript">
-    jQuery(document).ready(function(){
-        jQuery('.your-slider').slick({
-            dots: true
-        });
-    });
-</script>
-    """
     html += get_contents_html(caption)
     return html
 

@@ -36,7 +36,7 @@ def auth():
     long_token = client.get_long_term_token(access_token)
     db = get_db()
     db.cursor().execute(
-        "UPDATE customers SET facebook_token = %s"
+        "UPDATE customers SET facebook_token = %s, start_date = NOW()"
         " WHERE id = %s",
         (long_token, g.customer["id"])
     )
