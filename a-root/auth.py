@@ -41,8 +41,12 @@ def load_logged_in_user():
 
 @bp.route("/logout")
 def logout():
+    admin_user_id = session.get("admin_user_id")
     session.clear()
-    return redirect(url_for("customer.login"))
+    if admin_user_id is None:
+        return redirect(url_for("customer.login"))
+    else:
+        return redirect(url_for("admin.login"))
 
 
 def login_required(view):
