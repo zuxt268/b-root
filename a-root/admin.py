@@ -183,6 +183,7 @@ def delete_customer():
 def register_user():
     admin_user = AdminUser()
     if request.method == "POST":
+        admin_user.set_param(request)
         error = admin_user.validate()
         if error is None:
             try:
@@ -193,7 +194,7 @@ def register_user():
                 )
                 db.commit()
                 db.cursor().close()
-                return redirect(url_for("index"))
+                return redirect(url_for("admin.index"))
             except mysql.connector.errors.IntegrityError as e:
                 error = f"{admin_user.email}はすでに登録されています。"
         flash(error)

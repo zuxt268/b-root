@@ -45,6 +45,7 @@ class Meta(Client):
         for i in facebook_pages:
             instagram_id = i["instagram_business_account"]["id"]
             return instagram_id
+        raise Exception("No instagram account found")
 
     def get_media_ids(self, access_token, media_id):
         params = dict()
@@ -119,4 +120,3 @@ class Wordpress(Client):
         }
         return self.post("/wp-json/wp/v2/posts", headers=headers, json=data, auth=self.auth)
 
-# https://kenwheeler.github.io/slick/
