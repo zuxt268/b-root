@@ -5,7 +5,7 @@ import mysql.connector
 import dotenv
 
 from urllib.request import urlretrieve
-from client import Meta, Wordpress
+from service.client import Meta, Wordpress
 from jinja2 import Template
 
 
@@ -162,6 +162,6 @@ def execute():
 
 
 if __name__ == "__main__":
-    dotenv.load_dotenv("../.env")
+    dotenv.load_dotenv(".env")
     execute()
 
