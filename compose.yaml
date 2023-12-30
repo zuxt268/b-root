@@ -1,6 +1,6 @@
 services:
   flask-app:
-    build: flask
+    build: a-root
     restart: always
     ports:
       - '8000:8000'
@@ -10,3 +10,31 @@ services:
       timeout: 10s
       retries: 3
     command: gunicorn -w 3 -t 60 -b 0.0.0.0:8000 app:app
+    depends_on:
+      db:
+        condition: service_healthy
+  db:
+    image: mysql:8
+    restart: always
+    healthcheck:
+      test: [ 'CMD-SHELL', 'mysqladmin ping -h 127.0.0.1 --password="$$(cat /run/secrets/db-password)" --silent' ]
+      interval: 3s
+      retries: 5
+      start_period: 30s
+    secrets:
+      - db-password
+    volumes:
+      - db-data:/var/lib/mysql
+    environment:
+      - MYSQL_DATABASE=b_root
+      - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/db-password
+    expose:
+      - 3306
+      - 33060
+
+volumes:
+  db-data:
+
+secrets:
+  db-password:
+    file: db/password.txt

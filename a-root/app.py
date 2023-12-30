@@ -6,7 +6,7 @@ from service import auth, admin, customer
 
 
 load_dotenv()
-app = Flask(__name__, instance_relative_config=True)
+app = Flask(__name__)
 app.config.from_mapping(
     SECRET_KEY='dev',
     DATABASE={
@@ -29,10 +29,6 @@ app.register_blueprint(auth.bp)
 app.register_blueprint(customer.bp)
 app.register_blueprint(admin.bp)
 
-try:
-    os.makedirs(app.instance_path)
-except OSError:
-    pass
 
 @app.route("/hello")
 def hello():

@@ -1,3 +1,4 @@
 .idea
 venv
-.env
+a-root/.env
+db/password.txt
