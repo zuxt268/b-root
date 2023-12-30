@@ -1,4 +1,3 @@
-
 from flask import Blueprint, flash, g, session, redirect, render_template, request, url_for
 from .auth import login_required
 from .db import get_db
@@ -11,7 +10,6 @@ bp = Blueprint("customer", __name__)
 @bp.route("/")
 @login_required
 def index():
-    print(g.customer["id"])
     customer_id = g.customer["id"]
     cursor = get_db().cursor(dictionary=True)
     cursor.execute(
@@ -20,7 +18,7 @@ def index():
     customer = cursor.fetchone()
 
     cursor.execute(
-        "SELECT * FROM posts WHERE customer_id = %s", (customer_id,)
+        "SELECT * FROM posts WHERE customer_id = %s order by id desc", (customer_id,)
     )
     posts = cursor.fetchall()
 

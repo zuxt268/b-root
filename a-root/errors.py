@@ -10,4 +10,5 @@ bp = Blueprint("errors", __name__)
 
 @bp.errorhandler(Exception)
 def handle_error(e):
-    pass
+    print(e)
+    return render_template("errors.html", errors=e)

@@ -9,6 +9,8 @@ from client import Meta, Wordpress
 from jinja2 import Template
 
 
+# 動画非対応
+
 class MySQL:
     def __init__(self):
         self.db = None
@@ -85,7 +87,7 @@ def get_html_for_image(caption, media_dict):
 
 
 def get_html_for_carousel(caption, media_dict_list):
-    html = '<div class="your-slider">'
+    html = '<div class="a-root-wordpress-instagram-slider">'
     for media_dict in media_dict_list:
         html += f"<div><img src={media_dict['source_url']} style='margin: 0 auto;' width='500px' height='500px'/></div>"
     html += "</div>"
@@ -143,20 +145,17 @@ def execute():
                 print(media_dict)
                 html = get_html_for_image(post["caption"], media_dict)
                 resp = wordpress.post_with_image(get_title(post["caption"]), Template(html).render(), media_dict["media_id"])
-                print("wordpress投稿response start ========")
-                print(resp)
-                print("wordpress投稿response end  =========")
             elif post["media_type"] == "CAROUSEL_ALBUM":
                 media_dict_list = wordpress.upload_images(post["file_path"])
                 print(media_dict_list)
                 html = get_html_for_carousel(post["caption"], media_dict_list)
                 resp = wordpress.post_with_image(get_title(post["caption"]), Template(html).render(), media_dict_list[0]["media_id"])
-                print("wordpress投稿response start ========")
-                print(resp)
-                print("wordpress投稿response end  =========")
             else:
                 print(post["media_type"])
                 continue
+            print("wordpress投稿response start ========")
+            print(resp)
+            print("wordpress投稿response end  =========")
             mysql_cli.save_target(post, resp["link"])
         shutil.rmtree("image_files")
         os.mkdir("image_files")
@@ -165,5 +164,4 @@ def execute():
 if __name__ == "__main__":
     dotenv.load_dotenv("../.env")
     execute()
-
 
