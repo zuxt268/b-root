@@ -27,7 +27,7 @@ services:
       - db-data:/var/lib/mysql
     environment:
       - MYSQL_DATABASE=b_root
-      - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/db-password
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
     expose:
       - 3306
       - 33060
@@ -35,6 +35,3 @@ services:
 volumes:
   db-data:
 
-secrets:
-  db-password:
-    file: db/config.txt
