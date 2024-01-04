@@ -47,7 +47,7 @@ class AdminUser:
 # ログイン
 @bp.route("/admin/login", methods=("GET", "POST"))
 def login():
-
+    print("login...")
     if request.method == "POST":
         email = request.form["email"]
         password = request.form["password"]
