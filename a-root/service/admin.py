@@ -49,6 +49,7 @@ def login():
     if request.method == "POST":
         email = request.form["email"]
         password = request.form["password"]
+        g_recaptcha = request.form["g_recaptcha"]
 
         error = None
         if not email or not password:
