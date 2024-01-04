@@ -1,3 +1,5 @@
+import os
+
 import mysql.connector
 import requests
 
@@ -49,24 +51,35 @@ def login():
     if request.method == "POST":
         email = request.form["email"]
         password = request.form["password"]
-        g_recaptcha = request.form["g_recaptcha"]
-
         error = None
         if not email or not password:
             error = "Email、またはPasswordが間違っています。"
         else:
-            db = get_db()
-            cursor = db.cursor(dictionary=True)
-            cursor.execute(
-                "SELECT * FROM admin_users WHERE email = %s",
-                (email,)
+            g_recaptcha = request.form["g_recaptcha"]
+            print(g_recaptcha)
+            secret = os.getenv("RECAPTCHA_SECRET_KEY")
+            client_ip = request.remote_addr
+            response = requests.post(
+                'https://www.google.com/recaptcha/api/siteverify',
+                data={'secret': secret, 'response': g_recaptcha, 'remote_ip': client_ip }
             )
-            exist_user = cursor.fetchone()
-            cursor.close()
-            if not exist_user:
-                error = "Email、またはPasswordが間違っています。"
-            elif not check_password_hash(exist_user["password"], password):
-                error = "Email、またはPasswordが間違っています。"
+            result = response.json()
+            print(result)
+            if result["success"] and result["score"] >= 0.5:
+                db = get_db()
+                cursor = db.cursor(dictionary=True)
+                cursor.execute(
+                    "SELECT * FROM admin_users WHERE email = %s",
+                    (email,)
+                )
+                exist_user = cursor.fetchone()
+                cursor.close()
+                if not exist_user:
+                    error = "Email、またはPasswordが間違っています。"
+                elif not check_password_hash(exist_user["password"], password):
+                    error = "Email、またはPasswordが間違っています。"
+            else:
+                error = "ログインできません"
 
             if error is None:
                 session.clear()
