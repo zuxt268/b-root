@@ -43,7 +43,7 @@
 <script>
     document.getElementById("admin_login_btn").addEventListener("click", (event) => {
         document.getElementById("admin_login_btn").disabled = true;
-        const g_recaptcha = document.getElementById('g-recaptcha-response').value = "6LeClEUpAAAAAB5jOCAINcFq-2DuGnqPbSkHYc1U";
+        const g_recaptcha = document.getElementById('g-recaptcha-response').value;
         const email = document.getElementById("email").value;
         const password = document.getElementById("password").value;
         console.log(g_recaptcha);
