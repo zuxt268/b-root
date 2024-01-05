@@ -27,7 +27,7 @@
                                         <input name="password" type="password" class="form-control form-control-user"
                                             id="password" placeholder="Password">
                                     </div>
-                                    <input type="hidden" id="g-recaptcha-response" name="g-recaptcha-response">
+
 <!--                                    <input id="admin_login_btn" type="submit" value="Login" class="btn btn-primary btn-user btn-block" />-->
                                     <button type="submit" class="btn btn-primary btn-user btn-block g-recaptcha">Login</button>
                                     <hr>
@@ -42,15 +42,6 @@
     </div>
 </div>
 
-<script src="https://www.google.com/recaptcha/api.js?render=6LeClEUpAAAAAB5jOCAINcFq-2DuGnqPbSkHYc1U"></script>
- <script>
-    grecaptcha.ready(function() {
-     grecaptcha.execute('6LeClEUpAAAAAB5jOCAINcFq-2DuGnqPbSkHYc1U', {action: 'submit'}).then(function(token) {
-     document.getElementById('g-recaptcha-response').value = token;
-     });
-    });
- </script>
-
 <!--<script>-->
 <!--    document.getElementById("admin_login_btn").addEventListener("click", (event) => {-->
 <!--        document.getElementById("admin_login_btn").disabled = true;-->
@@ -58,7 +49,7 @@
 <!--        const email = document.getElementById("email").value;-->
 <!--        const password = document.getElementById("password").value;-->
 <!--        console.log(g_recaptcha);-->
-<!--        post("/admin/login", {email, password, g_recaptcha});-->
+<!--        post("/admin/login", {email, password});-->
 <!--    });-->
 <!--</script>-->
 
