@@ -51,11 +51,12 @@ def login():
     if request.method == "POST":
         email = request.form["email"]
         password = request.form["password"]
+        print(request.form)
         error = None
         if not email or not password:
             error = "Email、またはPasswordが間違っています。"
         else:
-            g_recaptcha = request.form["g_recaptcha"]
+            g_recaptcha = request.form["g-recaptcha-response"]
             print(g_recaptcha)
             secret = os.getenv("RECAPTCHA_SECRET_KEY")
             client_ip = request.remote_addr
