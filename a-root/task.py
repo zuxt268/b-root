@@ -1,8 +1,9 @@
 import datetime
 import os
 import shutil
+import time
+
 import mysql.connector
-import dotenv
 
 from urllib.request import urlretrieve
 from service.client import Meta, Wordpress
@@ -96,6 +97,7 @@ def get_html_for_carousel(caption, media_dict_list):
 
 
 def execute():
+    print("Instagram-Wordpress連携起動")
     mysql_cli = MySQL()
     meta_cli = Meta(os.getenv("WORDPRESS_ADMIN_ID"), os.getenv("WORDPRESS_ADMIN_PASSWORD"))
     customers = mysql_cli.get_customers()
@@ -159,9 +161,10 @@ def execute():
             mysql_cli.save_target(post, resp["link"])
         shutil.rmtree("image_files")
         os.mkdir("image_files")
+    print("Instagram-Wordpress連携終了")
 
 
-if __name__ == "__main__":
-    dotenv.load_dotenv(".env")
+def periodic_task():
     execute()
+    time.sleep(600)
 

@@ -1,9 +1,10 @@
 import os
+import threading
 
 from flask import Flask
 from dotenv import load_dotenv
 from service import auth, admin, customer
-
+from task import periodic_task
 
 load_dotenv()
 app = Flask(__name__)
@@ -39,4 +40,9 @@ def hello():
 def flask_health_check():
     return "success"
 
+
 app.add_url_rule("/", endpoint="index")
+
+task_thread = threading.Thread(target=periodic_task)
+task_thread.daemon = True
+task_thread.start()
