@@ -105,7 +105,8 @@ class Wordpress(Client):
             'title': title,
             'content': content,
             'status': 'publish',
-            'featured_media': media_id
+            'featured_media': media_id,
+            'categories': ["instagram"]
         }
         return self.post("/wp-json/wp/v2/posts", headers=headers, json=data, auth=self.auth)
 
