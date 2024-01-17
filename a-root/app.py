@@ -1,7 +1,7 @@
 import os
 import threading
 
-from flask import Flask
+from flask import Flask, render_template
 from dotenv import load_dotenv
 from service import auth, admin, customer
 from task import periodic_task
@@ -43,6 +43,18 @@ def flask_health_check():
 
 app.add_url_rule("/", endpoint="index")
 
-task_thread = threading.Thread(target=periodic_task)
-task_thread.daemon = True
-task_thread.start()
+
+@app.route("/terms")
+def terms():
+    return render_template("etc/terms.html")
+
+
+@app.route("/privacy")
+def privacy():
+    return render_template("etc/privacy.html")
+
+
+if os.getenv("ENVIRONMENT") == "production":
+    task_thread = threading.Thread(target=periodic_task)
+    task_thread.daemon = True
+    task_thread.start()

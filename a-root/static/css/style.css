@@ -80,3 +80,62 @@
 .thumb .slick-slide:hover {
   opacity: .7;
 }
+
+.wrapKOPIPE-OK {
+    position: relative;
+    margin: 20px 0 0;
+    padding: 60px;
+    background: #f8f8f0;
+    border-radius: 20px;
+}
+
+.wrapKOPIPE-OK:after {
+    content: "";
+    display: block;
+    position: absolute;
+    top: -50px;
+    left: 25px;
+    width: 70px;
+    height: 50px;
+}
+
+.wrapHINAGATA h2 {
+    margin: 50px 0 40px 0;
+    padding: 15px 0 15px 20px;
+    font-size: 28px;
+    border-left: 5px solid #5db5bd;
+}
+
+.wrapHINAGATA ol {
+    margin: 20px 0 0 50px;
+}
+
+.wrapHINAGATA ol li {
+    position: relative;
+    list-style: outside decimal;
+    padding: 0 0 0 5px;
+}
+
+main li {
+    font-size: 1.1rem;
+    line-height: 1.8;
+}
+
+main li+li {
+    margin-top: 15px;
+}
+
+main p {
+    font-size: 1.1rem;
+    line-height: 1.8;
+}
+
+main {
+    margin: 0;
+    padding: 80px;
+    font-family: Roboto, 'Noto Sans JP', "游ゴシック", YuGothic, "メイリオ", Meiryo, "ヒラギノ角ゴ ProN W3", "Hiragino Kaku Gothic ProN", Arial, Helvetica, sans-serif;
+    color: #333333;
+    -webkit-text-size-adjust: 100%;
+    font-size: 100%;
+    font-weight: 500;
+}
