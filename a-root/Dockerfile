@@ -30,6 +30,6 @@ RUN pip install -r requirements.txt
 EXPOSE 8000
 
 ENV FLASK_APP=a-root
-ENV FLASK_ENV=development
+ENV FLASK_ENV=production
 
 CMD ["python", "app.py"]
