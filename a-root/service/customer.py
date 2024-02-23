@@ -1,3 +1,5 @@
+import datetime
+
 from flask import Blueprint, flash, g, session, redirect, render_template, request, url_for
 from .auth import login_required
 from .db import get_db
@@ -34,9 +36,9 @@ def auth():
     long_token = client.get_long_term_token(access_token)
     db = get_db()
     db.cursor().execute(
-        "UPDATE customers SET facebook_token = %s, start_date = NOW()"
+        "UPDATE customers SET facebook_token = %s, start_date = %s"
         " WHERE id = %s",
-        (long_token, g.customer["id"])
+        (long_token, str(datetime.datetime.now()), g.customer["id"])
     )
     db.commit()
     db.close()
