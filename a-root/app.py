@@ -54,7 +54,7 @@ def privacy():
     return render_template("etc/privacy.html")
 
 
-if os.getenv("ENVIRONMENT") == "production":
+if os.getenv("FLASK_ENV") == "production":
     task_thread = threading.Thread(target=periodic_task)
     task_thread.daemon = True
     task_thread.start()
