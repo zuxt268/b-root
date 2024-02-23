@@ -96,7 +96,7 @@ def get_html_for_carousel(caption, media_dict_list):
     return html
 
 
-def execute():
+def meta_execute():
     print("Instagram-Wordpress連携起動")
     mysql_cli = MySQL()
     meta_cli = Meta(os.getenv("WORDPRESS_ADMIN_ID"), os.getenv("WORDPRESS_ADMIN_PASSWORD"))
@@ -165,6 +165,6 @@ def execute():
 
 
 def periodic_task():
-    execute()
+    meta_execute()
     time.sleep(600)
 

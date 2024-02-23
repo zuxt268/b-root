@@ -4,7 +4,7 @@ import threading
 from flask import Flask, render_template
 from dotenv import load_dotenv
 from service import auth, admin, customer
-from task import periodic_task
+from task import meta_execute
 
 load_dotenv()
 app = Flask(__name__)
@@ -54,7 +54,12 @@ def privacy():
     return render_template("etc/privacy.html")
 
 
-if os.getenv("FLASK_ENV") == "production":
-    task_thread = threading.Thread(target=periodic_task)
-    task_thread.daemon = True
-    task_thread.start()
+@app.route("/meta/execute")
+def meta_exec():
+    meta_execute()
+
+
+# if os.getenv("FLASK_ENV") == "production":
+#     task_thread = threading.Thread(target=periodic_task)
+#     task_thread.daemon = True
+#     task_thread.start()
