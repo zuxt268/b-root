@@ -27,6 +27,7 @@ services:
     environment:
       - MYSQL_DATABASE=b_root
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - TZ=Asia/Tokyo
     expose:
       - 3306
       - 33060
