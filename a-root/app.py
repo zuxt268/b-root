@@ -57,6 +57,7 @@ def privacy():
 @app.route("/meta/execute")
 def meta_exec():
     meta_execute()
+    return "success"
 
 
 # if os.getenv("FLASK_ENV") == "production":
