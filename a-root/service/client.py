@@ -81,7 +81,7 @@ class Wordpress(Client):
         print(self.auth)
 
     def upload_image(self, image_path):
-        print("upload_image invoked")
+        print("upload_image is invoked")
         # file_name = str(image_path).split("/")[-1]
         headers = {
             'Content-Type': 'image/jpeg',
@@ -101,14 +101,13 @@ class Wordpress(Client):
         return source_urls
 
     def post_with_image(self, title, content, media_id):
-        print("post_with_image")
+        print("post_with_image is invoked")
         headers = {'Content-Type': 'application/json'}
         data = {
             'title': title,
             'content': content,
             'status': 'publish',
-            'featured_media': media_id,
-            'categories': ["instagram"]
+            'featured_media': media_id
         }
         return self.post("/wp-json/wp/v2/posts", headers=headers, json=data, auth=self.auth)
 
