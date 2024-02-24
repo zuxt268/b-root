@@ -50,8 +50,9 @@ class MySQL:
         cursor.close()
         if exist:
             return False
-        media_timestamp = datetime.datetime.strptime(media["timestamp"], "%Y-%m-%dT%H:%M:%S%z")
-        if media_timestamp < customer["start_date"]:
+        media_timestamp = datetime.datetime.strptime(media["timestamp"], "%Y-%m-%dT%H:%M:%S%z").replace(tzinfo=None)
+        start_date = datetime.datetime.strptime(customer["start_date"], "%Y-%m-%dT%H:%M:%S%z").replace(tzinfo=None)
+        if media_timestamp < start_date:
             return False
         return True
 
@@ -105,7 +106,6 @@ def meta_execute():
         media_list = meta_cli.get_media_list(access_token)
         files = []
         index = 0
-        print(media_list)
         for media in media_list:
             if not mysql_cli.is_target(customer, media):
                 continue
