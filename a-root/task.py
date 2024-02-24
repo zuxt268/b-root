@@ -102,6 +102,7 @@ def meta_execute():
     meta_cli = Meta(os.getenv("WORDPRESS_ADMIN_ID"), os.getenv("WORDPRESS_ADMIN_PASSWORD"))
     customers = mysql_cli.get_customers()
     for customer in customers:
+        os.mkdir("image_files")
         access_token = customer["facebook_token"]
         media_list = meta_cli.get_media_list(access_token)
         files = []
@@ -111,7 +112,8 @@ def meta_execute():
                 continue
             # pngの場合のも対応すること
             if media["media_type"] == "IMAGE":
-                urlretrieve(media["media_url"], f"image_files/{index}.jpeg")
+                f_path = f"image_files/{index}.jpeg"
+                urlretrieve(media["media_url"], f_path)
                 files.append({
                     "customer_id": customer["id"],
                     "media_id": media["id"],
@@ -160,7 +162,6 @@ def meta_execute():
             print("wordpress投稿response end  =========")
             mysql_cli.save_target(post, resp["link"])
         shutil.rmtree("image_files")
-        os.mkdir("image_files")
     print("Instagram-Wordpress連携終了")
 
 
