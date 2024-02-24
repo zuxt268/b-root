@@ -51,7 +51,7 @@ class MySQL:
         if exist:
             return False
         media_timestamp = datetime.datetime.strptime(media["timestamp"], "%Y-%m-%dT%H:%M:%S%z").replace(tzinfo=None)
-        start_date = datetime.datetime.strptime(customer["start_date"], "%Y-%m-%dT%H:%M:%S%z").replace(tzinfo=None)
+        start_date = customer["start_date"].replace(tzinfo=None)
         if media_timestamp < start_date:
             return False
         return True
