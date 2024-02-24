@@ -119,7 +119,7 @@ def meta_execute():
                     "media_id": media["id"],
                     "timestamp": media["timestamp"],
                     "caption": media["caption"],
-                    "file_path": f"image_files/{index}.jpeg",
+                    "file_path": f_path,
                     "media_url": media["media_url"],
                     "permalink": media["permalink"],
                     "media_type": media["media_type"]

@@ -81,14 +81,15 @@ class Wordpress(Client):
         print(self.auth)
 
     def upload_image(self, image_path):
-        file_name = str(image_path).split("/")[-1]
+        # file_name = str(image_path).split("/")[-1]
         headers = {
             'Content-Type': 'image/jpeg',
-            'Content-Disposition': f'attachment; filename="{file_name}"'
+            'Content-Disposition': f'attachment; filename="{image_path}"'
         }
         with open(image_path, 'rb') as img:
             binary = img.read()
             response = self.post('/wp-json/wp/v2/media', headers=headers, data=binary, auth=self.auth)
+        print(response)
         return {"source_url": response["source_url"], "media_id": response["id"]}
 
     def upload_images(self, image_paths):
