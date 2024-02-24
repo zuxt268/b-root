@@ -81,6 +81,7 @@ class Wordpress(Client):
         print(self.auth)
 
     def upload_image(self, image_path):
+        print("upload_image invoked")
         # file_name = str(image_path).split("/")[-1]
         headers = {
             'Content-Type': 'image/jpeg',

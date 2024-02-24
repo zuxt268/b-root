@@ -102,7 +102,8 @@ def meta_execute():
     meta_cli = Meta(os.getenv("WORDPRESS_ADMIN_ID"), os.getenv("WORDPRESS_ADMIN_PASSWORD"))
     customers = mysql_cli.get_customers()
     for customer in customers:
-        os.mkdir("image_files")
+        if not os.path.isdir("image_files"):
+            os.mkdir("image_files")
         access_token = customer["facebook_token"]
         media_list = meta_cli.get_media_list(access_token)
         files = []
