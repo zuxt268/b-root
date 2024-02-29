@@ -29,7 +29,7 @@
         </div>
         <div class="col-lg-12">
             <div class="card-header pt-3">
-                <h6 class="m-0 font-weight-bold text-primary">instagram-wordpress 連携状況</h6>
+                <h6 class="m-0 font-weight-bold text-primary">instagram-wordpress 連携状況{% if customer.facebook_token %}<button id="facebook_execute" class="mx-2 btn btn-sm btn-danger">連携実行</button>{% endif %}</h6>
             </div>
             <div class="card-body">
                 <table class="table table-sm">
@@ -72,6 +72,46 @@
         }, {scope: 'public_profile, pages_show_list, business_management, instagram_basic'});
         // }, {scope: 'public_profile,email,pages_show_list,instagram_basic,pages_read_engagement'});
     })
+    let facebook_btn = document.getElementById("facebook_execute");
+    if (facebook_btn) {
+        facebook_btn.addEventListener("click", (event) => {
+            console.log("wao");
+            if (!window.confirm("連携しますか？")) {
+                return;
+            }
+            fetch("/instagram", {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: null
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                if (!window.confirm("この内容で連携しますか")) {
+                    return;
+                }
+                fetch("/post/wordpress", {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json'
+                    },
+                    body: null
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                })
+                .catch((error) => {
+                    console.error('エラー発生:', error);
+                });
+            })
+            .catch((error) => {
+                console.error('エラー発生:', error);
+            });
+        })
+    }
 </script>
 
 {% endblock %}

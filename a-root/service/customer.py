@@ -1,6 +1,6 @@
 import datetime
 
-from flask import Blueprint, flash, g, session, redirect, render_template, request, url_for
+from flask import Blueprint, flash, g, session, redirect, render_template, request, url_for, jsonify
 from .auth import login_required
 from .db import get_db
 from .client import get_meta_client
@@ -43,6 +43,42 @@ def auth():
     db.commit()
     db.close()
     return redirect(url_for("customer.index"))
+
+
+def abstract_target(linked_post_list, media_list, start_date):
+    for media in media_list:
+        for post in linked_post_list:
+
+
+    return []
+
+
+@bp.route("/instagram", methods=("POST",))
+def get_instagram():
+    print("get_instagram is invoked")
+    customer_id = g.customer["id"]
+    cursor = get_db().cursor(dictionary=True)
+    cursor.execute(
+        "SELECT * FROM customers WHERE id = %s", (customer_id,)
+    )
+    customer = cursor.fetchone()
+    cursor.execute(
+        "SELECT * FROM posts WHERE customer_id = %s", (customer_id,)
+    )
+    linked_post_list = cursor.fetchall()
+    cursor.close()
+    meta_client = get_meta_client()
+    media_list = meta_client.get_media_list(customer["facebook_token"])
+    targets = abstract_target(linked_post_list, media_list, customer["start_date"])
+    return jsonify(targets)
+
+
+@bp.route("/post/wordpress", methods=("POST",))
+def post_wordpress():
+    print("post_wordpress is invoked")
+    customer_id = g.customer["id"]
+    print(customer_id)
+    return jsonify({"wwww": "eee"})
 
 
 @bp.route("/login", methods=('GET', 'POST'))
