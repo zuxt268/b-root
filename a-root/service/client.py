@@ -1,7 +1,10 @@
 import requests
+import os
 
 from flask import current_app, g
 from requests.auth import HTTPBasicAuth
+from jinja2 import Template
+from urllib.request import urlretrieve
 
 
 def get_meta_client():
@@ -80,9 +83,67 @@ class Wordpress(Client):
         self.auth = HTTPBasicAuth(admin_id, admin_password)
         print(self.auth)
 
+    @staticmethod
+    def get_contents_html(caption):
+        contents = "<p>"
+        for row in str(caption).split("/n"):
+            contents += f"{row}<br>"
+        contents += "</p>"
+        return contents
+
+    def get_html_for_image(self, caption, url):
+        contents = self.get_contents_html(caption)
+        return f"<div><img src={url} style='margin: 0 auto;' width='500px' height='500px'/></div>{contents}"
+
+    def get_html_for_carousel(self, caption, resp_upload_list):
+        html = '<div class="a-root-wordpress-instagram-slider">'
+        for resp_upload in resp_upload_list:
+            html += f"<div><img src={resp_upload['source_url']} style='margin: 0 auto;' width='500px' height='500px'/></div>"
+        html += "</div>"
+        html += self.get_contents_html(caption)
+        return html
+
+    @staticmethod
+    def get_title(caption):
+        return str(caption).split(" ")[0]
+
+    def post_for_carousel(self, post):
+        print("post_for_carousel is invoked")
+        resp_upload_list = []
+        for m in post["children"]["data"]:
+            f_path = "image_files/tmp.jpeg"
+            urlretrieve(m["media_url"], f_path)
+            resp_upload = self.upload_image(f_path)
+            os.remove(f_path)
+            resp_upload_list.append(resp_upload)
+        html = self.get_html_for_carousel(post["caption"], resp_upload_list)
+        resp_post = self.post_with_image(post["caption"], html, resp_upload_list[0]["media_id"])
+        return {
+            "media_id": resp_upload_list[0]["media_id"],
+            "timestamp": post["timestamp"],
+            "media_url": post["media_url"],
+            "permalink": post["permalink"],
+            "wordpress_link": resp_post["link"],
+        }
+
+    def post_for_image(self, post):
+        print("post_for_image is invoked")
+        f_path = "image_files/tmp.jpeg"
+        urlretrieve(post["media_url"], f_path)
+        resp_upload = self.upload_image(f_path)
+        os.remove(f_path)
+        html = self.get_html_for_image(post["caption"], resp_upload["source_url"])
+        resp_post = self.post_with_image(self.get_title(post["caption"]), html, resp_upload["media_id"])
+        return {
+            "media_id": resp_upload["media_id"],
+            "timestamp": post["timestamp"],
+            "media_url": post["media_url"],
+            "permalink": post["permalink"],
+            "wordpress_link": resp_post["link"],
+        }
+
     def upload_image(self, image_path):
         print("upload_image is invoked")
-        # file_name = str(image_path).split("/")[-1]
         headers = {
             'Content-Type': 'image/jpeg',
             'Content-Disposition': f'attachment; filename="{image_path}"'
@@ -90,7 +151,6 @@ class Wordpress(Client):
         with open(image_path, 'rb') as img:
             binary = img.read()
             response = self.post('/wp-json/wp/v2/media', headers=headers, data=binary, auth=self.auth)
-        print(response)
         return {"source_url": response["source_url"], "media_id": response["id"]}
 
     def upload_images(self, image_paths):

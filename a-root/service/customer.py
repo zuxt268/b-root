@@ -1,9 +1,11 @@
+import os
 import datetime
+import shutil
 
 from flask import Blueprint, flash, g, session, redirect, render_template, request, url_for, jsonify
 from .auth import login_required
 from .db import get_db
-from .client import get_meta_client
+from .client import get_meta_client, Wordpress
 from werkzeug.security import check_password_hash, generate_password_hash
 
 bp = Blueprint("customer", __name__)
@@ -46,11 +48,20 @@ def auth():
 
 
 def abstract_target(linked_post_list, media_list, start_date):
+    targets = []
+    linked_post_id_list = []
+    for post in linked_post_list:
+        linked_post_id_list.append(post["media_id"])
     for media in media_list:
-        for post in linked_post_list:
-
-
-    return []
+        if media["id"] in linked_post_id_list:
+            continue
+        media_timestamp = datetime.datetime.strptime(media["timestamp"], "%Y-%m-%dT%H:%M:%S%z").replace(tzinfo=None)
+        if media_timestamp < start_date:
+            continue
+        if media["media_type"] != "IMAGE" and media["media_type"] != "CAROUSEL_ALBUM":
+            continue
+        targets.append(media)
+    return targets
 
 
 @bp.route("/instagram", methods=("POST",))
@@ -67,18 +78,33 @@ def get_instagram():
     )
     linked_post_list = cursor.fetchall()
     cursor.close()
-    meta_client = get_meta_client()
-    media_list = meta_client.get_media_list(customer["facebook_token"])
-    targets = abstract_target(linked_post_list, media_list, customer["start_date"])
-    return jsonify(targets)
+    media_list = get_meta_client().get_media_list(customer["facebook_token"])
+    return jsonify(abstract_target(linked_post_list, media_list, customer["start_date"]))
 
 
 @bp.route("/post/wordpress", methods=("POST",))
 def post_wordpress():
     print("post_wordpress is invoked")
     customer_id = g.customer["id"]
-    print(customer_id)
-    return jsonify({"wwww": "eee"})
+    cursor = get_db().cursor(dictionary=True)
+    cursor.execute(
+        "SELECT * FROM customers WHERE id = %s", (customer_id,)
+    )
+    customer = cursor.fetchone()
+    posts = request.json
+    wordpress = Wordpress(f"https://{customer['wordpress_url']}", os.getenv("WORDPRESS_ADMIN_ID"),
+                          os.getenv("WORDPRESS_ADMIN_PASSWORD"))
+    for post in posts:
+        if post["media_type"] == "IMAGE":
+            resp = wordpress.post_for_image(post)
+        else:
+            resp = wordpress.post_for_carousel(post)
+        cursor.execute(
+            "INSERT INTO posts (customer_id, media_id, timestamp, media_url, permalink, wordpress_link) VALUES (%s, %s, %s, %s, %s, %s)",
+            (customer_id, post["id"], resp["timestamp"], resp["media_url"], resp["permalink"], resp["wordpress_link"])
+        )
+    cursor.close()
+    return jsonify({"status": "success"})
 
 
 @bp.route("/login", methods=('GET', 'POST'))
@@ -86,7 +112,6 @@ def login():
     if request.method == "POST":
         email = request.form["email"]
         password = request.form["password"]
-
         error = None
         if not email or not password:
             error = "メールアドレスかパスワードが間違っています"

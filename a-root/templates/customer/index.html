@@ -58,7 +58,51 @@
         </div>
     </div>
 </div>
+<div class="modal" tabindex="-1" role="dialog" id="dataModal">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Instagram</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div id="modal-body" class="modal-body">
+        <p>モーダルボディ</p>
+      </div>
+      <div class="modal-footer">
+        <button id="execute_post_wordpress" type="button" class="btn btn-primary" data-dismiss="modal">連携</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/5.0.0-alpha1/css/bootstrap.min.css" rel="stylesheet">
+<!-- BootstrapのJavaScript Bundle（Popperが含まれています） -->
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/5.0.0-alpha1/js/bootstrap.bundle.min.js"></script>
+
+
 <script>
+    function getCardGrop(data) {
+        let html = "";
+        let ary = Array.from(data);
+        if (ary.length > 0) {
+            document.getElementById("execute_post_wordpress").disabled = false;
+            html += "<p>以下の投稿をWordpressに連携します。問題なければ下部の「連携」ボタンを押してください。</p>"
+            ary.forEach((m) => {
+                html += `<div class="card m-3">
+                    <img class="bd-placeholder-img card-img-top" src="${m['media_url']}" class="img-fluid" alt="Responsive image">
+                    <div class="card-body"><p class="card-text">${m['caption'].replaceAll("\n", "<br>")}</p></div>
+                  </div>`;
+            });
+        } else {
+            document.getElementById("execute_post_wordpress").disabled = true;
+            html += "<p>対象データはありません。</p>";
+        }
+
+        return html;
+    }
+    let instagramPost = null;
     document.getElementById("facebook_btn").addEventListener("click", (event) => {
         document.getElementById("facebook_btn").disabled = true;
         FB.login(function(response){
@@ -70,15 +114,14 @@
                 document.getElementById("facebook_btn").disabled = false;
             }
         }, {scope: 'public_profile, pages_show_list, business_management, instagram_basic'});
-        // }, {scope: 'public_profile,email,pages_show_list,instagram_basic,pages_read_engagement'});
     })
     let facebook_btn = document.getElementById("facebook_execute");
     if (facebook_btn) {
         facebook_btn.addEventListener("click", (event) => {
-            console.log("wao");
-            if (!window.confirm("連携しますか？")) {
+            if (!window.confirm("Instagramの投稿を取得しますか？")) {
                 return;
             }
+            showLoadingOverlay();
             fetch("/instagram", {
                 method: 'POST',
                 headers: {
@@ -88,30 +131,50 @@
             })
             .then(response => response.json())
             .then(data => {
-                console.log(data);
-                if (!window.confirm("この内容で連携しますか")) {
-                    return;
-                }
-                fetch("/post/wordpress", {
-                    method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/json'
-                    },
-                    body: null
-                })
-                .then(response => response.json())
-                .then(data => {
-                    console.log(data);
-                })
-                .catch((error) => {
-                    console.error('エラー発生:', error);
-                });
+                instagramPost = data;
+                let modalElement = document.getElementById('dataModal');
+                let modalInstance = new bootstrap.Modal(modalElement);
+                document.getElementById("modal-body").innerHTML = getCardGrop(data);
+                modalInstance.show();
             })
             .catch((error) => {
                 console.error('エラー発生:', error);
+            })
+            .finally(() => {
+                hideLoadingOverlay();
             });
         })
     }
+    let execute_btn = document.getElementById("execute_post_wordpress");
+    if (execute_btn) {
+        execute_btn.addEventListener("click", (event) => {
+            postToWordpress();
+        });
+    }
+    function postToWordpress() {
+        showLoadingOverlay();
+        if (instagramPost) {
+            fetch("/post/wordpress", {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(instagramPost)
+            })
+            .then(response => response.json())
+            .then(data => {
+                window.alert("連携が完了しました。");
+                window.location.reload();
+            })
+            .catch((error) => {
+                console.error('エラー発生:', error);
+            })
+            .finally(() => {
+                hideLoadingOverlay();
+            });
+        }
+    }
+
 </script>
 
 {% endblock %}

@@ -1,4 +1,4 @@
-console.log("common.js")
+
 function post(path, dict) {
     let form = document.createElement('form');
     form.setAttribute('method', 'post');
@@ -12,4 +12,14 @@ function post(path, dict) {
     });
     document.body.appendChild(form);
     form.submit();
+}
+
+// オーバーレイを表示する関数
+function showLoadingOverlay() {
+    document.getElementById('loadingOverlay').classList.remove('d-none');
+}
+
+// オーバーレイを非表示にする関数
+function hideLoadingOverlay() {
+    document.getElementById('loadingOverlay').classList.add('d-none');
 }
