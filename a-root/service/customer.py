@@ -1,6 +1,5 @@
 import os
 import datetime
-import shutil
 
 from flask import Blueprint, flash, g, session, redirect, render_template, request, url_for, jsonify
 from .auth import login_required
