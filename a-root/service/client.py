@@ -105,7 +105,7 @@ class Wordpress(Client):
 
     @staticmethod
     def get_title(caption):
-        return str(caption).split(" ")[0]
+        return str(caption).split("\n")[0]
 
     def post_for_carousel(self, post):
         print("post_for_carousel is invoked")
@@ -117,7 +117,7 @@ class Wordpress(Client):
             os.remove(f_path)
             resp_upload_list.append(resp_upload)
         html = self.get_html_for_carousel(post["caption"], resp_upload_list)
-        resp_post = self.post_with_image(post["caption"], html, resp_upload_list[0]["media_id"])
+        resp_post = self.post_with_image(self.get_title(post["caption"]), html, resp_upload_list[0]["media_id"])
         return {
             "media_id": resp_upload_list[0]["media_id"],
             "timestamp": post["timestamp"],
