@@ -92,6 +92,20 @@
 
 
 <script>
+    function formatString(input) {
+        // inputがundefinedの場合、空白文字列を返す
+        if (typeof input === 'undefined') {
+            return " ";
+        }
+
+        // inputが文字列の場合、改行を<br>に置き換える
+        if (typeof input === 'string') {
+            return input.replaceAll("\n", "<br>");
+        }
+
+        // inputが文字列でもundefinedでもない場合、inputをそのまま返す
+        return input;
+    }
     function getCardGrop(data) {
         let html = "";
         let ary = Array.from(data);
@@ -101,7 +115,7 @@
             ary.forEach((m) => {
                 html += `<div class="card m-3">
                     <img class="bd-placeholder-img card-img-top" src="${m['media_url']}" class="img-fluid" alt="Responsive image">
-                    <div class="card-body"><p class="card-text">${m['caption'].replaceAll("\n", "<br>")}</p></div>
+                    <div class="card-body"><p class="card-text">${formatString(m['caption'])}</p></div>
                   </div>`;
             });
         } else {

@@ -128,12 +128,13 @@ class Wordpress(Client):
 
     def post_for_image(self, post):
         print("post_for_image is invoked")
+        print(post)
         f_path = "image_files/tmp.jpeg"
         urlretrieve(post["media_url"], f_path)
         resp_upload = self.upload_image(f_path)
         os.remove(f_path)
-        html = self.get_html_for_image(post["caption"], resp_upload["source_url"])
-        resp_post = self.post_with_image(self.get_title(post["caption"]), html, resp_upload["media_id"])
+        html = self.get_html_for_image(post.get("caption", " "), resp_upload["source_url"])
+        resp_post = self.post_with_image(self.get_title(post.get("caption", " ")), html, resp_upload["media_id"])
         return {
             "media_id": resp_upload["media_id"],
             "timestamp": post["timestamp"],
