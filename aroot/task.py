@@ -88,7 +88,7 @@ def get_html_for_image(caption, media_dict):
 
 
 def get_html_for_carousel(caption, media_dict_list):
-    html = '<div class="a-root-wordpress-instagram-slider">'
+    html = '<div class="aroot-wordpress-instagram-slider">'
     for media_dict in media_dict_list:
         html += f"<div><img src={media_dict['source_url']} style='margin: 0 auto;' width='500px' height='500px'/></div>"
     html += "</div>"

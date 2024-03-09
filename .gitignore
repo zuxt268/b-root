@@ -1,4 +1,4 @@
 .idea
 venv
-a-root/.env
+aroot/.env
 db/password.txt

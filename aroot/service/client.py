@@ -96,7 +96,7 @@ class Wordpress(Client):
         return f"<div><img src={url} style='margin: 0 auto;' width='500px' height='500px'/></div>{contents}"
 
     def get_html_for_carousel(self, caption, resp_upload_list):
-        html = '<div class="a-root-wordpress-instagram-slider">'
+        html = '<div class="aroot-wordpress-instagram-slider">'
         for resp_upload in resp_upload_list:
             html += f"<div><img src={resp_upload['source_url']} style='margin: 0 auto;' width='500px' height='500px'/></div>"
         html += "</div>"

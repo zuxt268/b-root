@@ -1,6 +1,6 @@
 services:
   flask-app:
-    build: a-root
+    build: aroot
     restart: always
     ports:
       - '8000:8000'
