@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from models import CustomersModel
+from aroot.repository.models import CustomersModel
 from aroot.service.customers import Customer
 
 

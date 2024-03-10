@@ -25,7 +25,7 @@ class MetaService:
         params['access_token'] = access_token
         response = requests.get(self.base_url + "/me", params=params)
         if 200 <= response.status_code < 300:
-            facebook_pages = response["accounts"]["data"]
+            facebook_pages = response.json()["accounts"]["data"]
             for i in facebook_pages:
                 instagram_id = i["instagram_business_account"]["id"]
                 return instagram_id

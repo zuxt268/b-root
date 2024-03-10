@@ -2,9 +2,9 @@ import os
 import datetime
 
 from flask import Blueprint, flash, g, session, redirect, render_template, request, url_for, jsonify
-from .auth import login_required
-from .db import get_db
-from .client import get_meta_client, Wordpress
+from .old_auth import login_required
+from .old_db import get_db
+from .old_client import get_meta_client, Wordpress
 from werkzeug.security import check_password_hash, generate_password_hash
 
 bp = Blueprint("customer", __name__)

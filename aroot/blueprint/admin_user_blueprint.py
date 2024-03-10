@@ -1,5 +1,3 @@
-import os
-import datetime
 import functools
 
 from flask import Blueprint, flash, g, session, redirect, render_template, request, url_for, jsonify
@@ -7,12 +5,11 @@ from sqlalchemy.sql.functions import current_user
 
 from aroot.repository.admin_user_repository import AdminUserRepository
 from aroot.repository.customers_repository import CustomersRepository
-from aroot.service.admin_users import AdminUserValidator, AdminUser, AdminUserValidationError
-from aroot.service.admin_users_service import AdminUsersService, AdminUserNotFountError, AdminUserAuthError
+from aroot.service.admin_users import AdminUserValidator, AdminUser
+from aroot.service.admin_users_service import AdminUsersService, AdminUserNotFountError, AdminUserAuthError, AdminUserValidationError
 from aroot.repository.unit_of_work import UnitOfWork
-from aroot.service.customers import Customer, CustomerValidator, CustomerValidationError
-from aroot.service.customers_service import CustomersService
-from werkzeug.security import generate_password_hash
+from aroot.service.customers import Customer, CustomerValidator
+from aroot.service.customers_service import CustomersService, CustomerValidationError
 
 bp = Blueprint("admin_user", __name__)
 
@@ -81,6 +78,7 @@ def register_customer():
                     email=request.form["email"],
                     password=request.form["password"]
                 )
+                CustomerValidator.validate(customer)
                 customers_repo = CustomersRepository(unit_of_work.session)
                 customers_service = CustomersService(customers_repo)
                 customers_service.register_customer(customer)

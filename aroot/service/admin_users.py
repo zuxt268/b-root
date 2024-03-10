@@ -35,6 +35,4 @@ class AdminUserValidator:
             return "名前は空欄では登録できません"
 
 
-class AdminUserValidationError(Exception):
-    pass
 

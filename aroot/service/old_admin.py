@@ -5,8 +5,8 @@ import requests
 
 from flask import Blueprint, flash, redirect, url_for, g, render_template, request, session
 from werkzeug.security import check_password_hash, generate_password_hash
-from .db import get_db
-from .auth import admin_login_required
+from .old_db import get_db
+from .old_auth import admin_login_required
 
 bp = Blueprint("admin", __name__)
 

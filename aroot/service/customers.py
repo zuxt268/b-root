@@ -42,5 +42,3 @@ class CustomerValidator:
             return "名前は空欄では登録できません"
 
 
-class CustomerValidationError(Exception):
-    pass

@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from models import PostsModel
+from aroot.repository.models import PostsModel
 from aroot.service.posts import Post
 
 

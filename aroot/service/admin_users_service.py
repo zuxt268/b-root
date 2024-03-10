@@ -1,4 +1,15 @@
-from aroot.service.admin_users import AdminUserValidationError
+
+
+class AdminUserNotFountError(Exception):
+    pass
+
+
+class AdminUserAuthError(Exception):
+    pass
+
+
+class AdminUserValidationError(Exception):
+    pass
 
 
 class AdminUsersService:
@@ -26,11 +37,5 @@ class AdminUsersService:
         self.admin_users_repository.add(admin_user)
 
 
-class AdminUserNotFountError(Exception):
-    pass
-
-
-class AdminUserAuthError(Exception):
-    pass
 
 

@@ -1,4 +1,4 @@
-from app import app
+from aroot import app
 import os
 
 # for production

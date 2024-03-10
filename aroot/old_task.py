@@ -6,7 +6,7 @@ import time
 import mysql.connector
 
 from urllib.request import urlretrieve
-from service.client import Meta, Wordpress
+from service.old_client import Meta, Wordpress
 from jinja2 import Template
 
 

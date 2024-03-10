@@ -29,7 +29,7 @@ RUN pip install -r requirements.txt
 # define the port number the container should expose
 EXPOSE 8000
 
-ENV FLASK_APP=a-root
+ENV FLASK_APP=aroot
 ENV FLASK_ENV=production
 
 CMD ["python", "app.py"]

@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from models import AdminUsersModel
+from aroot.repository.models import AdminUsersModel
 from aroot.service.admin_users import AdminUser
 
 

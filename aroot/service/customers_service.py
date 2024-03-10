@@ -1,4 +1,15 @@
-from aroot.service.customers import CustomerValidationError
+
+
+class CustomerNotFoundError(Exception):
+    pass
+
+
+class CustomerAuthError(Exception):
+    pass
+
+
+class CustomerValidationError(Exception):
+    pass
 
 
 class CustomersService:
@@ -34,11 +45,3 @@ class CustomersService:
         customer = self.customers_repository.find_by_email(email)
         if customer is not None:
             raise CustomerValidationError("Emailは使われています。")
-
-
-class CustomerNotFoundError(Exception):
-    pass
-
-
-class CustomerAuthError(Exception):
-    pass
