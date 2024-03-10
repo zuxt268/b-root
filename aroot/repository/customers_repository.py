@@ -10,15 +10,21 @@ class CustomersRepository:
     def add(self, customer):
         record = CustomersModel(**customer)
         self.session.add(record)
-        return Customer(**record.dict(), )
+        return Customer(**record.dict())
 
     def _get(self, _id) -> CustomersModel:
         return self.session.query(CustomersModel).filter(CustomersModel.id == _id).first()
 
-    def get(self, _id):
+    def find_by_id(self, _id):
         customer = self._get(_id)
         if customer is not None:
             return Customer(**customer.dict())
+
+    def find_by_email(self, email):
+        query = self.session.query(CustomersModel)
+        record = query.filter(CustomersModel.email == email).first()
+        if record is not None:
+            return Customer(**record.dict())
 
     def find_all(self, limit=None, offset=None):
         query = self.session.query(CustomersModel)

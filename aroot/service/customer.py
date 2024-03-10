@@ -120,17 +120,14 @@ def login():
             cursor.execute("SELECT * FROM customers WHERE email = %s", (email,))
             customer = cursor.fetchone()
             cursor.close()
-
             if customer is None:
                 error = "メールアドレスかパスワードが間違っています"
             elif not check_password_hash(customer["password"], password):
                 error = "メールアドレスかパスワードが間違っています"
-
             if error is None:
                 session.clear()
                 session["customer_id"] = customer["id"]
                 return redirect(url_for("index"))
-
         flash(error)
     return render_template("customer/login.html")
 
