@@ -1,4 +1,5 @@
-from werkzeug.security import check_password_hash
+from werkzeug.security import check_password_hash, generate_password_hash
+from aroot.service.admin_users_service import AdminUserValidationError, AdminUserAuthError
 
 
 class AdminUser:
@@ -10,7 +11,10 @@ class AdminUser:
 
     def check_password_hash(self, password):
         if check_password_hash(self.password, password) is False:
-            raise AdminUserValidationError("パスワードかEmailが間違っています")
+            raise AdminUserAuthError("パスワードかEmailが間違っています")
+
+    def generate_hash_password(self):
+        self.password = generate_password_hash(self.password)
 
 
 class AdminUserValidator:

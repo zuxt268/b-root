@@ -7,6 +7,10 @@ load_dotenv()
 
 app = Flask(__name__)
 
+app.config.from_mapping(
+    SECRET_KEY='aroot'
+)
+
 app.register_blueprint(customer_blueprint.bp)
 app.register_blueprint(admin_user_blueprint.bp)
 app.register_blueprint(batch_blueprint.bp)

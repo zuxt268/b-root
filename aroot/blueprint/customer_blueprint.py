@@ -1,6 +1,4 @@
 import functools
-import os
-import datetime
 
 from flask import Blueprint, flash, g, session, redirect, render_template, request, url_for, jsonify
 
@@ -8,7 +6,6 @@ from aroot.repository.posts_repository import PostsRepository
 from aroot.repository.unit_of_work import UnitOfWork
 from aroot.repository.customers_repository import CustomersRepository, CustomersModel
 from aroot.service.customers_service import CustomersService, CustomerNotFoundError, CustomerAuthError
-from aroot.service.customers import Customer
 from aroot.service.posts_service import PostsService
 from aroot.service.meta_service import MetaService, MetaApiError
 from aroot.service.wordpress_service import WordpressService
@@ -39,15 +36,20 @@ def login():
                     customer_repo = CustomersRepository(unit_of_work.session)
                     customer_service = CustomersService(customer_repo)
                     customer = customer_service.get_customer_by_email(email)
-                    customer.check_password(password)
-                    session.clear()
+                    customer.check_password_hash(password)
                     session["customer_id"] = customer.id
                     unit_of_work.commit()
-                    return redirect(url_for("index"))
+                    return redirect(url_for("customer.index"))
             except CustomerNotFoundError | CustomerAuthError:
                 error = "メールアドレスかパスワードが間違っています"
         flash(error)
     return render_template("customer/login.html")
+
+
+@bp.route("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("login"))
 
 
 @bp.route("/")

@@ -6,8 +6,9 @@ from sqlalchemy.orm import sessionmaker
 
 class UnitOfWork:
     def __init__(self):
+        connection_string = f"mysql+pymysql://{os.getenv('DATABASE_USER')}:{os.getenv('DATABASE_PASSWORD')}@{os.getenv('DATABASE_HOST')}/{os.getenv('DATABASE_SCHEME')}"
         self.session_maker = sessionmaker(
-            bind=create_engine(f"mysql+pymysql://{os.getenv('DATABASE_USER')}:{os.getenv('DATABASE_PASSWORD')}@{os.getenv('DATABASE_HOST')}/{os.getenv('DATABASE_SCHEME')}")
+            bind=create_engine(connection_string)
         )
 
     def __enter__(self):

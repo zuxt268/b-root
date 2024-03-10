@@ -26,7 +26,7 @@ class CustomersService:
         raise CustomerNotFoundError("Customer with id {} not found".format(customer_id))
 
     def get_customer_by_email(self, email):
-        customer = self.customers_repository.find_by_email()
+        customer = self.customers_repository.find_by_email(email)
         if customer is not None:
             return customer
         raise CustomerNotFoundError("Customer with email {} not found".format(email))

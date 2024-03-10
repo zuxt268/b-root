@@ -48,6 +48,12 @@ def login():
     return render_template("admin/login.html")
 
 
+@bp.route("/admin/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("login"))
+
+
 @bp.route("/admin")
 @admin_login_required
 def index():
@@ -98,7 +104,7 @@ def delete_customer():
             customer_service = CustomersService(customer_repo)
             customer_service.remove_customer_by_id(customer_id)
             unit_of_work.commit()
-    return redirect(url_for("admin.index"))
+    return redirect(url_for("index"))
 
 
 @bp.route('/admin/register_user', methods=('GET', 'POST'))
