@@ -10,7 +10,7 @@ bp = Blueprint('auth', __name__, url_prefix='/auth')
 def load_logged_in_user():
     if request.path.startswith("/static"):
         return
-    elif request.path.startswith("/admin"):
+    elif request.path.startswith("/admin_user"):
         """管理者ページ"""
         admin_user_id = session.get("admin_user_id")
         if admin_user_id is None:
@@ -43,7 +43,7 @@ def logout():
     if admin_user_id is None:
         return redirect(url_for("customer.login"))
     else:
-        return redirect(url_for("admin.login"))
+        return redirect(url_for("admin_user.login"))
 
 
 def login_required(view):
@@ -59,7 +59,7 @@ def admin_login_required(view):
     @functools.wraps(view)
     def wrapped_view(**kwargs):
         if g.admin_user is None:
-            return redirect(url_for("admin.login"))
+            return redirect(url_for("admin_user.login"))
         return view(**kwargs)
     return wrapped_view
 

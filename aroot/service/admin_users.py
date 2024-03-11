@@ -3,7 +3,7 @@ from aroot.service.admin_users_service import AdminUserValidationError, AdminUse
 
 
 class AdminUser:
-    def __init__(self, id, name, email, password):
+    def __init__(self, id="", name="", email="", password=""):
         self.id = id
         self.name = name
         self.email = email
@@ -16,27 +16,35 @@ class AdminUser:
     def generate_hash_password(self):
         self.password = generate_password_hash(self.password)
 
+    def dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "email": self.email,
+            "password": self.password,
+        }
+
+    def dict_save(self):
+        return {
+            "name": self.name,
+            "email": self.email,
+            "password": self.password,
+        }
+
 
 class AdminUserValidator:
     @staticmethod
     def validate(admin_user):
-        error = AdminUserValidator.validate_password(admin_user.password)
-        if error is not None:
-            raise AdminUserValidationError(error)
-        error = AdminUserValidator.validate_name(admin_user.name)
-        if error is None:
-            raise AdminUserValidationError(error)
-        return None
+        AdminUserValidator.validate_password(admin_user.password)
+        AdminUserValidator.validate_name(admin_user.name)
 
     @staticmethod
     def validate_password(password):
         if len(password) < 8:
-            return "パスワードは8文字以上で設定してください"
+            raise AdminUserValidationError("パスワードは8文字以上で設定してください")
 
     @staticmethod
     def validate_name(name):
         if len(name) == 0:
-            return "名前は空欄では登録できません"
-
-
+            raise AdminUserValidationError("名前は空欄では登録できません")
 

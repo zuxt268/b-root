@@ -3,7 +3,7 @@ from aroot.service.customers_service import CustomerAuthError, CustomerValidatio
 
 
 class Customer:
-    def __init__(self, id, name, email, password, wordpress_url, facebook_token, start_date):
+    def __init__(self, id=None, name="", email="", password=None, wordpress_url=None, facebook_token=None, start_date=None):
         self.id = id
         self.name = name
         self.email = email
@@ -18,6 +18,20 @@ class Customer:
 
     def generate_hash_password(self):
         self.password = generate_password_hash(self.password)
+
+    def dict(self):
+        result = {}
+        if self.id is not None:
+            result["id"] = self.id
+        if self.name is not None:
+            result["name"] = self.name
+        if self.email is not None:
+            result["email"] = self.email
+        if self.password is not None:
+            result["password"] = self.password
+        if self.wordpress_url is not None:
+            result["wordpress_url"] = self.wordpress_url
+        return result
 
 
 class CustomerValidator:

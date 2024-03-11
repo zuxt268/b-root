@@ -8,7 +8,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from .old_db import get_db
 from .old_auth import admin_login_required
 
-bp = Blueprint("admin", __name__)
+bp = Blueprint("admin_user", __name__)
 
 
 class AdminUser:
@@ -73,10 +73,10 @@ def login():
             if error is None:
                 session.clear()
                 session["admin_user_id"] = exist_user["id"]
-                return redirect(url_for("admin.index"))
+                return redirect(url_for("admin_user.index"))
 
         flash(error)
-    return render_template("admin/login.html")
+    return render_template("admin_user/login.html")
 
 
 # 一覧表示
@@ -89,7 +89,7 @@ def index():
     )
     customers = cursor.fetchall()
     cursor.close()
-    return render_template("admin/index.html", customers=customers, login_name=g.admin_user["name"])
+    return render_template("admin_user/index.html", customers=customers, login_name=g.admin_user["name"])
 
 
 class Customer:
@@ -155,11 +155,11 @@ def register_customer():
                 )
                 db.commit()
                 db.cursor().close()
-                return redirect(url_for("admin.index"))
+                return redirect(url_for("admin_user.index"))
             except mysql.connector.errors.IntegrityError as e:
                 error = f"{customer.email}はすでに登録されています。"
         flash(error)
-    return render_template("admin/register_customer.html", customer=customer, login_name=g.admin_user["name"])
+    return render_template("admin_user/register_customer.html", customer=customer, login_name=g.admin_user["name"])
 
 
 @bp.route("/admin/delete_customer", methods=("POST",))
@@ -178,7 +178,7 @@ def delete_customer():
             db.cursor().close()
         except mysql.connector.errors.Error as e:
             flash(e)
-    return redirect(url_for("admin.index"))
+    return redirect(url_for("admin_user.index"))
 
 
 @bp.route('/admin/register_user', methods=('GET', 'POST'))
@@ -197,10 +197,10 @@ def register_user():
                 )
                 db.commit()
                 db.cursor().close()
-                return redirect(url_for("admin.index"))
+                return redirect(url_for("admin_user.index"))
             except mysql.connector.errors.IntegrityError as e:
                 error = f"{admin_user.email}はすでに登録されています。"
         flash(error)
-    return render_template("admin/register_user.html", admin_user=admin_user, login_name=g.admin_user["name"])
+    return render_template("admin_user/register_user.html", admin_user=admin_user, login_name=g.admin_user["name"])
 
 

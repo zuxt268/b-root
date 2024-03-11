@@ -8,8 +8,10 @@ class AdminUserRepository:
         self.session = session
 
     def add(self, admin_user):
+        print(admin_user)
         record = AdminUsersModel(**admin_user)
         self.session.add(record)
+        print(record)
         return AdminUser(**record.dict())
 
     def find_by_id(self, id):

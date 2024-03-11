@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block header %}
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+    <div class="row mt-5 justify-content-center">
+        <div class="col-xl-10 col-lg-12 col-md-9">
+            <div class="card o-hidden border-0 shadow-lg my-5">
+                <div class="card-body p-0">
+                    <div class="row">
+                        <div class="col-lg-6 d-none d-lg-block bg-login-image"></div>
+                        <div class="col-lg-6">
+                            <div class="p-5">
+                                <div class="text-center">
+                                    <h1 class="h4 text-gray-900 mb-4">A Root - 管理者ログイン</h1>
+                                </div>
+                                <form id="login_form" method="post" action="{{ url_for('admin.login') }}" class="user">
+                                    <div class="form-group">
+                                        <input name="email" type="email" class="form-control form-control-user"
+                                            id="email" aria-describedby="emailHelp"
+                                            placeholder="Enter Email Address...">
+                                    </div>
+                                    <div class="form-group">
+                                        <input name="password" type="password" class="form-control form-control-user"
+                                            id="password" placeholder="Password">
+                                    </div>
+
+<!--                                    <input id="admin_login_btn" type="submit" value="Login" class="btn btn-primary btn-user btn-block" />-->
+                                    <button type="submit" class="btn btn-primary btn-user btn-block g-recaptcha">Login</button>
+                                    <hr>
+                                </form>
+                                <hr>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--<script>-->
+<!--    document.getElementById("admin_login_btn").addEventListener("click", (event) => {-->
+<!--        document.getElementById("admin_login_btn").disabled = true;-->
+<!--        const g_recaptcha = document.getElementById('g-recaptcha-response').value;-->
+<!--        const email = document.getElementById("email").value;-->
+<!--        const password = document.getElementById("password").value;-->
+<!--        console.log(g_recaptcha);-->
+<!--        post("/admin_user/login", {email, password});-->
+<!--    });-->
+<!--</script>-->
+
+{% endblock %}
