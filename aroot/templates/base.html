@@ -20,19 +20,6 @@
       {% block header %}{% endblock %}
     </header>
 
-    {% block content %}{% endblock %}
-
-    <footer class="sticky-footer bg-white">
-        <div class="container my-auto">
-            <div class="copyright text-center my-auto">
-                <span class="mr-2"><a target="_blank" rel="noopener" href="https://strategy-drive.jp/">運営会社</a></span>
-                <span class="mr-2"><a href="/terms">利用規約</a></span>
-                <span class="mr-2"><a href="/privacy">プライバシーポリシー</a></span>
-                <span>Copyright &copy; A-Root 2024</span>
-            </div>
-        </div>
-    </footer>
-
     <div id="loadingOverlay" class="loading-overlay d-none">
         <div style="width: 3rem; height: 3rem;" class="spinner-border text-primary" role="status">
             <span class="sr-only">Loading...</span>
@@ -46,6 +33,19 @@
             </div>
         </div>
     {% endfor %}
+
+    {% block content %}{% endblock %}
+
+    <footer class="sticky-footer bg-white">
+        <div class="container my-auto">
+            <div class="copyright text-center my-auto">
+                <span class="mr-2"><a target="_blank" rel="noopener" href="https://strategy-drive.jp/">運営会社</a></span>
+                <span class="mr-2"><a href="/terms">利用規約</a></span>
+                <span class="mr-2"><a href="/privacy">プライバシーポリシー</a></span>
+                <span>Copyright &copy; A-Root 2024</span>
+            </div>
+        </div>
+    </footer>
 
     {% block logoutmodal %}{% endblock %}
 

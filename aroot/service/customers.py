@@ -3,7 +3,7 @@ from aroot.service.customers_service import CustomerAuthError, CustomerValidatio
 
 
 class Customer:
-    def __init__(self, id=None, name="", email="", password=None, wordpress_url=None, facebook_token=None, start_date=None):
+    def __init__(self, id=None, name="", email="", password="", wordpress_url="", facebook_token=None, start_date=None):
         self.id = id
         self.name = name
         self.email = email
@@ -11,6 +11,16 @@ class Customer:
         self.wordpress_url = wordpress_url
         self.facebook_token = facebook_token
         self.start_date = start_date
+
+    def set_wordpress_url(self, _wordpress_url):
+        wordpress_url = _wordpress_url
+        if wordpress_url.startswith("https://"):
+            wordpress_url.replace("https://", "")
+        elif wordpress_url.startswith("http://"):
+            wordpress_url.replace("http://", "")
+        if wordpress_url.endswith("/"):
+            wordpress_url = wordpress_url[:-1]
+        self.wordpress_url = wordpress_url
 
     def check_password_hash(self, password):
         if check_password_hash(self.password, password) is False:
@@ -37,16 +47,21 @@ class Customer:
 class CustomerValidator:
     @staticmethod
     def validate(customer):
-        error = CustomerValidator.validate_password(customer.password)
-        if error is not None:
-            raise CustomerValidationError(error)
+        print(customer.dict())
         error = CustomerValidator.validate_name(customer.name)
         if error is None:
             raise CustomerValidationError(error)
-        return None
+        error = CustomerValidator.validate_password(customer.password)
+        if error is not None:
+            raise CustomerValidationError(error)
+        error = CustomerValidator.validate_wordpress_url(customer.wordpress_url)
+        if error is not None:
+            raise CustomerValidationError(error)
 
     @staticmethod
     def validate_password(password):
+        if password is None:
+            return "パスワードを設定してください"
         if len(password) < 8:
             return "パスワードは8文字以上で設定してください"
 
@@ -55,4 +70,8 @@ class CustomerValidator:
         if len(name) == 0:
             return "名前は空欄では登録できません"
 
+    @staticmethod
+    def validate_wordpress_url(wordpress_url):
+        if len(wordpress_url) == 0:
+            return "Wordpress URLは入力必須です。"
 

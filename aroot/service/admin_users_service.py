@@ -28,6 +28,9 @@ class AdminUsersService:
             return admin_user
         raise AdminUserNotFountError("Admin User with id {} not found".format(_id))
 
+    def find_all(self):
+        return self.admin_users_repository.find_all()
+
     def check_use_email(self, email):
         admin_user = self.admin_users_repository.find_by_email(email)
         if admin_user is not None:
@@ -36,6 +39,8 @@ class AdminUsersService:
     def register_user(self, admin_user):
         self.admin_users_repository.add(admin_user)
 
+    def remove_user(self, admin_user):
+        self.admin_users_repository.delete(admin_user)
 
 
 

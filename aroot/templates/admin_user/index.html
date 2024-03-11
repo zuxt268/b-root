@@ -56,13 +56,10 @@
         <div class="card-header py-3">
             <div class="row">
                 <h6 class="col m-0 font-weight-bold text-primary">
-                    DataTables
+                    Customer Tables
                 </h6>
                 <div class="col">
                     <div class="row justify-content-end">
-                        <div class="text-right">
-                          <a style="width: 6rem" id="register_user" href="{{ url_for('admin_user.register_user') }}" type="button" class="mr-2 btn btn-sm btn-success">管理者追加</a>
-                        </div>
                         <div class="text-right">
                           <a style="width: 6rem" id="register_customer" href="{{ url_for('admin_user.register_customer') }}" type="button" class="btn btn-sm btn-primary">顧客追加</a>
                         </div>
@@ -72,7 +69,7 @@
         </div>
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table" id="dataTable" width="100%" cellspacing="0">
+                <table class="table" id="customerTables" width="100%" cellspacing="0">
                     <thead>
                         <tr>
                             <th>ID</th>
@@ -102,7 +99,52 @@
                                     {% endif %}
                                 </td>
                                 <td>
-                                    <button value="{{ customer.id }}" type="button" style="width: 6rem;" class="delete_btn btn btn-outline-danger btn-sm">削除ボタン</button>
+                                    <button value="{{ customer.id }}" type="button" style="width: 6rem;" class="delete_customer_btn btn btn-outline-danger btn-sm">削除ボタン</button>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <h1 class="h3 mb-2 text-gray-800">管理ユーザー一覧</h1>
+    <!-- DataTales Example -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <div class="row">
+                <h6 class="col m-0 font-weight-bold text-primary">
+                    Admin Users Tables
+                </h6>
+                <div class="col">
+                    <div class="row justify-content-end">
+                        <div class="text-right">
+                          <a style="width: 6rem" id="register_user" href="{{ url_for('admin_user.register_user') }}" type="button" class="mr-2 btn btn-sm btn-success">管理者追加</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table" id="adminUsersTables" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for admin_user in admin_users %}
+                            <tr>
+                                <td>{{ admin_user["id"] }}</td>
+                                <td>{{ admin_user["name"] }}</td>
+                                <td>{{ admin_user["email"] }}</td>
+                                <td>
+                                    <button value="{{ admin_user.id }}" type="button" style="width: 6rem;" class="delete_user_btn btn btn-outline-danger btn-sm">削除ボタン</button>
                                 </td>
                             </tr>
                         {% endfor %}
@@ -113,15 +155,26 @@
     </div>
 </div>
 <script>
-    document.querySelectorAll(".delete_btn").forEach((ele) => {
+    document.querySelectorAll(".delete_customer_btn").forEach((ele) => {
         ele.addEventListener("click", (event) => {
             const customer_id = event.target.value;
             if (window.confirm(`ID: ${customer_id}の顧客を削除します。よろしいですか？`)) {
+                showLoadingOverlay();
                 event.target.disabled = true;
                 post("/admin/delete_customer", {customer_id});
             }
-        })
-    })
+        });
+    });
+    document.querySelectorAll(".delete_user_btn").forEach((ele) => {
+        ele.addEventListener("click", (event) => {
+            const admin_user_id = event.target.value;
+            if (window.confirm(`ID: ${admin_user_id}の管理者ユーザーを削除します。よろしいですか？`)) {
+                showLoadingOverlay();
+                event.target.disabled = true;
+                post("/admin/delete_user", {admin_user_id});
+            }
+        });
+    });
 </script>
 <script type="text/javascript" src="//cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"></script>
 {% endblock %}

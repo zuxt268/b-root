@@ -3,7 +3,7 @@ from aroot.service.admin_users_service import AdminUserValidationError, AdminUse
 
 
 class AdminUser:
-    def __init__(self, id="", name="", email="", password=""):
+    def __init__(self, id=None, name="", email="", password=""):
         self.id = id
         self.name = name
         self.email = email
@@ -17,19 +17,16 @@ class AdminUser:
         self.password = generate_password_hash(self.password)
 
     def dict(self):
-        return {
-            "id": self.id,
-            "name": self.name,
-            "email": self.email,
-            "password": self.password,
-        }
-
-    def dict_save(self):
-        return {
-            "name": self.name,
-            "email": self.email,
-            "password": self.password,
-        }
+        result = {}
+        if self.id is not None:
+            result["id"] = self.id
+        if self.name is not None:
+            result["name"] = self.name
+        if self.email is not None:
+            result["email"] = self.email
+        if self.password is not None:
+            result["password"] = self.password
+        return result
 
 
 class AdminUserValidator:
