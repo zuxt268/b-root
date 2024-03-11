@@ -5,3 +5,4 @@ db/password.txt
 __pycache__
 aroot/service/__pychache__
 aroot/__pychache__
+aroot/app.log

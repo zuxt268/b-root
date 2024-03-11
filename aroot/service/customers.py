@@ -47,31 +47,23 @@ class Customer:
 class CustomerValidator:
     @staticmethod
     def validate(customer):
-        print(customer.dict())
-        error = CustomerValidator.validate_name(customer.name)
-        if error is None:
-            raise CustomerValidationError(error)
-        error = CustomerValidator.validate_password(customer.password)
-        if error is not None:
-            raise CustomerValidationError(error)
-        error = CustomerValidator.validate_wordpress_url(customer.wordpress_url)
-        if error is not None:
-            raise CustomerValidationError(error)
+        CustomerValidator.validate_name(customer.name)
+        CustomerValidator.validate_password(customer.password)
+        CustomerValidator.validate_wordpress_url(customer.wordpress_url)
 
     @staticmethod
     def validate_password(password):
         if password is None:
-            return "パスワードを設定してください"
+            raise CustomerValidationError("パスワードを設定してください")
         if len(password) < 8:
-            return "パスワードは8文字以上で設定してください"
+            raise CustomerValidationError("パスワードは8文字以上で設定してください")
 
     @staticmethod
     def validate_name(name):
         if len(name) == 0:
-            return "名前は空欄では登録できません"
+            raise CustomerValidationError("名前は空欄では登録できません")
 
     @staticmethod
     def validate_wordpress_url(wordpress_url):
         if len(wordpress_url) == 0:
-            return "Wordpress URLは入力必須です。"
-
+            raise CustomerValidationError("Wordpress URLは入力必須です")

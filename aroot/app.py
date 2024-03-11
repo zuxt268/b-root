@@ -1,4 +1,7 @@
 from flask import Flask, render_template
+import logging
+from logging.handlers import RotatingFileHandler
+from pythonjsonlogger import jsonlogger
 from aroot.blueprint import customer_blueprint, admin_user_blueprint
 from aroot.blueprint import batch_blueprint
 from dotenv import load_dotenv
@@ -10,6 +13,18 @@ app = Flask(__name__)
 app.config.from_mapping(
     SECRET_KEY='aroot'
 )
+
+log_level = logging.DEBUG
+
+handler = RotatingFileHandler('app.log', maxBytes=10000, backupCount=1)
+handler.setLevel(log_level)
+formatter = jsonlogger.JsonFormatter(
+    '%(asctime)s %(levelname)s %(name)s %(message)s',
+    datefmt='%Y-%m-%dT%H:%M:%S'
+)
+handler.setFormatter(formatter)
+app.logger.addHandler(handler)
+app.logger.setLevel(log_level)
 
 app.register_blueprint(customer_blueprint.bp)
 app.register_blueprint(admin_user_blueprint.bp)

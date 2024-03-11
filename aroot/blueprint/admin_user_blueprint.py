@@ -96,7 +96,6 @@ def register_customer():
                 unit_of_work.commit()
                 return redirect(url_for("admin_user.index"))
     except CustomerValidationError as e:
-        print(e)
         flash(str(e))
     return render_template("admin_user/register_customer.html", customer=new_customer, login_name=admin_user.name)
 
