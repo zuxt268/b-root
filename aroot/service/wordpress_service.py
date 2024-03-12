@@ -1,3 +1,4 @@
+import datetime
 import os
 import requests
 from flask import current_app
@@ -38,7 +39,6 @@ class WordpressService:
     def posts(self, posts):
         results = []
         for post in posts:
-            print(post)
             if post["media_type"] == "IMAGE":
                 result = self.post_for_image(post)
                 results.append(result)
@@ -104,6 +104,7 @@ class WordpressService:
             "media_url": media["media_url"],
             "permalink": media["permalink"],
             "wordpress_link": resp_post["link"],
+            "created_at": datetime.datetime.now(),
         }
 
     def post_for_carousel(self, media):
@@ -120,6 +121,7 @@ class WordpressService:
             "media_url": media["media_url"],
             "permalink": media["permalink"],
             "wordpress_link": resp_post["link"],
+            "created_at": datetime.datetime.now(),
         }
 
 

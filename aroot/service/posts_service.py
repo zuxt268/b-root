@@ -11,7 +11,6 @@ class PostsService:
     def save_posts(self, posts, customer_id):
         for post in posts:
             post['customer_id'] = customer_id
-            post['created_at'] = datetime.datetime.now()
             self.save_post(post)
 
     def find_all_posts(self):
@@ -19,6 +18,9 @@ class PostsService:
 
     def find_by_customer_id(self, customer_id):
         return self.posts_repository.find_by_customer_id(customer_id)
+
+    def find_all(self):
+        return self.posts_repository.find_all()
 
     @staticmethod
     def abstract_targets(posts, media_list, start_date):

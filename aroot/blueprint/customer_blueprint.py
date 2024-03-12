@@ -40,7 +40,9 @@ def login():
                     session["customer_id"] = customer.id
                     unit_of_work.commit()
                     return redirect(url_for("customer.index"))
-            except CustomerNotFoundError | CustomerAuthError:
+            except CustomerNotFoundError:
+                error = "メールアドレスかパスワードが間違っています"
+            except CustomerAuthError:
                 error = "メールアドレスかパスワードが間違っています"
         flash(error)
     return render_template("customer/login.html")
@@ -62,7 +64,7 @@ def index():
         customer = customers_service.get_customer_by_id(customer_id)
         posts_repo = PostsRepository(unit_of_work.session)
         posts_service = PostsService(posts_repo)
-        posts = posts_service.find_all_posts()
+        posts = posts_service.find_by_customer_id(customer_id)
         unit_of_work.commit()
     return render_template("customer/index.html", customer=customer, posts=posts)
 

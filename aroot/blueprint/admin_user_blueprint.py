@@ -4,6 +4,7 @@ from flask import Blueprint, flash, g, session, redirect, render_template, reque
 
 from aroot.repository.admin_user_repository import AdminUserRepository
 from aroot.repository.customers_repository import CustomersRepository
+from aroot.repository.posts_repository import PostsRepository
 from aroot.service.admin_users import AdminUserValidator, AdminUser
 from aroot.service.admin_users_service import (
     AdminUsersService,
@@ -14,6 +15,8 @@ from aroot.service.admin_users_service import (
 from aroot.repository.unit_of_work import UnitOfWork
 from aroot.service.customers import Customer, CustomerValidator
 from aroot.service.customers_service import CustomersService, CustomerValidationError
+from aroot.service.posts_service import PostsService
+from aroot.service.sendgrid_service import SendGridService
 
 bp = Blueprint("admin_user", __name__)
 
@@ -68,10 +71,13 @@ def index():
         admin_user = admin_user_service.find_by_id(admin_user_id)
         customers_repo = CustomersRepository(unit_of_work.session)
         customer_service = CustomersService(customers_repo)
+        posts_repo = PostsRepository(unit_of_work.session)
+        posts_service = PostsService(posts_repo)
         customers = customer_service.find_all()
         admin_users = admin_user_service.find_all()
+        posts = posts_service.find_all()
         unit_of_work.commit()
-    return render_template("admin_user/index.html", customers=customers, admin_users=admin_users, login_name=admin_user.name)
+    return render_template("admin_user/index.html", posts=posts, customers=customers, admin_users=admin_users, login_name=admin_user.name)
 
 
 @bp.route("/admin/register_customer", methods=("GET", "POST"))
