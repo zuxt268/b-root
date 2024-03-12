@@ -16,7 +16,7 @@ app.config.from_mapping(
 
 log_level = logging.DEBUG
 
-handler = RotatingFileHandler('app.log', maxBytes=10000, backupCount=1)
+handler = logging.FileHandler('app.log')
 handler.setLevel(log_level)
 formatter = jsonlogger.JsonFormatter(
     '%(asctime)s %(levelname)s %(name)s %(message)s',

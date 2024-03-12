@@ -38,6 +38,7 @@ class WordpressService:
     def posts(self, posts):
         results = []
         for post in posts:
+            print(post)
             if post["media_type"] == "IMAGE":
                 result = self.post_for_image(post)
                 results.append(result)
@@ -54,10 +55,10 @@ class WordpressService:
         }
         with open(image_path, 'rb') as img:
             binary = img.read()
-            response = requests.post('/wp-json/wp/v2/media', headers=headers, data=binary, auth=self.auth)
+            response = requests.post(f"https://{self.wordpress_url}/wp-json/wp/v2/media", headers=headers, data=binary, auth=self.auth)
             current_app.logger.info(f"response: {response.json()}, status: {response.status_code}")
             if 200 <= response.status_code < 300:
-                return {"source_url": response["source_url"], "media_id": response["id"]}
+                return {"source_url": response.json()["source_url"], "media_id": response.json()["id"]}
             raise WordpressApiError(response.json())
 
     def transfer_image(self, media_url):
@@ -83,41 +84,41 @@ class WordpressService:
             'status': 'publish',
             'featured_media': media_id
         }
-        response = requests.post(f"{self.wordpress_url}/wp-json/wp/v2/posts", headers=headers, json=data, auth=self.auth)
+        response = requests.post(f"https://{self.wordpress_url}/wp-json/wp/v2/posts", headers=headers, json=data, auth=self.auth)
         current_app.logger.info(f"response: {response.json()}, status: {response.status_code}")
         if 200 <= response.status_code < 300:
             return response.json()
         raise WordpressApiError(response.json())
 
-    def post_for_image(self, post):
-        resp_upload = self.transfer_image(post)
-        html = self.get_html_for_image(post.get("caption", " "), resp_upload["source_url"])
+    def post_for_image(self, media):
+        resp_upload = self.transfer_image(media["media_url"])
+        html = self.get_html_for_image(media.get("caption", " "), resp_upload["source_url"])
         resp_post = self.create_post(
-            self.get_title(post.get("caption", " ")),
+            self.get_title(media.get("caption", " ")),
             html,
-            resp_upload["source_url"],
+            int(resp_upload["media_id"]),
         )
         return {
-            "media_id": resp_upload["media_id"],
-            "timestamp": post["timestamp"],
-            "media_url": post["media_url"],
-            "permalink": post["permalink"],
+            "media_id": media["id"],
+            "timestamp": media["timestamp"],
+            "media_url": media["media_url"],
+            "permalink": media["permalink"],
             "wordpress_link": resp_post["link"],
         }
 
-    def post_for_carousel(self, post):
-        resp_uploads = self.transfer_images(post)
-        html = self.get_html_for_carousel(post.get("caption", " "), resp_uploads)
+    def post_for_carousel(self, media):
+        resp_uploads = self.transfer_images(media)
+        html = self.get_html_for_carousel(media.get("caption", " "), resp_uploads)
         resp_post = self.create_post(
-            post.get("caption", " "),
+            media.get("caption", " "),
             html,
-            resp_uploads[0]["media_id"]
+            int(resp_uploads[0]["media_id"])
         )
         return {
-            "media_id": resp_uploads[0]["media_id"],
-            "timestamp": post["timestamp"],
-            "media_url": post["media_url"],
-            "permalink": post["permalink"],
+            "media_id": media["id"],
+            "timestamp": media["timestamp"],
+            "media_url": media["media_url"],
+            "permalink": media["permalink"],
             "wordpress_link": resp_post["link"],
         }
 

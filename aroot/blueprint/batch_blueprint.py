@@ -28,7 +28,7 @@ def execute():
                 linked_post = posts_service.find_by_customer_id(customer.id)
                 targets = posts_service.abstract_targets(linked_post, media_list, customer.start_date)
                 results = wordpress_service.posts(targets)
-                posts_service.save_posts(results)
+                posts_service.save_posts(results, customer.id)
                 current_app.logger.info(f"<End>")
             except Exception as e:
                 current_app.logger.info(str(e))

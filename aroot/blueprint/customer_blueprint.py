@@ -1,6 +1,6 @@
 import functools
 
-from flask import Blueprint, flash, g, session, redirect, render_template, request, url_for, jsonify
+from flask import Blueprint, flash, g, session, redirect, render_template, request, url_for, jsonify, current_app
 
 from aroot.repository.posts_repository import PostsRepository
 from aroot.repository.unit_of_work import UnitOfWork
@@ -121,11 +121,12 @@ def post_wordpress():
             posted = wordpress_service.posts(request.json)
             posts_repo = PostsRepository(unit_of_work.session)
             posts_service = PostsService(posts_repo)
-            posts_service.save_posts(posted)
+            posts_service.save_posts(posted, customer_id)
             unit_of_work.commit()
             return jsonify({"status": "success"})
     except Exception as e:
-        return jsonify({"error": str(e)})
+        raise e
+        # return jsonify({"error": str(e)})
 
 
 
