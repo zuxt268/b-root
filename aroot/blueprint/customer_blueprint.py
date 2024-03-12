@@ -91,7 +91,7 @@ def facebook_auth():
 @login_required
 def get_instagram():
     try:
-        with UnitOfWork as unit_of_work:
+        with UnitOfWork() as unit_of_work:
             customers_repo = CustomersRepository(unit_of_work.session)
             customer_service = CustomersService(customers_repo)
             customer_id = session.get("customer_id")
@@ -112,7 +112,7 @@ def get_instagram():
 @login_required
 def post_wordpress():
     try:
-        with UnitOfWork as unit_of_work:
+        with UnitOfWork() as unit_of_work:
             customers_repo = CustomersRepository(unit_of_work.session)
             customer_service = CustomersService(customers_repo)
             customer_id = session.get("customer_id")

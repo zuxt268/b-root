@@ -1,5 +1,6 @@
 import os
 import requests
+from flask import current_app
 
 from requests.auth import HTTPBasicAuth
 from urllib.request import urlretrieve
@@ -46,13 +47,15 @@ class WordpressService:
         return results
 
     def upload_image(self, image_path):
+        current_app.logger.info("upload_image is invoked")
         headers = {
             'Content-Type': 'image/jpeg',
             'Content-Disposition': f'attachment; filename="{image_path}"'
         }
         with open(image_path, 'rb') as img:
             binary = img.read()
-            response = requests.post('/wp-json/wp/v2/media', headers=headers, data=binary, auth=self.auth).json()
+            response = requests.post('/wp-json/wp/v2/media', headers=headers, data=binary, auth=self.auth)
+            current_app.logger.info(f"response: {response.json()}, status: {response.status_code}")
             if 200 <= response.status_code < 300:
                 return {"source_url": response["source_url"], "media_id": response["id"]}
             raise WordpressApiError(response.json())
@@ -72,6 +75,7 @@ class WordpressService:
         return resp_uploads
 
     def create_post(self, title, content, media_id):
+        current_app.logger.info("create_post is invoked")
         headers = {'Content-Type': 'application/json'}
         data = {
             'title': title,
@@ -79,10 +83,11 @@ class WordpressService:
             'status': 'publish',
             'featured_media': media_id
         }
-        resp = requests.post(f"{self.wordpress_url}/wp-json/wp/v2/posts", headers=headers, json=data, auth=self.auth)
-        if 200 <= resp.status_code < 300:
-            return resp.json()
-        raise WordpressApiError(resp.json())
+        response = requests.post(f"{self.wordpress_url}/wp-json/wp/v2/posts", headers=headers, json=data, auth=self.auth)
+        current_app.logger.info(f"response: {response.json()}, status: {response.status_code}")
+        if 200 <= response.status_code < 300:
+            return response.json()
+        raise WordpressApiError(response.json())
 
     def post_for_image(self, post):
         resp_upload = self.transfer_image(post)

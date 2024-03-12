@@ -1,4 +1,4 @@
-from flask import Blueprint, flash, g, session, redirect, render_template, request, url_for, jsonify
+from flask import Blueprint, current_app, flash, g, session, redirect, render_template, request, url_for, jsonify
 
 from aroot.repository.unit_of_work import UnitOfWork
 from aroot.repository.customers_repository import CustomersRepository
@@ -22,12 +22,14 @@ def execute():
         meta_service = MetaService()
         for customer in customers:
             try:
+                current_app.logger.info(f"<Start> customer_id: {customer.id}, customer_name: {customer.name}")
                 wordpress_service = WordpressService(customer.wordpress_url)
                 media_list = meta_service.get_media_list(customer.facebook_token)
                 linked_post = posts_service.find_by_customer_id(customer.id)
                 targets = posts_service.abstract_targets(linked_post, media_list, customer.start_date)
                 results = wordpress_service.posts(targets)
                 posts_service.save_posts(results)
+                current_app.logger.info(f"<End>")
             except Exception as e:
-                print(e)
+                current_app.logger.info(str(e))
     return jsonify({"status": "success"})

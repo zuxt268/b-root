@@ -31,6 +31,12 @@ app.register_blueprint(admin_user_blueprint.bp)
 app.register_blueprint(batch_blueprint.bp)
 
 
+# @app.errorhandler(Exception)
+# def handle_exception(error):
+#     app.logger.error(error)
+#     return render_template("errors.html", errors=error)
+
+
 @app.route("/terms")
 def terms():
     return render_template("etc/terms.html")

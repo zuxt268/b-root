@@ -1,5 +1,6 @@
 import os
 import requests
+from flask import current_app
 
 
 class MetaService:
@@ -9,21 +10,25 @@ class MetaService:
         self.client_secret = os.getenv("META_CLIENT_SECRET")
 
     def get_long_term_token(self, access_token):
+        current_app.logger.info("get_long_term_token is invoked")
         params = dict()
         params['grant_type'] = 'fb_exchange_token'
         params['fb_exchange_token'] = access_token
         params['client_id'] = self.client_id
         params['client_secret'] = self.client_secret
         response = requests.post(self.base_url + "/oauth/access_token", params=params)
+        current_app.logger.info(f"response: {response.json()}, status: {response.status_code}")
         if 200 <= response.status_code < 300:
             return response.json()['access_token']
         raise MetaApiError(response.json())
 
     def get_instagram_account(self, access_token):
+        current_app.logger.info("get_instagram_account is invoked")
         params = dict()
         params['fields'] = "accounts{name,instagram_business_account}"
         params['access_token'] = access_token
         response = requests.get(self.base_url + "/me", params=params)
+        current_app.logger.info(f"response: {response.json()}, status: {response.status_code}")
         if 200 <= response.status_code < 300:
             facebook_pages = response.json()["accounts"]["data"]
             for i in facebook_pages:
@@ -36,15 +41,18 @@ class MetaService:
         params = dict()
         params["access_token"] = access_token
         response = requests.get(self.base_url + f"/{media_id}/media", params=params)
+        current_app.logger.info(f"response: {response.json()}, status: {response.status_code}")
         if 200 <= response.status_code < 300:
             return map(lambda x: x["id"], response.json()["data"])
         raise MetaApiError(response.json())
 
     def get_media(self, access_token, id):
+        current_app.logger.info("get_media is invoked")
         params = dict()
         params["access_token"] = access_token
         params['fields'] = "id,caption,media_url,timestamp,media_type,permalink,children{media_url}"
         response = requests.get(self.base_url + f"/{id}", params=params)
+        current_app.logger.info(f"response: {response.json()}, status: {response.status_code}")
         if 200 <= response.status_code < 300:
             return response.json()
         raise MetaApiError(response.json())
