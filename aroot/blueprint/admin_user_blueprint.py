@@ -96,9 +96,10 @@ def register_customer():
                 new_customer.set_wordpress_url(request.form["wordpress_url"])
                 new_customer.password = request.form["password"]
                 CustomerValidator.validate(new_customer)
+                new_customer.generate_hash_password()
                 customers_repo = CustomersRepository(unit_of_work.session)
                 customers_service = CustomersService(customers_repo)
-                customers_service.register_customer(new_customer)
+                customers_service.register_customer(new_customer.dict())
                 unit_of_work.commit()
                 return redirect(url_for("admin_user.index"))
     except CustomerValidationError as e:
@@ -135,6 +136,7 @@ def register_user():
                 new_admin_user.password = request.form["password"]
                 AdminUserValidator.validate(new_admin_user)
                 admin_user_service.check_use_email(new_admin_user.email)
+                new_admin_user.generate_hash_password()
                 admin_user_service.register_user(new_admin_user.dict())
                 unit_of_work.commit()
                 return redirect(url_for("admin_user.index"))

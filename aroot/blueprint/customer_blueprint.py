@@ -41,8 +41,10 @@ def login():
                     unit_of_work.commit()
                     return redirect(url_for("customer.index"))
             except CustomerNotFoundError:
+                current_app.logger.error("ユーザーがいない")
                 error = "メールアドレスかパスワードが間違っています"
             except CustomerAuthError:
+                current_app.logger.error("パスワードが違う")
                 error = "メールアドレスかパスワードが間違っています"
         flash(error)
     return render_template("customer/login.html")
@@ -84,8 +86,7 @@ def facebook_auth():
             customer_service.update_facebook_token(customer_id, long_token)
             unit_of_work.commit()
     except MetaApiError as e:
-        error = str(e)
-        flash(error)
+        return jsonify({"error": str(e)})
     return redirect(url_for("customer.index"))
 
 
@@ -127,8 +128,7 @@ def post_wordpress():
             unit_of_work.commit()
             return jsonify({"status": "success"})
     except Exception as e:
-        raise e
-        # return jsonify({"error": str(e)})
+        return jsonify({"error": str(e)})
 
 
 

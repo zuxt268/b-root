@@ -11,7 +11,7 @@ from aroot.service.wordpress_service import WordpressService
 bp = Blueprint("batch", __name__)
 
 
-@bp.route("/batch")
+@bp.route("/batch", methods=("POST",))
 def execute():
     with UnitOfWork() as unit_of_work:
         customer_repo = CustomersRepository(unit_of_work.session)

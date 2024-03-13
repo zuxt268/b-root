@@ -11,7 +11,7 @@ class AdminUserRepository:
         return self.session.query(AdminUsersModel).filter(AdminUsersModel.id == _id).first()
 
     def add(self, admin_user):
-        record = AdminUsersModel(**admin_user)
+        record = AdminUsersModel(**admin_user.dict())
         self.session.add(record)
         return AdminUser(**record.dict())
 
