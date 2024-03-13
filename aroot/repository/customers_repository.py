@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
-from aroot.repository.models import CustomersModel
-from aroot.service.customers import Customer
+from .models import CustomersModel
+from ..service.customers import Customer
 
 
 class CustomersRepository:

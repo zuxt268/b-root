@@ -1,5 +1,5 @@
 from werkzeug.security import check_password_hash, generate_password_hash
-from aroot.service.admin_users_service import AdminUserValidationError, AdminUserAuthError
+from .admin_users_service import AdminUserValidationError, AdminUserAuthError
 
 
 class AdminUser:

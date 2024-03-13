@@ -2,21 +2,21 @@ import functools
 
 from flask import Blueprint, flash, g, session, redirect, render_template, request, url_for, jsonify
 
-from aroot.repository.admin_user_repository import AdminUserRepository
-from aroot.repository.customers_repository import CustomersRepository
-from aroot.repository.posts_repository import PostsRepository
-from aroot.service.admin_users import AdminUserValidator, AdminUser
-from aroot.service.admin_users_service import (
+from ..repository.admin_user_repository import AdminUserRepository
+from ..repository.customers_repository import CustomersRepository
+from ..repository.posts_repository import PostsRepository
+from ..service.admin_users import AdminUserValidator, AdminUser
+from ..service.admin_users_service import (
     AdminUsersService,
     AdminUserNotFountError,
     AdminUserAuthError,
     AdminUserValidationError
 )
-from aroot.repository.unit_of_work import UnitOfWork
-from aroot.service.customers import Customer, CustomerValidator
-from aroot.service.customers_service import CustomersService, CustomerValidationError
-from aroot.service.posts_service import PostsService
-from aroot.service.sendgrid_service import SendGridService
+from ..repository.unit_of_work import UnitOfWork
+from ..service.customers import Customer, CustomerValidator
+from ..service.customers_service import CustomersService, CustomerValidationError
+from ..service.posts_service import PostsService
+
 
 bp = Blueprint("admin_user", __name__)
 

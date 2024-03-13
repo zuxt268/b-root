@@ -2,13 +2,13 @@ import functools
 
 from flask import Blueprint, flash, g, session, redirect, render_template, request, url_for, jsonify, current_app
 
-from aroot.repository.posts_repository import PostsRepository
-from aroot.repository.unit_of_work import UnitOfWork
-from aroot.repository.customers_repository import CustomersRepository, CustomersModel
-from aroot.service.customers_service import CustomersService, CustomerNotFoundError, CustomerAuthError
-from aroot.service.posts_service import PostsService
-from aroot.service.meta_service import MetaService, MetaApiError
-from aroot.service.wordpress_service import WordpressService
+from ..repository.posts_repository import PostsRepository
+from ..repository.unit_of_work import UnitOfWork
+from ..repository.customers_repository import CustomersRepository, CustomersModel
+from ..service.customers_service import CustomersService, CustomerNotFoundError, CustomerAuthError
+from ..service.posts_service import PostsService
+from ..service.meta_service import MetaService, MetaApiError
+from ..service.wordpress_service import WordpressService
 
 bp = Blueprint("customer", __name__)
 

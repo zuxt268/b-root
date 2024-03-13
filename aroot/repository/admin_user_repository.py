@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
-from aroot.repository.models import AdminUsersModel
-from aroot.service.admin_users import AdminUser
+from .models import AdminUsersModel
+from ..service.admin_users import AdminUser
 
 
 class AdminUserRepository:
