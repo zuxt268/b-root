@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import desc, text
-from .models import PostsModel, CustomersModel
-from ..service.posts import Post
+from aroot.repository.models import PostsModel, CustomersModel
+from aroot.service.posts import Post
 
 
 class PostsRepository:

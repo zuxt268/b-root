@@ -1,12 +1,12 @@
 from flask import Blueprint, current_app, flash, g, session, redirect, render_template, request, url_for, jsonify
 
-from ..repository.unit_of_work import UnitOfWork
-from ..repository.customers_repository import CustomersRepository
-from ..service.customers_service import CustomersService
-from ..repository.posts_repository import PostsRepository
-from ..service.meta_service import MetaService
-from ..service.posts_service import PostsService
-from ..service.wordpress_service import WordpressService
+from aroot.repository.unit_of_work import UnitOfWork
+from aroot.repository.customers_repository import CustomersRepository
+from aroot.service.customers_service import CustomersService
+from aroot.repository.posts_repository import PostsRepository
+from aroot.service.meta_service import MetaService
+from aroot.service.posts_service import PostsService
+from aroot.service.wordpress_service import WordpressService
 
 bp = Blueprint("batch", __name__)
 

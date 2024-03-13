@@ -12,10 +12,10 @@ from ..service.admin_users_service import (
     AdminUserAuthError,
     AdminUserValidationError
 )
-from ..repository.unit_of_work import UnitOfWork
-from ..service.customers import Customer, CustomerValidator
-from ..service.customers_service import CustomersService, CustomerValidationError
-from ..service.posts_service import PostsService
+from aroot.repository.unit_of_work import UnitOfWork
+from aroot.service.customers import Customer, CustomerValidator
+from aroot.service.customers_service import (CustomersService, CustomerValidationError)
+from aroot.service.posts_service import PostsService
 
 
 bp = Blueprint("admin_user", __name__)
