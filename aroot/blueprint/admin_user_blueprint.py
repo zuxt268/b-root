@@ -49,7 +49,9 @@ def login():
                     session["admin_user_id"] = admin_user.id
                     unit_of_work.commit()
                     return redirect(url_for("admin_user.index"))
-            except AdminUserNotFountError | AdminUserAuthError:
+            except AdminUserNotFountError:
+                error = "Email、またはPasswordが間違っています。"
+            except AdminUserAuthError:
                 error = "Email、またはPasswordが間違っています。"
         flash(error)
     return render_template("admin_user/login.html")

@@ -6,3 +6,5 @@ __pycache__
 aroot/service/__pychache__
 aroot/__pychache__
 aroot/app.log
+aroot/.idea
+aroot/.venv
