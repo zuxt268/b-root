@@ -1,5 +1,5 @@
 from werkzeug.security import check_password_hash, generate_password_hash
-from .customers_service import CustomerAuthError, CustomerValidationError
+from service.customers_service import CustomerAuthError, CustomerValidationError
 
 
 class Customer:

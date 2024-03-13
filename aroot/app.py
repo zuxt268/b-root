@@ -2,8 +2,8 @@ from flask import Flask, render_template
 import logging
 from logging.handlers import RotatingFileHandler
 from pythonjsonlogger import jsonlogger
-from aroot.blueprint import customer_blueprint, admin_user_blueprint
-from aroot.blueprint import batch_blueprint
+from blueprint import customer_blueprint, admin_user_blueprint
+from blueprint import batch_blueprint
 from dotenv import load_dotenv
 
 load_dotenv()
