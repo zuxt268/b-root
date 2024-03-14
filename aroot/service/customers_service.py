@@ -1,3 +1,4 @@
+import datetime
 
 
 class CustomerNotFoundError(Exception):
@@ -32,7 +33,7 @@ class CustomersService:
         raise CustomerNotFoundError("Customer with email {} not found".format(email))
 
     def update_facebook_token(self, id_, access_token):
-        self.customers_repository.update(id_, facebook_token=access_token)
+        self.customers_repository.update(id_, facebook_token=access_token, start_date=datetime.datetime.now())
 
     def find_all(self):
         return self.customers_repository.find_all()
