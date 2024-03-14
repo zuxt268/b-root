@@ -35,6 +35,7 @@ def login():
                 with UnitOfWork() as unit_of_work:
                     customer_repo = CustomersRepository(unit_of_work.session)
                     customer_service = CustomersService(customer_repo)
+                    customer_service = CustomersService(customer_repo)
                     customer = customer_service.get_customer_by_email(email)
                     customer.check_password_hash(password)
                     session["customer_id"] = customer.id
@@ -74,6 +75,7 @@ def index():
 @bp.route("/facebook/auth", methods=("POST",))
 @login_required
 def facebook_auth():
+    current_app.logger.info("facebook_auth is invoked")
     customer_id = session.get("customer_id")
     access_token = request.form["access_token"]
     try:

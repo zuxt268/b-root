@@ -175,8 +175,15 @@
         fb_btn.addEventListener("click", (event) => {
             document.getElementById("facebook_btn").disabled = true;
             FB.login(function(response){
+                // 
                 console.log(response);
                 console.log(response.authResponse);
+                for (const key in response.authResponse) {
+                  if (response.authResponse.hasOwnProperty(key)) {
+                    console.log(key + ": " + response.authResponse[key]);
+                  }
+                }
+                //
                 if (response.status === "connected") {
                     const accessToken = response.authResponse.accessToken;
                     post("/facebook/auth", {accessToken})
