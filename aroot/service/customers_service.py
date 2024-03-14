@@ -44,4 +44,4 @@ class CustomersService:
     def check_use_email(self, email):
         customer = self.customers_repository.find_by_email(email)
         if customer is not None:
-            raise CustomerValidationError("Emailは使われています。")
+            raise CustomerValidationError("Emailはすでに使われています。")
