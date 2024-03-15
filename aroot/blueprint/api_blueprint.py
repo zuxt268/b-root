@@ -1,4 +1,8 @@
+import base64
 import functools
+import hashlib
+import hmac
+import json
 import os
 
 from flask import Blueprint, flash, g, session, redirect, render_template, request, url_for, jsonify
@@ -22,12 +26,30 @@ from service.posts_service import PostsService
 bp = Blueprint("api", __name__)
 
 
+@bp.before_request
+def verification():
+    data = request.json
+    if not data or 'message' not in data or 'hmac' not in data:
+        return jsonify({'status': 'error', 'message': 'Bad Request: Missing required parameters'}), 400
+    message = json.dumps(data["message"], sort_keys=True)
+    received_hmac_base64 = data["hmac"]
+    received_hmac = base64.b64decode(received_hmac_base64)
+    hmac_obj = hmac.new(os.getenv("A_ROOT_SECRET_KEY").encode(), message.encode(), hashlib.sha256)
+    if hmac.compare_digest(hmac_obj.digest(), received_hmac) is False:
+        return jsonify({'status': 'error', 'message': 'permission denied'}), 403
+
+
+@bp.errorhandler(Exception)
+def handle_exception(e):
+    response = jsonify({'status': 'error', 'message': f"{e}"})
+    response.status_code = 500
+    return response
+
+
 @bp.route("/api/v1/customers", methods=('POST',))
 def post_customer():
-    customers = request.json
-    authorization = request.headers["Authorization"]
-    if authorization != os.getenv("A_ROOT_SECRET_KEY"):
-        return jsonify({"message": "authorization error"})
+    result = ""
+    customers = request.json["customers"]
     if customers is not None:
         with UnitOfWork() as unit_of_work:
             customers_repo = CustomersRepository(unit_of_work.session)
@@ -35,5 +57,16 @@ def post_customer():
             result = customers_service.register_customers(customers)
     return jsonify({"status": "success", "data": result})
 
+
+@bp.route("/api/v1/admin_users", methods=("POST",))
+def admin_users():
+    result = ""
+    admin_users = request.json["admin_users"]
+    if admin_users is not None:
+        with UnitOfWork() as unit_of_work:
+            admin_users_repo = AdminUserRepository(unit_of_work.session)
+            admin_users_service = AdminUsersService(admin_users_repo)
+            result = admin_users_service.register_users(admin_users)
+    return jsonify({"status": "success", "data": result})
 
 

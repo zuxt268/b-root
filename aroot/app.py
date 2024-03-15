@@ -2,8 +2,7 @@ from flask import Flask, render_template
 import logging
 from logging.handlers import RotatingFileHandler
 from pythonjsonlogger import jsonlogger
-from blueprint import customer_blueprint, admin_user_blueprint
-from blueprint import batch_blueprint
+from blueprint import customer_blueprint, admin_user_blueprint, batch_blueprint, api_blueprint
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -29,12 +28,13 @@ app.logger.setLevel(log_level)
 app.register_blueprint(customer_blueprint.bp)
 app.register_blueprint(admin_user_blueprint.bp)
 app.register_blueprint(batch_blueprint.bp)
+app.register_blueprint(api_blueprint.bp)
 
 
-# @app.errorhandler(Exception)
-# def handle_exception(error):
-#     app.logger.error(error)
-#     return render_template("errors.html", errors=error)
+@app.errorhandler(Exception)
+def handle_exception(error):
+    app.logger.error(error)
+    return render_template("errors.html", errors=error)
 
 
 @app.route("/terms")
