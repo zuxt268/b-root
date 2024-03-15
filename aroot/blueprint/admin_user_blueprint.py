@@ -103,7 +103,6 @@ def register_customer():
                 customers_service = CustomersService(customers_repo)
                 customers_service.check_use_email(request.form["email"])
                 customers_service.register_customer(new_customer.dict())
-                customers_service.register_customer(new_customer.dict())
                 unit_of_work.commit()
                 return redirect(url_for("admin_user.index"))
     except CustomerValidationError as e:

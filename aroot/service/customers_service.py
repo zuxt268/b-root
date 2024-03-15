@@ -20,6 +20,21 @@ class CustomersService:
     def register_customer(self, customer):
         return self.customers_repository.add(customer)
 
+    def register_customers(self, customers):
+        result = {
+            "success": [],
+            "fail": []
+        }
+        for customer in customers:
+            try:
+                self.register_customer(customer)
+                result["success"].append(customer.name)
+            except Exception as e:
+                result["fail"].append({"name": customer.name, "error": f"str(e)"})
+        return result
+
+
+
     def get_customer_by_id(self, customer_id):
         customer = self.customers_repository.find_by_id(customer_id)
         if customer is not None:
