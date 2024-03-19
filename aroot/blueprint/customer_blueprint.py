@@ -35,7 +35,6 @@ def login():
                 with UnitOfWork() as unit_of_work:
                     customer_repo = CustomersRepository(unit_of_work.session)
                     customer_service = CustomersService(customer_repo)
-                    customer_service = CustomersService(customer_repo)
                     customer = customer_service.get_customer_by_email(email)
                     customer.check_password_hash(password)
                     session["customer_id"] = customer.id
