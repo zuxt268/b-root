@@ -61,8 +61,8 @@ class MetaService:
         media_id = self.get_instagram_account(access_token)
         ids = self.get_media_ids(access_token, media_id)
         media_list = []
-        for id in ids:
-            media = self.get_media(access_token, id)
+        for _id in ids:
+            media = self.get_media(access_token, _id)
             media_list.append(media)
         return media_list
 

@@ -1,11 +1,12 @@
+import traceback
 from flask import Blueprint, current_app, flash, g, session, redirect, render_template, request, url_for, jsonify
-
 from repository.unit_of_work import UnitOfWork
 from repository.customers_repository import CustomersRepository
 from service.customers_service import CustomersService
 from repository.posts_repository import PostsRepository
 from service.meta_service import MetaService
 from service.posts_service import PostsService
+from service.slack_service import SlackService
 from service.wordpress_service import WordpressService
 
 bp = Blueprint("batch", __name__)
@@ -31,5 +32,9 @@ def execute():
                 posts_service.save_posts(results, customer.id)
                 current_app.logger.info(f"<End>")
             except Exception as e:
+                err_txt = str(e)
+                stack_trace = traceback.format_exc()
+                msg = f"```{err_txt}\n{stack_trace}```"
+                SlackService().send_alert(msg)
                 current_app.logger.info(str(e))
     return jsonify({"status": "success"})

@@ -1,5 +1,5 @@
 import functools
-
+import traceback
 from flask import Blueprint, flash, g, session, redirect, render_template, request, url_for, jsonify, current_app
 
 from repository.posts_repository import PostsRepository
@@ -8,6 +8,7 @@ from repository.customers_repository import CustomersRepository, CustomersModel
 from service.customers_service import CustomersService, CustomerNotFoundError, CustomerAuthError
 from service.posts_service import PostsService
 from service.meta_service import MetaService, MetaApiError
+from service.slack_service import SlackService
 from service.wordpress_service import WordpressService
 
 bp = Blueprint("customer", __name__)
@@ -129,6 +130,10 @@ def post_wordpress():
             unit_of_work.commit()
             return jsonify({"status": "success"})
     except Exception as e:
+        err_txt = str(e)
+        stack_trace = traceback.format_exc()
+        msg = f"```{err_txt}\n{stack_trace}```"
+        SlackService().send_alert(msg)
         return jsonify({"error": str(e)})
 
 
