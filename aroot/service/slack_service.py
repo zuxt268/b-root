@@ -18,17 +18,15 @@ class SlackService(object):
             raise ValueError(f"Request to Slack returned an error {response.status_code}, the response is:\n{response.text}")
 
     def send_alert(self, message):
-        payload = {
+        self.request({
             "icon_emoji": ":cold_sweat:",
             "username": "A-Root",
             "text": f"<@U04P797HYPM>\n{message}"
-        }
-        self.request(payload)
+        })
 
     def send_message(self, message):
-        payload = {
-            "icon_emoji": ":cold_sweat:",
+        self.request({
+            "icon_emoji": ":wink:",
             "username": "A-Root",
-            "text": f"{message}"
-        }
-        self.request(payload)
+            "text": message
+        })

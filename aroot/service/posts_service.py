@@ -31,7 +31,7 @@ class PostsService:
         for media in media_list:
             if media["id"] in linked_post_id_list:
                 continue
-            media_timestamp = datetime.datetime.strptime(media["timestamp"], "%Y-%m-%dT%H:%M:%S%z").replace(tzinfo=None)
+            media_timestamp = datetime.datetime.strptime(media["timestamp"], "%Y-%m-%dT%H:%M:%S%z")
             if media_timestamp < start_date:
                 continue
             if media["media_type"] != "IMAGE" and media["media_type"] != "CAROUSEL_ALBUM":
