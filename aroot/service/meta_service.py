@@ -30,10 +30,10 @@ class MetaService:
         response = requests.get(self.base_url + "/me", params=params)
         current_app.logger.info(f"response: {response.json()}, status: {response.status_code}")
         if 200 <= response.status_code < 300:
-            facebook_pages = response.json()["accounts"]["data"]
-            for i in facebook_pages:
-                instagram_id = i["instagram_business_account"]["id"]
-                return instagram_id
+            if "accounts" in response.json():
+                facebook_pages = response.json()["accounts"]["data"]
+                for i in facebook_pages:
+                    return i["instagram_business_account"]["id"]
             raise MetaApiError("Not found instagram_business_account")
         raise MetaApiError(response.json())
 
@@ -44,7 +44,10 @@ class MetaService:
         params['access_token'] = access_token
         response = requests.get(self.base_url + "/" + instagram_id, params=params)
         if 200 <= response.status_code < 300:
-            return response.json()["username"]
+            if "username" in response.json():
+                return response.json()["username"]
+            else:
+                raise MetaApiError("Not found username")
         raise MetaApiError(response.json())
 
     def get_media_ids(self, access_token, media_id):

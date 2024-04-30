@@ -1,10 +1,10 @@
 import functools
 import traceback
-from flask import Blueprint, flash, g, session, redirect, render_template, request, url_for, jsonify, current_app
+from flask import Blueprint, flash, session, redirect, render_template, request, url_for, jsonify, current_app
 
 from repository.posts_repository import PostsRepository
 from repository.unit_of_work import UnitOfWork
-from repository.customers_repository import CustomersRepository, CustomersModel
+from repository.customers_repository import CustomersRepository
 from service.customers_service import CustomersService, CustomerNotFoundError, CustomerAuthError
 from service.posts_service import PostsService
 from service.meta_service import MetaService, MetaApiError
@@ -89,7 +89,11 @@ def facebook_auth():
             customer_service.update_customer_after_login(customer_id, long_token, instagram_id, user_name)
             unit_of_work.commit()
     except MetaApiError as e:
-        return jsonify({"error": str(e)})
+        err_txt = str(e)
+        stack_trace = traceback.format_exc()
+        msg = f"```{err_txt}\n{stack_trace}```"
+        SlackService().send_alert(msg)
+        flash(f"Instagramアカウントの取得に失敗しました。設定を確認してください: {str(e)}")
     return redirect(url_for("customer.index"))
 
 
