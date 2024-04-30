@@ -22,8 +22,8 @@ class MetaService:
             return response.json()['access_token']
         raise MetaApiError(response.json())
 
-    def get_instagram_account(self, access_token):
-        current_app.logger.info("get_instagram_account is invoked")
+    def get_instagram_account_id(self, access_token):
+        current_app.logger.info("get_instagram_account_id is invoked")
         params = dict()
         params['fields'] = "accounts{name,instagram_business_account}"
         params['access_token'] = access_token
@@ -37,6 +37,16 @@ class MetaService:
             raise MetaApiError("Not found instagram_business_account")
         raise MetaApiError(response.json())
 
+    def get_instagram_account_name(self, access_token, instagram_id):
+        current_app.logger.info("get_instagram_account_name is invoked")
+        params = dict()
+        params["fields"] = "username"
+        params['access_token'] = access_token
+        response = requests.get(self.base_url + "/" + instagram_id, params=params)
+        if 200 <= response.status_code < 300:
+            return response.json()["username"]
+        raise MetaApiError(response.json())
+
     def get_media_ids(self, access_token, media_id):
         params = dict()
         params["access_token"] = access_token
@@ -46,20 +56,19 @@ class MetaService:
             return map(lambda x: x["id"], response.json()["data"])
         raise MetaApiError(response.json())
 
-    def get_media(self, access_token, id):
+    def get_media(self, access_token, _id):
         current_app.logger.info("get_media is invoked")
         params = dict()
         params["access_token"] = access_token
         params['fields'] = "id,caption,media_url,timestamp,media_type,permalink,children{media_url}"
-        response = requests.get(self.base_url + f"/{id}", params=params)
+        response = requests.get(self.base_url + f"/{_id}", params=params)
         current_app.logger.info(f"response: {response.json()}, status: {response.status_code}")
         if 200 <= response.status_code < 300:
             return response.json()
         raise MetaApiError(response.json())
 
-    def get_media_list(self, access_token):
-        media_id = self.get_instagram_account(access_token)
-        ids = self.get_media_ids(access_token, media_id)
+    def get_media_list(self, access_token, instagram_business_account_id):
+        ids = self.get_media_ids(access_token, instagram_business_account_id)
         media_list = []
         for _id in ids:
             media = self.get_media(access_token, _id)

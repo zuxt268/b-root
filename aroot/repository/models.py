@@ -36,6 +36,8 @@ class CustomersModel(Base):
     wordpress_url = Column(String(255), nullable=False)
     facebook_token = Column(String(255))
     start_date = Column(DateTime)
+    instagram_business_account_id = Column(String(255))
+    instagram_business_account_name = Column(String(255))
 
     def dict(self):
         return {
@@ -46,6 +48,8 @@ class CustomersModel(Base):
             "wordpress_url": self.wordpress_url,
             "facebook_token": self.facebook_token,
             "start_date": self.start_date,
+            "instagram_business_account_id": self.instagram_business_account_id,
+            "instagram_business_account_name": self.instagram_business_account_name,
         }
 
 

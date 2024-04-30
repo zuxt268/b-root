@@ -56,7 +56,10 @@
             <!-- Circle Buttons -->
             <div class="card shadow mb-4">
                 <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">{{ customer.wordpress_url }}</h6>
+                    <h6 class="m-1 font-weight-bold">Wordpress: <span class="text-primary">{{ customer.wordpress_url }}</span></h6>
+                    {% if customer.instagram_business_account_name %}
+                    <h6 class="m-1 font-weight-bold">Instagram: <span class="text-primary">{{ customer.instagram_business_account_name }}({{ customer.instagram_business_account_id }})</span></h6>
+                    {% endif %}
                 </div>
                 <div class="card-body">
                     <div class="row">
@@ -176,6 +179,7 @@
             document.getElementById("facebook_btn").disabled = true;
             FB.login(function(response){
                 if (response.status === "connected") {
+                    showLoadingOverlay()
                     const accessToken = response.authResponse.accessToken;
                     post("/facebook/auth", {"access_token": accessToken})
                 } else {

@@ -48,6 +48,13 @@ class CustomersService:
     def update_facebook_token(self, id_, access_token):
         self.customers_repository.update(id_, facebook_token=access_token, start_date=datetime.datetime.now())
 
+    def update_customer_after_login(self, id_, access_token, instagram_business_account_id, instagram_user_name):
+        self.customers_repository.update(id_,
+                                         facebook_token=access_token,
+                                         start_date=datetime.datetime.now(),
+                                         instagram_business_account_id=instagram_business_account_id,
+                                         instagram_business_account_name=instagram_user_name)
+
     def find_all(self):
         return self.customers_repository.find_all()
 

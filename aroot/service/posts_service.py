@@ -25,9 +25,7 @@ class PostsService:
     @staticmethod
     def abstract_targets(posts, media_list, start_date):
         targets = []
-        linked_post_id_list = []
-        for post in posts:
-            linked_post_id_list.append(post.media_id)
+        linked_post_id_list = [post.media_id for post in posts]
         for media in media_list:
             if media["id"] in linked_post_id_list:
                 continue
