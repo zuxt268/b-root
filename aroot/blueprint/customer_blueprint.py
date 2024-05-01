@@ -140,7 +140,7 @@ def post_wordpress():
     except Exception as e:
         err_txt = str(e)
         stack_trace = traceback.format_exc()
-        msg = f"```{err_txt}\n{stack_trace}```"
+        msg = f"```{customer.name}\n\n{err_txt}\n\n{stack_trace}```"
         SlackService().send_alert(msg)
         return jsonify({"error": str(e)})
 

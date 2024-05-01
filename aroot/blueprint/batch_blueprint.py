@@ -1,4 +1,6 @@
 import traceback
+
+from threading import Thread, Lock
 from flask import Blueprint, current_app, flash, g, session, redirect, render_template, request, url_for, jsonify
 from repository.unit_of_work import UnitOfWork
 from repository.customers_repository import CustomersRepository
@@ -11,15 +13,18 @@ from service.wordpress_service import WordpressService
 
 bp = Blueprint("batch", __name__)
 
+lock = Lock()
 
-@bp.route("/batch", methods=("POST",))
-def execute():
+
+def process_batch():
+    lock.acquire()
+    SlackService().send_message("*<batch start>*")
     with UnitOfWork() as unit_of_work:
         customer_repo = CustomersRepository(unit_of_work.session)
         customer_service = CustomersService(customer_repo)
         posts_repo = PostsRepository(unit_of_work.session)
         posts_service = PostsService(posts_repo)
-        customers = customer_service.find_all()
+        customers = customer_service.find_already_linked()
         meta_service = MetaService()
         for customer in customers:
             try:
@@ -32,11 +37,19 @@ def execute():
                 targets = posts_service.abstract_targets(media_list, customer.start_date)
                 results = wordpress_service.posts(targets)
                 posts_service.save_posts(results, not_linked_media_ids, customer.id)
-                current_app.logger.info(f"<End>")
+                unit_of_work.commit()
             except Exception as e:
                 err_txt = str(e)
                 stack_trace = traceback.format_exc()
-                msg = f"```{err_txt}\n{stack_trace}```"
+                msg = f"```{customer.name}\n\n{err_txt}\n\n{stack_trace}```"
                 SlackService().send_alert(msg)
-                current_app.logger.info(str(e))
+                unit_of_work.rollback()
+    SlackService().send_message("*<batch end>*")
+    lock.release()
+
+
+@bp.route("/batch", methods=("POST",))
+def execute():
+    thread = Thread(target=process_batch)
+    thread.start()
     return jsonify({"status": "success"})

@@ -9,18 +9,11 @@ from flask import Blueprint, flash, g, session, redirect, render_template, reque
 
 from repository.admin_user_repository import AdminUserRepository
 from repository.customers_repository import CustomersRepository
-from repository.posts_repository import PostsRepository
-from service.admin_users import AdminUserValidator, AdminUser
 from service.admin_users_service import (
     AdminUsersService,
-    AdminUserNotFountError,
-    AdminUserAuthError,
-    AdminUserValidationError
 )
 from repository.unit_of_work import UnitOfWork
-from service.customers import Customer, CustomerValidator
 from service.customers_service import (CustomersService, CustomerValidationError)
-from service.posts_service import PostsService
 
 
 bp = Blueprint("api", __name__)
@@ -68,5 +61,3 @@ def admin_users():
             admin_users_service = AdminUsersService(admin_users_repo)
             result = admin_users_service.register_users(admin_users)
     return jsonify({"status": "success", "data": result})
-
-

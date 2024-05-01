@@ -58,6 +58,9 @@ class CustomersService:
     def find_all(self):
         return self.customers_repository.find_all()
 
+    def find_already_linked(self):
+        return self.customers_repository.find_already_linked()
+
     def remove_customer_by_id(self, customer_id):
         return self.customers_repository.delete(customer_id)
 
