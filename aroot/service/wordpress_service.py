@@ -104,7 +104,6 @@ class WordpressService:
             "media_url": media["media_url"],
             "permalink": media["permalink"],
             "wordpress_link": resp_post["link"],
-            "created_at": datetime.datetime.now(),
         }
 
     def post_for_carousel(self, media):
@@ -121,7 +120,6 @@ class WordpressService:
             "media_url": media["media_url"],
             "permalink": media["permalink"],
             "wordpress_link": resp_post["link"],
-            "created_at": datetime.datetime.now(),
         }
 
 

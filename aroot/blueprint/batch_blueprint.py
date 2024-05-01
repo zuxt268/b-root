@@ -25,11 +25,13 @@ def execute():
             try:
                 current_app.logger.info(f"<Start> customer_id: {customer.id}, customer_name: {customer.name}")
                 wordpress_service = WordpressService(customer.wordpress_url)
-                media_list = meta_service.get_media_list(customer.facebook_token, customer.instagram_business_account_id)
+                media_ids = meta_service.get_media_ids(customer.facebook_token, customer.instagram_business_account_id)
                 linked_post = posts_service.find_by_customer_id(customer.id)
-                targets = posts_service.abstract_targets(linked_post, media_list, customer.start_date)
+                not_linked_media_ids = posts_service.abstract_not_linked_media(linked_post, media_ids)
+                media_list = meta_service.get_media_list(customer.facebook_token, not_linked_media_ids)
+                targets = posts_service.abstract_targets(media_list, customer.start_date)
                 results = wordpress_service.posts(targets)
-                posts_service.save_posts(results, customer.id)
+                posts_service.save_posts(results, not_linked_media_ids, customer.id)
                 current_app.logger.info(f"<End>")
             except Exception as e:
                 err_txt = str(e)

@@ -1,9 +1,7 @@
 import uuid
-from datetime import datetime
 
 from sqlalchemy import Column, Integer, String, DateTime, Text, ForeignKey, create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
 
 
 Base = declarative_base()
@@ -59,11 +57,11 @@ class PostsModel(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     media_id = Column(String(45), nullable=False)
     customer_id = Column(Integer, ForeignKey('customers.id'), nullable=False)
-    timestamp = Column(String(45), nullable=False)
-    media_url = Column(Text, nullable=False)
-    created_at = Column(DateTime, nullable=False)
-    permalink = Column(String(255), nullable=False)
-    wordpress_link = Column(String(255), nullable=False)
+    timestamp = Column(String(45))
+    media_url = Column(Text)
+    created_at = Column(DateTime)
+    permalink = Column(String(255))
+    wordpress_link = Column(String(255))
 
     def dict(self):
         return {

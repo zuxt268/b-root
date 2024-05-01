@@ -70,8 +70,7 @@ class MetaService:
             return response.json()
         raise MetaApiError(response.json())
 
-    def get_media_list(self, access_token, instagram_business_account_id):
-        ids = self.get_media_ids(access_token, instagram_business_account_id)
+    def get_media_list(self, access_token, ids):
         media_list = []
         for _id in ids:
             media = self.get_media(access_token, _id)

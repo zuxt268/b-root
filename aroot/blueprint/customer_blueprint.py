@@ -69,6 +69,7 @@ def index():
         posts_service = PostsService(posts_repo)
         posts = posts_service.find_by_customer_id(customer_id)
         unit_of_work.commit()
+        print(posts)
     return render_template("customer/index.html", customer=customer, posts=posts)
 
 
@@ -108,10 +109,12 @@ def get_instagram():
             customer = customer_service.get_customer_by_id(customer_id)
             posts_repo = PostsRepository(unit_of_work.session)
             posts_service = PostsService(posts_repo)
-            posts = posts_service.find_by_customer_id(customer_id)
             meta_service = MetaService()
-            media_list = meta_service.get_media_list(customer.facebook_token, customer.instagram_business_account_id)
-            targets = posts_service.abstract_targets(posts, media_list, customer.start_date)
+            media_ids = meta_service.get_media_ids(customer.facebook_token, customer.instagram_business_account_id)
+            linked_post = posts_service.find_by_customer_id(customer.id)
+            not_linked_media_ids = posts_service.abstract_not_linked_media(linked_post, media_ids)
+            media_list = meta_service.get_media_list(customer.facebook_token, not_linked_media_ids)
+            targets = posts_service.abstract_targets(media_list, customer.start_date)
             unit_of_work.commit()
             return jsonify(targets)
     except MetaApiError as e:
@@ -131,7 +134,7 @@ def post_wordpress():
             posted = wordpress_service.posts(request.json)
             posts_repo = PostsRepository(unit_of_work.session)
             posts_service = PostsService(posts_repo)
-            posts_service.save_posts(posted, customer_id)
+            posts_service.save_posts(posted, [], customer_id)
             unit_of_work.commit()
             return jsonify({"status": "success"})
     except Exception as e:

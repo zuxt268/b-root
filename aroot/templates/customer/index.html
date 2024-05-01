@@ -97,15 +97,17 @@
                   </thead>
                   <tbody>
                   {% for post in posts %}
-                    <tr>
-                      <th scope="row">{{ post["created_at"] }}</th>
-                      <td>
-                          <a href="{{ post['permalink'] }}" target="_blank">{{ post["permalink"][0:35] }}...</a>
-                      </td>
-                      <td>
-                          <a href="{{ post['wordpress_link'] }}" target="_blank">{{ post["wordpress_link"][0:35] }}...</a>
-                      </td>
-                    </tr>
+                      {% if post["wordpress_link"] %}
+                        <tr>
+                          <th scope="row">{{ post["created_at"] }} UTC</th>
+                          <td>
+                              <a href="{{ post['permalink'] }}" target="_blank">{{ post["permalink"][0:35] }}...</a>
+                          </td>
+                          <td>
+                              <a href="{{ post['wordpress_link'] }}" target="_blank">{{ post["wordpress_link"][0:35] }}...</a>
+                          </td>
+                        </tr>
+                      {% endif %}
                   {% endfor %}
                   </tbody>
                 </table>
