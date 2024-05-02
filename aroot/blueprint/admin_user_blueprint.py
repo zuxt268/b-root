@@ -159,3 +159,16 @@ def delete_user():
             admin_user_service.remove_user(admin_user_id)
             unit_of_work.commit()
     return redirect(url_for("admin_user.index"))
+
+
+@bp.route("/admin/reset_customer", methods=("POST",))
+@admin_login_required
+def reset_customer():
+    customer_id = request.form["customer_id"]
+    if customer_id:
+        with UnitOfWork() as unit_of_work:
+            customer_repo = CustomersRepository(unit_of_work.session)
+            customer_service = CustomersService(customer_repo)
+            customer_service.reset_customer_info_by_id(customer_id)
+            unit_of_work.commit()
+    return redirect(url_for("admin_user.index"))

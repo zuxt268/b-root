@@ -64,6 +64,13 @@ class CustomersService:
     def remove_customer_by_id(self, customer_id):
         return self.customers_repository.delete(customer_id)
 
+    def reset_customer_info_by_id(self, id_):
+        self.customers_repository.update(id_,
+                                         facebook_token=None,
+                                         start_date=None,
+                                         instagram_business_account_id=None,
+                                         instagram_business_account_name=None)
+
     def check_use_email(self, email):
         customer = self.customers_repository.find_by_email(email)
         if customer is not None:

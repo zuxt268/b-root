@@ -29,7 +29,7 @@ class SendGridService:
         msg = Mail(from_email=self.from_email, to_emails=self.to_email, subject="From A-Root", html_content=content)
         resp = self.client.send(msg)
         response_body = json.loads(resp.body.decode('utf-8'))
-        current_app.logger.info(response_body)
+        print(response_body)
 
     def send_email(self, subject, body, to_email):
         pass

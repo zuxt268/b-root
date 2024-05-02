@@ -16,7 +16,7 @@ class SlackService(object):
             headers={"Content-Type": "application/json"},
         )
         if response.status_code != 200:
-            current_app.logger.error(response.text)
+            print(response.text)
             # raise ValueError(f"Request to Slack returned an error {response.status_code}, the response is:\n{response.text}")
 
     def send_alert(self, message):
