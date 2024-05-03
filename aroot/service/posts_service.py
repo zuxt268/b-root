@@ -3,6 +3,8 @@ import datetime
 
 
 class PostsService:
+    limit = 50
+
     def __init__(self, posts_repository):
         self.posts_repository = posts_repository
 
@@ -25,14 +27,15 @@ class PostsService:
                 "customer_id": customer_id,
             })
 
-    def find_all_posts(self):
-        return self.posts_repository.find_all()
-
     def find_by_customer_id(self, customer_id):
         return self.posts_repository.find_by_customer_id(customer_id)
 
-    def find_all(self):
-        return self.posts_repository.find_all()
+    def block_count(self):
+        return self.posts_repository.count() // PostsService.limit + 1
+
+    def find_all(self, page=1):
+        offset = (page - 1) * PostsService.limit
+        return self.posts_repository.find_all(limit=PostsService.limit, offset=offset)
 
     @staticmethod
     def abstract_targets(media_list, start_date):

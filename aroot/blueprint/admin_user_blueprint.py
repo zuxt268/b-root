@@ -66,6 +66,24 @@ def logout():
 @bp.route("/admin")
 @admin_login_required
 def index():
+    admin_page = request.args.get("admin_page")
+    if admin_page is None:
+        admin_page = 1
+    elif str(admin_page).isdecimal() is False:
+        admin_page = 1
+
+    customer_page = request.args.get("customer_page")
+    if customer_page is None:
+        customer_page = 1
+    elif str(customer_page).isdecimal() is False:
+        customer_page = 1
+
+    post_page = request.args.get("post_page")
+    if post_page is None:
+        post_page = 1
+    elif str(post_page).isdecimal() is False:
+        post_page = 1
+
     admin_user_id = session.get("admin_user_id")
     with UnitOfWork() as unit_of_work:
         admin_user_repo = AdminUserRepository(unit_of_work.session)
@@ -75,11 +93,25 @@ def index():
         customer_service = CustomersService(customers_repo)
         posts_repo = PostsRepository(unit_of_work.session)
         posts_service = PostsService(posts_repo)
-        customers = customer_service.find_all()
-        admin_users = admin_user_service.find_all()
-        posts = posts_service.find_all()
+        admin_users = admin_user_service.find_all(admin_page)
+        customers = customer_service.find_all(customer_page)
+        posts = posts_service.find_all(post_page)
+        admin_users_block = admin_user_service.block_count()
+        customers_block = customer_service.block_count()
+        posts_block = posts_service.block_count()
         unit_of_work.commit()
-    return render_template("admin_user/index.html", posts=posts, customers=customers, admin_users=admin_users, login_name=admin_user.name)
+    return render_template("admin_user/index.html",
+                           posts=posts,
+                           customers=customers,
+                           admin_users=admin_users,
+                           login_name=admin_user.name,
+                           admin_users_block=admin_users_block,
+                           customers_block=customers_block,
+                           posts_block=posts_block,
+                           admin_page=admin_page,
+                           customer_page=customer_page,
+                           post_page=post_page,
+                           )
 
 
 @bp.route("/admin/register_customer", methods=("GET", "POST"))

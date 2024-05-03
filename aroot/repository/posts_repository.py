@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from sqlalchemy import desc, text
+from sqlalchemy import desc, text, func
 from repository.models import PostsModel, CustomersModel
 from service.posts import Post
 
@@ -26,6 +26,9 @@ class PostsRepository:
         records = query.filter(PostsModel.customer_id == customer_id).order_by(desc(PostsModel.id)).all()
         return [Post(**record.dict()) for record in records]
 
+    def count(self):
+        return self.session.query(func.count(PostsModel.id)).scalar()
+
     def find_all(self, limit=None, offset=None):
         results = []
         records = self.session.execute(
@@ -42,7 +45,8 @@ customers.name as customer_name
 FROM b_root.posts as posts
 INNER JOIN b_root.customers as customers
 on posts.customer_id = customers.id 
-order by posts.id desc;''')
+order by posts.id desc
+limit :limit offset :offset;'''), {"limit": limit, "offset": offset}
         )
         for record in records:
             results.append(Post(

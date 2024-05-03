@@ -13,6 +13,8 @@ class AdminUserValidationError(Exception):
 
 
 class AdminUsersService:
+    limit = 30
+
     def __init__(self, repository):
         self.admin_users_repository = repository
 
@@ -28,8 +30,12 @@ class AdminUsersService:
             return admin_user
         raise AdminUserNotFountError("Admin User with id {} not found".format(_id))
 
-    def find_all(self):
-        return self.admin_users_repository.find_all()
+    def block_count(self):
+        return self.admin_users_repository.count() // AdminUsersService.limit + 1
+
+    def find_all(self, page=1):
+        offset = (page - 1) * AdminUsersService.limit
+        return self.admin_users_repository.find_all(limit=AdminUsersService.limit, offset=offset)
 
     def check_use_email(self, email):
         admin_user = self.admin_users_repository.find_by_email(email)
@@ -54,6 +60,4 @@ class AdminUsersService:
 
     def remove_user(self, admin_user):
         self.admin_users_repository.delete(admin_user)
-
-
 

@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from repository.models import CustomersModel
 from service.customers import Customer
-
+from sqlalchemy import func
 
 class CustomersRepository:
     def __init__(self, session: Session) -> None:
@@ -44,3 +44,6 @@ class CustomersRepository:
 
     def delete(self, _id):
         self.session.delete(self._get(_id))
+
+    def count(self):
+        return self.session.query(func.count(CustomersModel.id)).scalar()

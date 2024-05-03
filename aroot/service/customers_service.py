@@ -14,6 +14,8 @@ class CustomerValidationError(Exception):
 
 
 class CustomersService:
+    limit = 30
+
     def __init__(self, customers_repository):
         self.customers_repository = customers_repository
 
@@ -55,8 +57,12 @@ class CustomersService:
                                          instagram_business_account_id=instagram_business_account_id,
                                          instagram_business_account_name=instagram_user_name)
 
-    def find_all(self):
-        return self.customers_repository.find_all()
+    def block_count(self):
+        return self.customers_repository.count() // CustomersService.limit + 1
+
+    def find_all(self, page=1):
+        offset = (page - 1) * CustomersService.limit
+        return self.customers_repository.find_all(limit=CustomersService.limit, offset=offset)
 
     def find_already_linked(self):
         return self.customers_repository.find_already_linked()

@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 from repository.models import AdminUsersModel
 from service.admin_users import AdminUser
+from sqlalchemy import func
 
 
 class AdminUserRepository:
@@ -33,4 +34,7 @@ class AdminUserRepository:
 
     def delete(self, _id):
         self.session.delete(self._get(_id))
+
+    def count(self):
+        return self.session.query(func.count(AdminUsersModel.id)).scalar()
 
