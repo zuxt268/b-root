@@ -67,22 +67,29 @@ def logout():
 @admin_login_required
 def index():
     admin_page = request.args.get("admin_page")
+
     if admin_page is None:
         admin_page = 1
     elif str(admin_page).isdecimal() is False:
         admin_page = 1
+    else:
+        admin_page = int(admin_page)
 
     customer_page = request.args.get("customer_page")
     if customer_page is None:
         customer_page = 1
     elif str(customer_page).isdecimal() is False:
         customer_page = 1
+    else:
+        customer_page = int(customer_page)
 
     post_page = request.args.get("post_page")
     if post_page is None:
         post_page = 1
     elif str(post_page).isdecimal() is False:
         post_page = 1
+    else:
+        post_page = int(post_page)
 
     admin_user_id = session.get("admin_user_id")
     with UnitOfWork() as unit_of_work:
