@@ -3,6 +3,7 @@ from repository.models import CustomersModel
 from service.customers import Customer
 from sqlalchemy import func
 
+
 class CustomersRepository:
     def __init__(self, session: Session) -> None:
         self.session = session

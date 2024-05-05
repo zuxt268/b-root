@@ -3,7 +3,7 @@ import datetime
 
 
 class PostsService:
-    limit = 3
+    limit = 30
 
     def __init__(self, posts_repository):
         self.posts_repository = posts_repository
