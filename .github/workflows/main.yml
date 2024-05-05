@@ -18,10 +18,11 @@ jobs:
         username: ${{ secrets.SERVER_USER }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
-          cd /var/www/lucario
+          cd /var/www/b-root
+          docker-compose down
           git pull
-          docker compose build
-          docker compose up -d
+          docker-compose build
+          docker-compose up -d
 
     - name: Notify Slack
       uses: 8398a7/action-slack@v3
