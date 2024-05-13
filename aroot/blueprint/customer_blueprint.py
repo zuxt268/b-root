@@ -144,5 +144,3 @@ def post_wordpress():
         SlackService().send_alert(msg)
         return jsonify({"error": str(e)})
 
-
-

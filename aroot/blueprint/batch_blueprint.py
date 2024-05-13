@@ -1,7 +1,7 @@
 import traceback
 
 from threading import Thread, Lock
-from flask import Blueprint, current_app, flash, g, session, redirect, render_template, request, url_for, jsonify
+from flask import Blueprint, jsonify
 from repository.unit_of_work import UnitOfWork
 from repository.customers_repository import CustomersRepository
 from service.customers_service import CustomersService

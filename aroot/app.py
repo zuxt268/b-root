@@ -32,10 +32,15 @@ app.register_blueprint(batch_blueprint.bp)
 app.register_blueprint(api_blueprint.bp)
 
 
+@app.errorhandler(404)
+def handle_404(error):
+    app.logger.error(f'404 error: {error}')
+    return render_template("404.html"), 404
+
+
 @app.errorhandler(Exception)
 def handle_exception(error):
     app.logger.error(error)
-    SlackService().send_alert(error)
     return render_template("errors.html", errors=error)
 
 
