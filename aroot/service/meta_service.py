@@ -38,7 +38,8 @@ class MetaService:
             if "accounts" in response.json(): # 設定が正しくないと、ここがfalseになる。
                 facebook_pages = response.json()["accounts"]["data"]
                 for i in facebook_pages:
-                    return i["instagram_business_account"]["id"]
+                    if "instagram_business_account" in i and "id" in i["instagram_business_account"]:
+                        return i["instagram_business_account"]["id"]
             raise MetaApiError("Not found instagram_business_account")
         raise MetaApiError(response.json())
 

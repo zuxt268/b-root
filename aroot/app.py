@@ -4,6 +4,7 @@ from logging.handlers import RotatingFileHandler
 from pythonjsonlogger import jsonlogger
 from blueprint import customer_blueprint, admin_user_blueprint, batch_blueprint, api_blueprint
 from dotenv import load_dotenv
+from service.slack_service import SlackService
 
 load_dotenv()
 
@@ -34,6 +35,7 @@ app.register_blueprint(api_blueprint.bp)
 @app.errorhandler(Exception)
 def handle_exception(error):
     app.logger.error(error)
+    SlackService().send_alert(error)
     return render_template("errors.html", errors=error)
 
 
