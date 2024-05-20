@@ -16,15 +16,17 @@ class PostsService:
         linked_ids = []
         for post in posts:
             post['customer_id'] = customer_id
+            post['created_at'] = str(datetime.datetime.now(datetime.UTC))
             self.save_post(post)
-            linked_ids.append(post.media_id)
+            linked_ids.append(post["media_id"])
         # 連携対象にならない投稿も保存しておくことで、次回以降対象外にさせて、リクエスト数を節約する。
-        for not_link in not_linkeds:
-            if not_link.media_id in linked_ids:
+        for not_link_id in not_linkeds:
+            if not_link_id in linked_ids:
                 continue
             self.save_post({
-                "media_id": not_link.media_id,
+                "media_id": not_link_id,
                 "customer_id": customer_id,
+                "created_at": str(datetime.datetime.now(datetime.UTC))
             })
 
     def find_by_customer_id(self, customer_id):
@@ -51,11 +53,11 @@ class PostsService:
         return targets
 
     @staticmethod
-    def abstract_not_linked_media(posts, media_list):
+    def abstract_not_linked_media(linked_post, media_ids):
         targets = []
-        linked_post_id_list = [post.media_id for post in posts]
-        for media in media_list:
-            if media["id"] in linked_post_id_list:
+        linked_post_id_list = [post.media_id for post in linked_post]
+        for media_id in media_ids:
+            if media_id in linked_post_id_list:
                 continue
-            targets.append(media)
+            targets.append(media_id)
         return targets

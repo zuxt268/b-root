@@ -66,7 +66,12 @@ class MetaService:
         response = requests.get(self.base_url + f"/{media_id}/media", params=params)
         print(f"response: {response.json()}, status: {response.status_code}")
         if 200 <= response.status_code < 300:
-            return map(lambda x: x["id"], response.json()["data"])
+            media_ids = []
+            if "data" in response.json():
+                for data in response.json()["data"]:
+                    if "id" in data:
+                        media_ids.append(int(data["id"]))
+            return media_ids
         raise MetaApiError(response.json())
 
     def get_media(self, access_token, _id):

@@ -41,6 +41,7 @@ def handle_404(error):
 @app.errorhandler(Exception)
 def handle_exception(error):
     app.logger.error(error)
+    SlackService().send_alert(error)
     return render_template("errors.html", errors=error)
 
 
