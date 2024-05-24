@@ -41,6 +41,12 @@ class PostsService:
 
     @staticmethod
     def abstract_targets(media_list, start_date):
+        """
+        instagramから取得した投稿のデータのうち、連携開始日以降にあるデータを抽出する。
+        :param media_list: 取得したinstagramの投稿データのリスト
+        :param start_date: 認証が完了した日付。
+        :return: 連携すべきinstagramの投稿データのリスト
+        """
         targets = []
         for media in media_list:
             media_timestamp = datetime.datetime.strptime(media["timestamp"], "%Y-%m-%dT%H:%M:%S%z")
@@ -53,9 +59,15 @@ class PostsService:
         return targets
 
     @staticmethod
-    def abstract_not_linked_media(linked_post, media_ids):
+    def exclude_linked_media(linked_post, media_ids):
+        """
+
+        :param linked_post:
+        :param media_ids:
+        :return:
+        """
         targets = []
-        linked_post_id_list = [post.media_id for post in linked_post]
+        linked_post_id_list = [int(post.media_id) for post in linked_post]
         for media_id in media_ids:
             if media_id in linked_post_id_list:
                 continue

@@ -89,6 +89,12 @@ class MetaService:
         raise MetaApiError(response.json())
 
     def get_media_list(self, access_token, ids):
+        """
+        instagramからmedia_idをもとに投稿の詳細データを取得する。
+        :param access_token: facebookのアクセストークン
+        :param ids: instagramの投稿のidリスト
+        :return: 投稿の詳細データのリスト
+        """
         media_list = []
         for _id in ids:
             media = self.get_media(access_token, _id)

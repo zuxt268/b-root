@@ -27,7 +27,7 @@ def handle_customer(customer):
             wordpress_service = WordpressService(customer.wordpress_url)
             media_ids = meta_service.get_media_ids(customer.facebook_token, customer.instagram_business_account_id)
             linked_post = posts_service.find_by_customer_id(customer.id)
-            not_linked_media_ids = posts_service.abstract_not_linked_media(linked_post, media_ids)
+            not_linked_media_ids = posts_service.exclude_linked_media(linked_post, media_ids)
             media_list = meta_service.get_media_list(customer.facebook_token, not_linked_media_ids)
             targets = posts_service.abstract_targets(media_list, customer.start_date)
             results = wordpress_service.posts(targets)
