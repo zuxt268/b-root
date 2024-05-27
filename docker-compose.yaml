@@ -13,6 +13,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    networks:
+      - shared-network
   db:
     image: mysql:8
     shm_size: 1gb
@@ -30,7 +32,12 @@ services:
     expose:
       - 3306
       - 33060
+    networks:
+      - shared-network
 
 volumes:
   db-data:
 
+networks:
+  shared-network:
+    external: true
