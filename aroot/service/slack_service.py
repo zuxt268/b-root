@@ -30,5 +30,5 @@ class SlackService(object):
         self.request({
             "icon_emoji": ":wink:",
             "username": "A-Root",
-            "text": message
+            "text": f"{message}"
         })
