@@ -19,6 +19,7 @@ lock = Lock()
 
 def handle_customer(customer):
     with UnitOfWork() as unit_of_work:
+        logs = [{"name": customer.name}]
         posts_repo = PostsRepository(unit_of_work.session)
         posts_service = PostsService(posts_repo)
         meta_service = MetaService()
@@ -26,13 +27,18 @@ def handle_customer(customer):
             print(f"<Start> customer_id: {customer.id}, customer_name: {customer.name}")
             wordpress_service = WordpressService(customer.wordpress_url)
             media_ids = meta_service.get_media_ids(customer.facebook_token, customer.instagram_business_account_id)
+            logs.append({"media_ids": media_ids})
             linked_post = posts_service.find_by_customer_id(customer.id)
             not_linked_media_ids = posts_service.exclude_linked_media(linked_post, media_ids)
+            logs.append({"not_linked_media_ids": not_linked_media_ids})
             media_list = meta_service.get_media_list(customer.facebook_token, not_linked_media_ids)
             targets = posts_service.abstract_targets(media_list, customer.start_date)
+            logs.append({"targets": targets})
             results = wordpress_service.posts(targets)
             posts_service.save_posts(results, not_linked_media_ids, customer.id)
             unit_of_work.commit()
+            logs.append({"status": "success"})
+            SlackService().send_alert(logs)
         except Exception as e:
             err_txt = str(e)
             stack_trace = traceback.format_exc()
@@ -45,7 +51,6 @@ def process_batch():
     if lock.acquire(blocking=False) is False:
         print("block")
         return
-    SlackService().send_message("*<batch start>*")
 
     # Facebook認証が終わっている顧客の一覧を取得する
     with UnitOfWork() as unit_of_work:
@@ -61,7 +66,6 @@ def process_batch():
                 future.result()
             except Exception as exc:
                 print(f'Exception for customer {futures[future].name}: {str(exc)}')
-    SlackService().send_message("*<batch end>*")
     lock.release()
 
 
