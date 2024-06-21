@@ -34,7 +34,7 @@ class WordpressService:
 
     @staticmethod
     def get_title(caption):
-        return str(caption).split("\n")[0]
+        return str(caption).split("/n")[0]
 
     def posts(self, posts):
         results = []
