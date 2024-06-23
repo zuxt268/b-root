@@ -107,6 +107,7 @@ class WordpressService:
         return resp_uploads
 
     def create_post(self, title, content, media_id):
+        title = self.get_title(title)
         print("create_post is invoked")
         headers = {'Content-Type': 'application/json'}
         data = {
@@ -141,7 +142,7 @@ class WordpressService:
         resp_uploads = self.transfer_images(media)
         html = self.get_html_for_carousel(media.get("caption", " "), resp_uploads)
         resp_post = self.create_post(
-            media.get("caption", " "),
+            self.get_title(media.get("caption", " ")),
             html,
             int(resp_uploads[0]["media_id"])
         )
