@@ -107,7 +107,6 @@ class WordpressService:
 
     def create_post(self, title, content, media_id):
         title = self.get_title(title)
-        print(title)
         print("create_post is invoked")
         headers = {'Content-Type': 'application/json'}
         data = {
@@ -145,7 +144,7 @@ class WordpressService:
         html = self.get_html_for_carousel(media.get("caption", " "), resp_uploads)
         caption = media.get("caption", " ")
         resp_post = self.create_post(
-            self.get_title(caption),
+            caption,
             html,
             int(resp_uploads[0]["media_id"])
         )
@@ -162,7 +161,7 @@ class WordpressService:
         html = self.get_html_for_video(media.get("caption", " "), resp_upload["source_url"])
 
         resp_post = self.create_post(
-            self.get_title(media.get("caption", " ")),
+            media.get("caption", " "),
             html,
             int(resp_upload["media_id"]),
         )
