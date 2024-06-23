@@ -45,8 +45,7 @@ class WordpressService:
     @staticmethod
     def get_title(caption):
         capt = str(caption)
-        # next \\n
-        return capt.split("/n")[0]
+        return capt.split("\\n")[0]
 
     def posts(self, posts):
         results = []
@@ -108,6 +107,7 @@ class WordpressService:
 
     def create_post(self, title, content, media_id):
         title = self.get_title(title)
+        print(title)
         print("create_post is invoked")
         headers = {'Content-Type': 'application/json'}
         data = {
@@ -125,8 +125,10 @@ class WordpressService:
     def post_for_image(self, media):
         resp_upload = self.transfer_image(media["media_url"])
         html = self.get_html_for_image(media.get("caption", " "), resp_upload["source_url"])
+        caption = media.get("caption", " ")
+        print(caption)
         resp_post = self.create_post(
-            self.get_title(media.get("caption", " ")),
+            caption,
             html,
             int(resp_upload["media_id"]),
         )
@@ -141,8 +143,9 @@ class WordpressService:
     def post_for_carousel(self, media):
         resp_uploads = self.transfer_images(media)
         html = self.get_html_for_carousel(media.get("caption", " "), resp_uploads)
+        caption = media.get("caption", " ")
         resp_post = self.create_post(
-            self.get_title(media.get("caption", " ")),
+            self.get_title(caption),
             html,
             int(resp_uploads[0]["media_id"])
         )
