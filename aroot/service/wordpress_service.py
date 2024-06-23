@@ -3,6 +3,7 @@ import requests
 
 from requests.auth import HTTPBasicAuth
 from urllib.request import urlretrieve
+from service.slack_service import SlackService
 
 
 class WordpressService:
@@ -23,7 +24,7 @@ class WordpressService:
         return f"<div><img src={url} style='margin: 0 auto;' width='500px' height='500px'/></div>{contents}"
 
     def get_html_for_carousel(self, caption, resp_upload_list):
-        html = '<div class="aroot-wordpress-instagram-slider">'
+        html = '<div class="a-root-wordpress-instagram-slider">'
         for resp_upload in resp_upload_list:
             html += f"<div><img src={resp_upload['source_url']} style='margin: 0 auto;' width='500px' height='500px'/></div>"
         html += "</div>"
@@ -43,7 +44,9 @@ class WordpressService:
 
     @staticmethod
     def get_title(caption):
-        return str(caption).split("<br>")[0]
+        capt = str(caption)
+        SlackService().send_message(capt)
+        return capt.split("<br>")[0]
 
     def posts(self, posts):
         results = []
@@ -153,6 +156,7 @@ class WordpressService:
     def post_for_video(self, media):
         resp_upload = self.transfer_video(media["media_url"])
         html = self.get_html_for_video(media.get("caption", " "), resp_upload["source_url"])
+
         resp_post = self.create_post(
             self.get_title(media.get("caption", " ")),
             html,
