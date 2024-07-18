@@ -17,6 +17,7 @@ class AdminUser:
         self.password = generate_password_hash(self.password)
 
     def dict(self):
+        print("koko")
         result = {}
         if self.id is not None:
             result["id"] = self.id
