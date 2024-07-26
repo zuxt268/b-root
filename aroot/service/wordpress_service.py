@@ -115,6 +115,7 @@ class WordpressService:
             'status': 'publish',
             'featured_media': media_id
         }
+        SlackService.send_message(headers)
         response = requests.post(f"https://{self.wordpress_url}/wp-json/wp/v2/posts", headers=headers, json=data, auth=self.auth)
         print(f"response: {response.json()}, status: {response.status_code}")
         if 200 <= response.status_code < 300:
