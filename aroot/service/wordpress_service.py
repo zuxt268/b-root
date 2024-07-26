@@ -66,6 +66,7 @@ class WordpressService:
             'Content-Type': 'image/jpeg',
             'Content-Disposition': f'attachment; filename="{image_path}"'
         }
+
         with open(image_path, 'rb') as img:
             binary = img.read()
             response = requests.post(f"https://{self.wordpress_url}/wp-json/wp/v2/media", headers=headers, data=binary, auth=self.auth)
@@ -101,6 +102,7 @@ class WordpressService:
     def transfer_images(self, post):
         resp_uploads = []
         for post in post["children"]["data"]:
+            SlackService().send_message(post["media_url"])
             resp_upload = self.transfer_image(post["media_url"])
             resp_uploads.append(resp_upload)
         return resp_uploads
