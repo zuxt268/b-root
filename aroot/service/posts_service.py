@@ -53,7 +53,7 @@ class PostsService:
             start_date = start_date.replace(tzinfo=datetime.timezone.utc)
             if media_timestamp < start_date:
                 continue
-            if media["media_type"] != "IMAGE" and media["media_type"] != "CAROUSEL_ALBUM" and media["media_type"] == "VIDEO":
+            if media["media_type"] != "IMAGE" and media["media_type"] != "CAROUSEL_ALBUM" and media["media_type"] != "VIDEO":
                 continue
             targets.append(media)
         return targets
