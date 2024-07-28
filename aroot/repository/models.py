@@ -1,6 +1,6 @@
 import uuid
 
-from sqlalchemy import Column, Integer, String, DateTime, Text, ForeignKey, create_engine
+from sqlalchemy import Column, Integer, String, DateTime, Text, ForeignKey, create_engine, Boolean, DefaultClause
 from sqlalchemy.ext.declarative import declarative_base
 
 
@@ -36,6 +36,7 @@ class CustomersModel(Base):
     start_date = Column(DateTime)
     instagram_business_account_id = Column(String(255))
     instagram_business_account_name = Column(String(255))
+    delete_hash = Column(Boolean, default=False)
 
     def dict(self):
         return {
@@ -48,6 +49,7 @@ class CustomersModel(Base):
             "start_date": self.start_date,
             "instagram_business_account_id": self.instagram_business_account_id,
             "instagram_business_account_name": self.instagram_business_account_name,
+            "delete_hash": self.delete_hash,
         }
 
 

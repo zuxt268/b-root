@@ -25,7 +25,7 @@ def handle_customer(customer):
         meta_service = MetaService()
         try:
             print(f"<Start> customer_id: {customer.id}, customer_name: {customer.name}")
-            wordpress_service = WordpressService(customer.wordpress_url)
+            wordpress_service = WordpressService(customer.wordpress_url, customer.delete_hash)
             media_ids = meta_service.get_media_ids(customer.facebook_token, customer.instagram_business_account_id)
             logs.append({"media_ids": media_ids})
             linked_post = posts_service.find_by_customer_id(customer.id)

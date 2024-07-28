@@ -101,13 +101,20 @@
                                 </td>
                                 <td>
                                     {% if customer.facebook_token %}
-                                        <button value="{{ customer.id }}" type="button" style="width: 6rem;" class="reset_customer_btn btn btn-outline-warning btn-sm">Resetボタン</button>
+                                        <button value="{{ customer.id }}" type="button" style="width: 6rem;" class="reset_customer_btn btn btn-outline-warning btn-sm">認証Reset</button>
                                     {% else %}
-                                        <button value="{{ customer.id }}" type="button" style="width: 6rem;" class="btn btn-outline-warning btn-sm" disabled>Resetボタン</button>
+                                        <button value="{{ customer.id }}" type="button" style="width: 6rem;" class="btn btn-outline-warning btn-sm" disabled>認証Reset</button>
                                     {% endif %}
                                 </td>
                                 <td>
-                                    <button value="{{ customer.id }}" type="button" style="width: 6rem;" class="delete_customer_btn btn btn-outline-danger btn-sm">削除ボタン</button>
+                                    {% if customer.delete_hash == False %}
+                                        <button value="{{ customer.id }}" type="button" style="width: 6rem;" class="delete_hash_change_true btn btn-outline-secondary btn-sm">通常</button>
+                                    {% else %}
+                                        <button value="{{ customer.id }}" type="button" style="width: 6rem;" class="delete_hash_change_false btn btn-outline-success btn-sm">＃削除中</button>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <button value="{{ customer.id }}" type="button" style="width: 6rem;" class="delete_customer_btn btn btn-outline-danger btn-sm">削除</button>
                                 </td>
                             </tr>
                         {% endfor %}
@@ -318,6 +325,27 @@
             }
         });
     });
+    document.querySelectorAll(".delete_hash_change_true").forEach((ele) => {
+        ele.addEventListener("click", (event) => {
+            const customer_id = event.target.value;
+            if (window.confirm(`ID: ${customer_id} ハッシュタグを削除するように設定します`)) {
+                showLoadingOverlay();
+                event.target.disabled = true;
+                post("/admin/customer/delete_hash", {customer_id, "delete_hash": true});
+            }
+        });
+    });
+    document.querySelectorAll(".delete_hash_change_false").forEach((ele) => {
+        ele.addEventListener("click", (event) => {
+            const customer_id = event.target.value;
+            if (window.confirm(`ID: ${customer_id} ハッシュタグを削除を解除します`)) {
+                showLoadingOverlay();
+                event.target.disabled = true;
+                post("/admin/customer/delete_hash", {customer_id, "delete_hash": false});
+            }
+        });
+    });
+
 </script>
 <script type="text/javascript" src="//cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"></script>
 {% endblock %}

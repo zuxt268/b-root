@@ -75,6 +75,20 @@
                                 <input name="password" type="text" class="form-control form-control-user"
                                         id="password" placeholder="Password">
                             </div>
+                            <div class="form-group">
+                                <select id="delete_hash" class="form-control" aria-label="Default select example">
+                                  <option value="0"
+                                          {% if customer.delete_hash %}
+                                            selected
+                                          {% endif %}
+                                  >ー</option>
+                                  <option value="1"
+                                          {% if customer.delete_hash %}
+                                            selected
+                                          {% endif %}
+                                  >ハッシュタグの除去</option>
+                                </select>
+                            </div>
                             <input id="save" type="submit" value="登録" class="btn btn-primary btn-user btn-block" />
                         </form>
                         <hr>
@@ -92,7 +106,9 @@
         const email = document.getElementById("email").value;
         const wordpress_url = document.getElementById("wordpress_url").value;
         const password = document.getElementById("password").value;
-        post("/admin/register_customer", { name, email, wordpress_url, password })
+        const delete_hash = document.getElementById("delete_hash").value;
+        console.log(delete_hash)
+        post("/admin/register_customer", { name, email, wordpress_url, password, delete_hash })
     });
 </script>
 

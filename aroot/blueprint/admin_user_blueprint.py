@@ -17,7 +17,6 @@ from service.customers import Customer, CustomerValidator
 from service.customers_service import (CustomersService, CustomerValidationError)
 from service.posts_service import PostsService
 
-
 bp = Blueprint("admin_user", __name__)
 
 
@@ -28,6 +27,7 @@ def admin_login_required(view):
         if admin_user_id is None:
             return redirect(url_for("admin_user.login"))
         return view(**kwargs)
+
     return wrapped_view
 
 
@@ -136,6 +136,7 @@ def register_customer():
                 new_customer.email = request.form["email"]
                 new_customer.set_wordpress_url(request.form["wordpress_url"])
                 new_customer.password = request.form["password"]
+                new_customer.delete_hash = request.form["delete_hash"]
                 CustomerValidator.validate(new_customer)
                 new_customer.generate_hash_password()
                 customers_repo = CustomersRepository(unit_of_work.session)
@@ -161,6 +162,19 @@ def delete_customer():
             unit_of_work.commit()
     return redirect(url_for("admin_user.index"))
 
+
+@bp.route("/admin/customer/delete_hash", methods=("POST",))
+def change_delete_hash():
+    customer_id = request.form["customer_id"]
+    with UnitOfWork() as unit_of_work:
+        customer_repo = CustomersRepository(unit_of_work.session)
+        customer_service = CustomersService(customer_repo)
+        if request.form["delete_hash"] == "true":
+            customer_service.set_delete_hash(customer_id)
+        else:
+            customer_service.remove_delete_hash(customer_id)
+        unit_of_work.commit()
+    return redirect(url_for("admin_user.index"))
 
 @bp.route('/admin/register_user', methods=('GET', 'POST'))
 @admin_login_required

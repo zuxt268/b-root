@@ -1,4 +1,6 @@
 import os
+import re
+
 import requests
 
 from requests.auth import HTTPBasicAuth
@@ -7,14 +9,16 @@ from service.slack_service import SlackService
 
 
 class WordpressService:
-    def __init__(self, wordpress_url):
+    def __init__(self, wordpress_url, delete_hash):
         self.wordpress_url = wordpress_url
+        self.delete_hash = delete_hash
         self.auth = HTTPBasicAuth(os.getenv("WORDPRESS_ADMIN_ID"), os.getenv("WORDPRESS_ADMIN_PASSWORD"))
 
     @staticmethod
     def get_contents_html(caption):
+        caption = re.sub(r'#\S+', '', str(caption))
         contents = "<p>"
-        for row in str(caption).split("/n"):
+        for row in caption.split("/n"):
             contents += f"{row}<br>"
         contents += "</p>"
         return contents
@@ -57,7 +61,8 @@ class WordpressService:
                 result = self.post_for_carousel(post)
                 results.append(result)
             elif post["media_type"] == "VIDEO":
-                pass  # TODO
+                result = self.post_for_video(post)
+                results.append(result)
         return results
 
     def upload_image(self, image_path):
@@ -102,7 +107,6 @@ class WordpressService:
     def transfer_images(self, post):
         resp_uploads = []
         for post in post["children"]["data"]:
-            SlackService().send_message(post["media_url"])
             resp_upload = self.transfer_image(post["media_url"])
             resp_uploads.append(resp_upload)
         return resp_uploads

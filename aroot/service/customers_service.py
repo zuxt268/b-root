@@ -77,6 +77,12 @@ class CustomersService:
                                          instagram_business_account_id=None,
                                          instagram_business_account_name=None)
 
+    def set_delete_hash(self, id_):
+        self.customers_repository.update(id_, delete_hash=True)
+
+    def remove_delete_hash(self, id_):
+        self.customers_repository.update(id_, delete_hash=False)
+
     def check_use_email(self, email):
         customer = self.customers_repository.find_by_email(email)
         if customer is not None:
