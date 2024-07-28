@@ -15,8 +15,10 @@ class WordpressService:
         self.auth = HTTPBasicAuth(os.getenv("WORDPRESS_ADMIN_ID"), os.getenv("WORDPRESS_ADMIN_PASSWORD"))
 
     @staticmethod
-    def get_contents_html(caption):
-        caption = re.sub(r'#\S+', '', str(caption))
+    def get_contents_html(caption, delete_hash):
+        caption = str(caption)
+        if delete_hash:
+            caption = re.sub(r'#\S+', '', str(caption))
         contents = "<p>"
         for row in caption.split("/n"):
             contents += f"{row}<br>"
@@ -24,7 +26,7 @@ class WordpressService:
         return contents
 
     def get_html_for_image(self, caption, url):
-        contents = self.get_contents_html(caption)
+        contents = self.get_contents_html(caption, self.delete_hash)
         return f"<div><img src={url} style='margin: 0 auto;' width='500px' height='500px'/></div>{contents}"
 
     def get_html_for_carousel(self, caption, resp_upload_list):
@@ -32,11 +34,11 @@ class WordpressService:
         for resp_upload in resp_upload_list:
             html += f"<div><img src={resp_upload['source_url']} style='margin: 0 auto;' width='500px' height='500px'/></div>"
         html += "</div>"
-        html += self.get_contents_html(caption)
+        html += self.get_contents_html(caption, self.delete_hash)
         return html
 
     def get_html_for_video(self, caption, url):
-        contents = self.get_contents_html(caption)
+        contents = self.get_contents_html(caption, self.delete_hash)
         video_html = f"""
         <div>
             <video src={url} style='margin: 0 auto;' width='500px' height='500px' controls>
