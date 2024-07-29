@@ -26,6 +26,7 @@ services:
       start_period: 30s
     volumes:
       - db-data:/var/lib/mysql
+      - ./db/my.cnf:/etc/mysql/conf.d/my.cnf
     environment:
       - MYSQL_DATABASE=b_root
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
