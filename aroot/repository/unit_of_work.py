@@ -19,10 +19,8 @@ class UnitOfWork:
         try:
             if exc_type is not None:
                 self.session.rollback()
+        finally:
             self.session.close()
-        except Exception as e:
-            self.session.close()
-            raise e
 
     def commit(self):
         self.session.commit()
