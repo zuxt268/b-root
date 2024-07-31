@@ -8,7 +8,7 @@ class UnitOfWork:
     def __init__(self):
         connection_string = f"mysql+pymysql://{os.getenv('DATABASE_USER')}:{os.getenv('DATABASE_PASSWORD')}@{os.getenv('DATABASE_HOST')}/{os.getenv('DATABASE_SCHEME')}"
         self.session_maker = sessionmaker(
-            bind=create_engine(connection_string)
+            bind=create_engine(connection_string, pool_size=5, max_overflow=10, pool_recycle=3600)
         )
 
     def __enter__(self):
