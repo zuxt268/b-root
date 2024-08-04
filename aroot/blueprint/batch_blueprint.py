@@ -37,8 +37,6 @@ def handle_customer(customer):
             results = wordpress_service.posts(targets)
             posts_service.save_posts(results, not_linked_media_ids, customer.id)
             unit_of_work.commit()
-            logs.append({"status": "success"})
-            SlackService().send_message(logs)
         except Exception as e:
             err_txt = str(e)
             stack_trace = traceback.format_exc()
