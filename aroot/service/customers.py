@@ -18,9 +18,9 @@ class Customer:
     def set_wordpress_url(self, _wordpress_url):
         wordpress_url = _wordpress_url
         if wordpress_url.startswith("https://"):
-            wordpress_url.replace("https://", "")
+            wordpress_url = wordpress_url.replace("https://", "")
         elif wordpress_url.startswith("http://"):
-            wordpress_url.replace("http://", "")
+            wordpress_url = wordpress_url.replace("http://", "")
         if wordpress_url.endswith("/"):
             wordpress_url = wordpress_url[:-1]
         self.wordpress_url = wordpress_url
