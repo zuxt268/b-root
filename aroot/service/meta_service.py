@@ -1,6 +1,7 @@
 import os
 import requests
-from flask import current_app
+
+from domain.instagram_media import InstagramMedia
 
 
 class MetaService:
@@ -12,94 +13,59 @@ class MetaService:
     def get_long_term_token(self, access_token):
         print("get_long_term_token is invoked")
         params = dict()
-        params['grant_type'] = 'fb_exchange_token'
-        params['fb_exchange_token'] = access_token
-        params['client_id'] = self.client_id
-        params['client_secret'] = self.client_secret
+        params["grant_type"] = "fb_exchange_token"
+        params["fb_exchange_token"] = access_token
+        params["client_id"] = self.client_id
+        params["client_secret"] = self.client_secret
         response = requests.post(self.base_url + "/oauth/access_token", params=params)
         print(f"response: {response.json()}, status: {response.status_code}")
         if 200 <= response.status_code < 300:
-            return response.json()['access_token']
+            return response.json()["access_token"]
         raise MetaApiError(response.json())
 
-    def get_instagram_account_id(self, access_token):
-        """
-        紐づいているインスタグラムのアカウントのIDを取得する。
-        この時、ビジネスページと紐づいていなかったり、Facebook認証での選択を間違っていたりすると、
-        instagram_business_accountの値を取得できない。
-        """
-        print("get_instagram_account_id is invoked")
+    def get_instagram_account(self, access_token):
+        print("get_instagram_account is invoked")
         params = dict()
-        params['fields'] = "accounts{name,instagram_business_account}"
-        params['access_token'] = access_token
+        params["access_token"] = access_token
+        params["fields"] = "accounts{name,instagram_business_account{name,username}}"
         response = requests.get(self.base_url + "/me", params=params)
-        print(f"response: {response.json()}, status: {response.status_code}")
         if 200 <= response.status_code < 300:
-            if "accounts" in response.json(): # 設定が正しくないと、ここがfalseになる。
+            if "accounts" in response.json():  # 設定が正しくないと、ここがfalseになる。
                 facebook_pages = response.json()["accounts"]["data"]
                 for i in facebook_pages:
-                    if "instagram_business_account" in i and "id" in i["instagram_business_account"]:
-                        return i["instagram_business_account"]["id"]
+                    if (
+                        "instagram_business_account" in i
+                        and "id" in i["instagram_business_account"]
+                    ):
+                        return {
+                            "id": i["instagram_business_account"]["id"],
+                            "username": i["instagram_business_account"]["username"],
+                        }
             raise MetaApiError("Not found instagram_business_account")
         raise MetaApiError(response.json())
 
-    def get_instagram_account_name(self, access_token, instagram_id):
-        print("get_instagram_account_name is invoked")
-        params = dict()
-        params["fields"] = "username"
-        params['access_token'] = access_token
-        response = requests.get(self.base_url + "/" + instagram_id, params=params)
-        if 200 <= response.status_code < 300:
-            if "username" in response.json():
-                return response.json()["username"]
-            else:
-                raise MetaApiError("Not found username")
-        raise MetaApiError(response.json())
-
-    def get_media_ids(self, access_token, media_id):
-        """
-        インスタグラムの投稿のIDを一覧で取得する。
-        詳細情報はIDを使用して、別のエンドポイントをたたく必要がある。
-        """
+    def get_media_list(
+        self, access_token, instagram_business_account_id
+    ) -> list[InstagramMedia]:
         params = dict()
         params["access_token"] = access_token
-        response = requests.get(self.base_url + f"/{media_id}/media", params=params)
-        print(f"response: {response.json()}, status: {response.status_code}")
+        params["fields"] = (
+            "media{id,permalink,caption,timestamp,"
+            + "media_type,media_url,children{media_type,media_url}}"
+        )
+        response = requests.get(
+            self.base_url + f"/{instagram_business_account_id}", params=params
+        )
+        result = list()
         if 200 <= response.status_code < 300:
-            media_ids = []
-            if "data" in response.json():
-                for data in response.json()["data"]:
-                    if "id" in data:
-                        media_ids.append(int(data["id"]))
-            return media_ids
+            print(response.json())
+            media_data = response.json()["media"]["data"]
+            media_data.reverse()
+            for media in media_data:
+                insta = InstagramMedia(media)
+                result.append(insta)
+            return result
         raise MetaApiError(response.json())
-
-    def get_media(self, access_token, _id):
-        """
-        インスタグラムの投稿のIDを使い、投稿の詳細情報を取得する。
-        """
-        print("get_media is invoked")
-        params = dict()
-        params["access_token"] = access_token
-        params['fields'] = "id,caption,media_url,timestamp,media_type,permalink,children{media_url}"
-        response = requests.get(self.base_url + f"/{_id}", params=params)
-        print(f"response: {response.json()}, status: {response.status_code}")
-        if 200 <= response.status_code < 300:
-            return response.json()
-        raise MetaApiError(response.json())
-
-    def get_media_list(self, access_token, ids):
-        """
-        instagramからmedia_idをもとに投稿の詳細データを取得する。
-        :param access_token: facebookのアクセストークン
-        :param ids: instagramの投稿のidリスト
-        :return: 投稿の詳細データのリスト
-        """
-        media_list = []
-        for _id in ids:
-            media = self.get_media(access_token, _id)
-            media_list.append(media)
-        return media_list
 
 
 class MetaApiError(Exception):

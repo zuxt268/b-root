@@ -8,8 +8,12 @@ class AdminUserRepository:
     def __init__(self, session: Session):
         self.session = session
 
-    def _get(self, _id) -> AdminUsersModel:
-        return self.session.query(AdminUsersModel).filter(AdminUsersModel.id == _id).first()
+    def _get(self, _id) -> AdminUsersModel | None:
+        return (
+            self.session.query(AdminUsersModel)
+            .filter(AdminUsersModel.id == _id)
+            .first()
+        )
 
     def add(self, admin_user):
         record = AdminUsersModel(**admin_user)
@@ -17,7 +21,9 @@ class AdminUserRepository:
         return AdminUser(**record.dict())
 
     def find_by_id(self, id):
-        record = self.session.query(AdminUsersModel).filter(AdminUsersModel.id == id).first()
+        record = (
+            self.session.query(AdminUsersModel).filter(AdminUsersModel.id == id).first()
+        )
         if record is not None:
             return AdminUser(**record.dict())
 
@@ -37,4 +43,3 @@ class AdminUserRepository:
 
     def count(self):
         return self.session.query(func.count(AdminUsersModel.id)).scalar()
-

@@ -1,15 +1,29 @@
 import functools
 import traceback
-from flask import Blueprint, flash, session, redirect, render_template, request, url_for, jsonify, current_app
+from flask import (
+    Blueprint,
+    flash,
+    session,
+    redirect,
+    render_template,
+    request,
+    url_for,
+    jsonify,
+)
 
 from repository.posts_repository import PostsRepository
 from repository.unit_of_work import UnitOfWork
 from repository.customers_repository import CustomersRepository
-from service.customers_service import CustomersService, CustomerNotFoundError, CustomerAuthError
+from service.customers_service import (
+    CustomersService,
+    CustomerNotFoundError,
+    CustomerAuthError,
+)
 from service.posts_service import PostsService
 from service.meta_service import MetaService, MetaApiError
 from service.slack_service import SlackService
 from service.wordpress_service import WordpressService
+from domain.instagram_media import convert_to_json
 
 bp = Blueprint("customer", __name__)
 
@@ -21,6 +35,7 @@ def login_required(view):
         if customer_id is None:
             return redirect(url_for("customer.login"))
         return view(**kwargs)
+
     return wrapped_view
 
 
@@ -42,10 +57,8 @@ def login():
                     unit_of_work.commit()
                     return redirect(url_for("customer.index"))
             except CustomerNotFoundError:
-                current_app.logger.error("ユーザーがいない")
                 error = "メールアドレスかパスワードが間違っています"
             except CustomerAuthError:
-                current_app.logger.error("パスワードが違う")
                 error = "メールアドレスかパスワードが間違っています"
         flash(error)
     return render_template("customer/login.html")
@@ -76,7 +89,6 @@ def index():
 @bp.route("/facebook/auth", methods=("POST",))
 @login_required
 def facebook_auth():
-    current_app.logger.info("facebook_auth is invoked")
     customer_id = session.get("customer_id")
     access_token = request.form["access_token"]
     try:
@@ -84,17 +96,20 @@ def facebook_auth():
             customers_repo = CustomersRepository(unit_of_work.session)
             customer_service = CustomersService(customers_repo)
             meta_service = MetaService()
-            instagram_id = meta_service.get_instagram_account_id(access_token)
             long_token = meta_service.get_long_term_token(access_token)
-            user_name = meta_service.get_instagram_account_name(access_token, instagram_id)
-            customer_service.update_customer_after_login(customer_id, long_token, instagram_id, user_name)
+            instagram = meta_service.get_instagram_account(access_token)
+            customer_service.update_customer_after_login(
+                customer_id, long_token, instagram["id"], instagram["username"]
+            )
             unit_of_work.commit()
     except MetaApiError as e:
         err_txt = str(e)
         stack_trace = traceback.format_exc()
         msg = f"```{err_txt}\n{stack_trace}```"
         SlackService().send_alert(msg)
-        flash(f"Instagramアカウントの取得に失敗しました。設定を確認してください: {str(e)}")
+        flash(
+            f"Instagramアカウントの取得に失敗しました。設定を確認してください: {str(e)}"
+        )
     return redirect(url_for("customer.index"))
 
 
@@ -110,13 +125,16 @@ def get_instagram():
             posts_repo = PostsRepository(unit_of_work.session)
             posts_service = PostsService(posts_repo)
             meta_service = MetaService()
-            media_ids = meta_service.get_media_ids(customer.facebook_token, customer.instagram_business_account_id)
+            media_id_list = meta_service.get_media_list(
+                customer.facebook_token, customer.instagram_business_account_id
+            )
             linked_post = posts_service.find_by_customer_id(customer.id)
-            not_linked_media_ids = posts_service.exclude_linked_media(linked_post, media_ids)
-            media_list = meta_service.get_media_list(customer.facebook_token, not_linked_media_ids)
-            targets = posts_service.abstract_targets(media_list, customer.start_date)
+            targets = posts_service.abstract_targets(
+                media_id_list, linked_post, customer.start_date
+            )
             unit_of_work.commit()
-            return jsonify(targets)
+            json_data = convert_to_json(targets)
+            return jsonify(json_data)
     except MetaApiError as e:
         return jsonify({"error": str(e)})
 
@@ -128,13 +146,23 @@ def post_wordpress():
         with UnitOfWork() as unit_of_work:
             customers_repo = CustomersRepository(unit_of_work.session)
             customer_service = CustomersService(customers_repo)
-            customer_id = session.get("customer_id")
-            customer = customer_service.get_customer_by_id(customer_id)
-            wordpress_service = WordpressService(customer.wordpress_url)
-            posted = wordpress_service.posts(request.json)
             posts_repo = PostsRepository(unit_of_work.session)
             posts_service = PostsService(posts_repo)
-            posts_service.save_posts(posted, [], customer_id)
+            customer_id = session.get("customer_id")
+            customer = customer_service.get_customer_by_id(customer_id)
+            wordpress_service = WordpressService(
+                customer.wordpress_url, customer.delete_hash
+            )
+            meta_service = MetaService()
+            media_id_list = meta_service.get_media_list(
+                customer.facebook_token, customer.instagram_business_account_id
+            )
+            linked_post = posts_service.find_by_customer_id(customer.id)
+            targets = posts_service.abstract_targets(
+                media_id_list, linked_post, customer.start_date
+            )
+            result = wordpress_service.posts(targets)
+            posts_service.save_posts(result, customer_id)
             unit_of_work.commit()
             return jsonify({"status": "success"})
     except Exception as e:
@@ -143,4 +171,3 @@ def post_wordpress():
         msg = f"```{customer.name}\n\n{err_txt}\n\n{stack_trace}```"
         SlackService().send_alert(msg)
         return jsonify({"error": str(e)})
-

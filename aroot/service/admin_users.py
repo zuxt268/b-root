@@ -17,7 +17,6 @@ class AdminUser:
         self.password = generate_password_hash(self.password)
 
     def dict(self):
-        print("koko")
         result = {}
         if self.id is not None:
             result["id"] = self.id
@@ -45,4 +44,3 @@ class AdminUserValidator:
     def validate_name(name):
         if len(name) == 0:
             raise AdminUserValidationError("名前は空欄では登録できません")
-

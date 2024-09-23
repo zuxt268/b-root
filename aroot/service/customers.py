@@ -3,7 +3,19 @@ from service.customers_service import CustomerAuthError, CustomerValidationError
 
 
 class Customer:
-    def __init__(self, id=None, name="", email="", password="", wordpress_url="", facebook_token=None, start_date=None, instagram_business_account_id=None, instagram_business_account_name=None, delete_hash=0):
+    def __init__(
+        self,
+        id=None,
+        name="",
+        email="",
+        password="",
+        wordpress_url="",
+        facebook_token=None,
+        start_date=None,
+        instagram_business_account_id=None,
+        instagram_business_account_name=None,
+        delete_hash=0,
+    ):
         self.id = id
         self.name = name
         self.email = email
