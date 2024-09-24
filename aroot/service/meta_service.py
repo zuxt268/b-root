@@ -59,12 +59,17 @@ class MetaService:
         result = list()
         if 200 <= response.status_code < 300:
             print(response.json())
-            media_data = response.json()["media"]["data"]
-            media_data.reverse()
-            for media in media_data:
-                insta = InstagramMedia(media)
-                result.append(insta)
-            return result
+            response_json = response.json()
+
+            if "media" in response_json and "data" in response_json["media"]:
+                media_data = response_json["media"]["data"]
+                media_data.reverse()
+                for media in media_data:
+                    insta = InstagramMedia(media)
+                    result.append(insta)
+                return result
+            else:
+                return []
         raise MetaApiError(response.json())
 
 
