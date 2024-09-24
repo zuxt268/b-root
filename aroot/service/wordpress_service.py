@@ -12,12 +12,13 @@ from domain.wordpress_source import WordPressSource
 
 
 class WordpressService:
-    def __init__(self, wordpress_url, delete_hash):
+    def __init__(self, wordpress_url, delete_hash, name):
         self.wordpress_url = wordpress_url
         self.delete_hash = delete_hash
         self.auth = HTTPBasicAuth(
             os.getenv("WORDPRESS_ADMIN_ID"), os.getenv("WORDPRESS_ADMIN_PASSWORD")
         )
+        self.name = name
 
     @staticmethod
     def get_contents_html(caption, delete_hash):
@@ -87,10 +88,13 @@ class WordpressService:
             elif post.media_type == "CAROUSEL_ALBUM":
                 result = self.post_for_carousel(post)
                 results.append(result)
-            SlackService().send_message(
-                f"""```{result["permalink"]}
+        if len(results) > 0:
+            for result in results:
+                SlackService().send_message(
+                    f"""```● {self.name}
+{result["permalink"]}
 {result["wordpress_link"]}```"""
-            )
+                )
         return results
 
     def upload_image(self, image_path) -> WordPressSource:

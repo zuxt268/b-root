@@ -25,7 +25,7 @@ def handle_customer(customer):
         try:
             print(f"<Start> customer_id: {customer.id}, customer_name: {customer.name}")
             wordpress_service = WordpressService(
-                customer.wordpress_url, customer.delete_hash
+                customer.wordpress_url, customer.delete_hash, customer.name
             )
             instagram_media_list = meta_service.get_media_list(
                 customer.facebook_token, customer.instagram_business_account_id

@@ -151,7 +151,7 @@ def post_wordpress():
             customer_id = session.get("customer_id")
             customer = customer_service.get_customer_by_id(customer_id)
             wordpress_service = WordpressService(
-                customer.wordpress_url, customer.delete_hash
+                customer.wordpress_url, customer.delete_hash, customer.name
             )
             meta_service = MetaService()
             media_id_list = meta_service.get_media_list(
