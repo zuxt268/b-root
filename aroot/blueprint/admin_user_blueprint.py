@@ -91,14 +91,6 @@ def index():
     else:
         customer_page = int(customer_page)
 
-    post_page = request.args.get("post_page")
-    if post_page is None:
-        post_page = 1
-    elif str(post_page).isdecimal() is False:
-        post_page = 1
-    else:
-        post_page = int(post_page)
-
     admin_user_id = session.get("admin_user_id")
     with UnitOfWork() as unit_of_work:
         admin_user_repo = AdminUserRepository(unit_of_work.session)
@@ -124,22 +116,37 @@ def index():
         posts_block=posts_block,
         admin_page=admin_page,
         customer_page=customer_page,
-        post_page=post_page,
     )
 
 
 @bp.route("/admin/customers/<customer_id>")
 @admin_login_required
 def show_customer(customer_id):
+    post_page = request.args.get("post_page")
+    if post_page is None:
+        post_page = 1
+    elif str(post_page).isdecimal() is False:
+        post_page = 1
+    else:
+        post_page = int(post_page)
+    print(post_page)
+
     with UnitOfWork() as unit_of_work:
         customer_repo = CustomersRepository(unit_of_work.session)
         customer_service = CustomersService(customer_repo)
         customer = customer_service.get_customer_by_id(customer_id)
         post_repo = PostsRepository(unit_of_work.session)
         posts_service = PostsService(post_repo)
-        posts = posts_service.find_by_customer_id(customer_id)
-    return render_template("admin_user/customer.html",
-                           customer=customer, posts=posts)
+        posts = posts_service.find_by_customer_id(customer_id, post_page)
+        posts_block = posts_service.block_count()
+        print(posts_block)
+    return render_template(
+        "admin_user/customer.html",
+        customer=customer,
+        posts=posts,
+        post_page=post_page,
+        posts_block=posts_block,
+    )
 
 
 @bp.route("/admin/register_customer", methods=("GET", "POST"))
@@ -199,7 +206,7 @@ def change_delete_hash():
         else:
             customer_service.remove_delete_hash(customer_id)
         unit_of_work.commit()
-    return redirect(url_for("admin_user.index"))
+    return redirect("/admin/customers/" + customer_id)
 
 
 @bp.route("/admin/register_user", methods=("GET", "POST"))
@@ -254,4 +261,4 @@ def reset_customer():
             customer_service = CustomersService(customer_repo)
             customer_service.reset_customer_info_by_id(customer_id)
             unit_of_work.commit()
-    return redirect(url_for("admin_user.index"))
+    return redirect("/admin/customers/" + customer_id)

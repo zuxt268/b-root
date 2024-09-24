@@ -20,8 +20,11 @@ class PostsService:
             self.save_post(post)
             linked_ids.append(post["media_id"])
 
-    def find_by_customer_id(self, customer_id) -> list[Post]:
-        return self.posts_repository.find_by_customer_id(customer_id)
+    def find_by_customer_id(self, customer_id: int, page: int = 1) -> list[Post]:
+        offset = (page - 1) * self.limit
+        return self.posts_repository.find_by_customer_id(
+            customer_id, limit=self.limit, offset=offset
+        )
 
     def block_count(self):
         return self.posts_repository.count() // PostsService.limit + 1

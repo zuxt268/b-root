@@ -23,11 +23,15 @@ class PostsRepository:
         if post is not None:
             return Post(**post.dict())
 
-    def find_by_customer_id(self, customer_id) -> list[service.posts.Post]:
+    def find_by_customer_id(
+        self, customer_id, limit, offset
+    ) -> list[service.posts.Post]:
         query = self.session.query(PostsModel)
         records = (
             query.filter(PostsModel.customer_id == customer_id)
             .order_by(desc(PostsModel.id))
+            .limit(limit)
+            .offset(offset)
             .all()
         )
         return [Post(**record.dict()) for record in records]

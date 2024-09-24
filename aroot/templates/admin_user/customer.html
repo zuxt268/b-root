@@ -188,7 +188,76 @@
                     </tbody>
                 </table>
             </div>
+            <div class="my-2">
+                <nav aria-label="Page navigation example">
+                  <ul class="pagination">
+                    <li class="page-item {{ 'disabled' if post_page == 1 }}">
+                      <a class="page-link" href="/admin/customers/{{ customer["id"] }}?post_page={{ post_page - 1 }}" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                        <span class="sr-only">Previous</span>
+                      </a>
+                    </li>
+                    {% for i in range(posts_block) %}
+                        {% if i + 1 == admin_page %}
+                            <li class="page-item disabled"><a class="page-link" href="/admin/customers/{{ customer["id"] }}?post_page={{ i + 1 }}">{{ i + 1 }}</a></li>
+                        {% else %}
+                            <li class="page-item"><a class="page-link" href="/admin/customers/{{ customer["id"] }}?post_page={{ i + 1 }}">{{ i + 1 }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+                    <li class="page-item {{ 'disabled' if post_page == posts_block }}">
+                      <a class="page-link" href="/admin/customers/{{ customer["id"] }}?post_page={{ post_page + 1 }}" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                        <span class="sr-only">Next</span>
+                      </a>
+                    </li>
+                  </ul>
+                </nav>
+            </div>
         </div>
     </div>
 </div>
+
+<script>
+    document.querySelectorAll(".reset_customer_btn").forEach((ele) => {
+   ele.addEventListener("click", (event) => {
+       const customer_id = event.target.value;
+       if (window.confirm(`ID: ${customer_id}、Facebookの連携をリセットします。よろしいですか？`)) {
+           showLoadingOverlay();
+           event.target.disabled = true;
+           post("/admin/reset_customer", {customer_id});
+       }
+   })
+});
+    document.querySelectorAll(".delete_customer_btn").forEach((ele) => {
+        ele.addEventListener("click", (event) => {
+            const customer_id = event.target.value;
+            if (window.confirm(`ID: ${customer_id}の顧客を削除します。よろしいですか？`)) {
+                showLoadingOverlay();
+                event.target.disabled = true;
+                post("/admin/delete_customer", {customer_id});
+            }
+        });
+    });
+    document.querySelectorAll(".delete_hash_change_true").forEach((ele) => {
+        ele.addEventListener("click", (event) => {
+            const customer_id = event.target.value;
+            if (window.confirm(`ID: ${customer_id} ハッシュタグを削除するように設定します`)) {
+                showLoadingOverlay();
+                event.target.disabled = true;
+                post("/admin/customer/delete_hash", {customer_id, "delete_hash": true});
+            }
+        });
+    });
+    document.querySelectorAll(".delete_hash_change_false").forEach((ele) => {
+    ele.addEventListener("click", (event) => {
+        const customer_id = event.target.value;
+        if (window.confirm(`ID: ${customer_id} ハッシュタグを削除を解除します`)) {
+            showLoadingOverlay();
+            event.target.disabled = true;
+            post("/admin/customer/delete_hash", {customer_id, "delete_hash": false});
+        }
+    });
+});
+</script>
+
 {% endblock %}
