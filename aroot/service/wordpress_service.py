@@ -34,7 +34,7 @@ class WordpressService:
     def get_html_for_image(self, caption, url):
         image_html = f"""
             <div>
-                <img src={url} style='margin: 0 auto;' width='500px' height='500px'/>
+                <img src='{url}' style='margin: 0 auto;' width='500px' height='500px'/>
             </div>"""
         image_html += self.get_contents_html(caption, self.delete_hash)
         return image_html
@@ -45,13 +45,13 @@ class WordpressService:
             if resp_upload.media_type == "IMAGE":
                 html += f"""
                 <div>
-                    <img src={resp_upload.source_url} style='margin: 0 auto;' width='500px' height='500px'/>
+                    <img src='{resp_upload.source_url}' style='margin: 0 auto;' width='500px' height='500px'/>
                 </div>
                 """
             elif resp_upload.media_type == "VIDEO":
                 html += f"""
                 <div>
-                    <video src={resp_upload.source_url} style='margin: 0 auto;' width='500px' height='500px' controls>
+                    <video src='{resp_upload.source_url}' style='margin: 0 auto;' width='500px' height='500px' controls>
                         Sorry, your browser does not support embedded videos.
                     </video>
                 </div>
@@ -63,7 +63,7 @@ class WordpressService:
     def get_html_for_video(self, caption, url):
         video_html = f"""
         <div>
-            <video src={url} style='margin: 0 auto;' width='500px' height='500px' controls>
+            <video src='{url}' style='margin: 0 auto;' width='500px' height='500px' controls>
                 Sorry, your browser does not support embedded videos.
             </video>
         </div>
