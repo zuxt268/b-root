@@ -47,7 +47,7 @@ class WordpressService:
                     <img src={resp_upload.source_url} style='margin: 0 auto;' width='500px' height='500px'/>
                 </div>
                 """
-            else:
+            elif resp_upload.media_type == "VIDEO":
                 html += f"""
                 <div>
                     <video src={resp_upload.source_url} style='margin: 0 auto;' width='500px' height='500px' controls>
@@ -84,7 +84,7 @@ class WordpressService:
             elif post.media_type == "VIDEO":
                 result = self.post_for_video(post)
                 results.append(result)
-            else:
+            elif post.media_type == "CAROUSEL_ALBUM":
                 result = self.post_for_carousel(post)
                 results.append(result)
             SlackService().send_message(
@@ -184,11 +184,13 @@ class WordpressService:
 
     def post_for_carousel(self, media: InstagramMedia):
         resp_uploads = []
+        SlackService().send_message(media.children)
         for post in media.children:
             if post.media_type == "IMAGE":
                 resp_uploads.append(self.transfer_image(post.media_url))
             elif post.media_type == "VIDEO":
                 resp_uploads.append(self.transfer_video(post.media_url))
+        SlackService().send_message(resp_uploads)
         html = self.get_html_for_carousel(media.caption, resp_uploads)
         resp_post = self.create_post(media.caption, html, int(resp_uploads[0].media_id))
         return {

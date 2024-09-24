@@ -25,7 +25,7 @@ class SlackService(object):
             }
         )
 
-    def send_message(self, message: str):
+    def send_message(self, message):
         self.request(
             {"icon_emoji": ":wink:", "username": "A-Root", "text": f"{message}"}
         )
