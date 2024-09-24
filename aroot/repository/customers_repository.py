@@ -31,7 +31,7 @@ class CustomersRepository:
 
     def find_already_linked(self):
         query = self.session.query(CustomersModel)
-        records = query.filter(CustomersModel.facebook_token is not None).all()
+        records = query.filter(CustomersModel.facebook_token != None).all()
         return [Customer(**record.dict()) for record in records]
 
     def find_all(self, limit=None, offset=None) -> list[Customer]:
