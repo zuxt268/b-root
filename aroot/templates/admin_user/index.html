@@ -74,20 +74,35 @@
                         <tr>
                             <th>ID</th>
                             <th>Name</th>
-                            <th>Email</th>
+                            <th>Instagram</th>
                             <th>Wordpress</th>
                             <th>Facebook</th>
-                            <th></th>
                             <th></th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for customer in customers %}
                             <tr>
-                                <td>{{ customer["id"] }}</td>
+                                <td>
+                                    <a class="w-50 btn-outline-secondary btn" href="/admin/customers/{{ customer["id"] }}">
+                                        #{{ customer["id"] }}
+                                    </a>
+                                </td>
                                 <td>{{ customer["name"] }}</td>
-                                <td>{{ customer["email"] }}</td>
-                                <td>{{ customer["wordpress_url"] }}</td>
+                                <td>
+                                    {% if customer["instagram_business_account_name"] == None %}
+                                        -
+                                    {% else %}
+                                        <a target="_blank" href="https://www.instagram.com/{{ customer.instagram_business_account_name }}">
+                                            {{ customer.instagram_business_account_name }}
+                                        </a>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a target="_blank" href="https://{{ customer["wordpress_url"] }}">
+                                        {{ customer["wordpress_url"] }}
+                                    </a>
+                                </td>
                                 <td>
                                     {% if not customer.facebook_token %}
                                         <span class="p-2 badge badge-secondary"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-x" viewBox="2 2 16 16">
@@ -98,23 +113,6 @@
   <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/>
 </svg>連携済</span>
                                     {% endif %}
-                                </td>
-                                <td>
-                                    {% if customer.facebook_token %}
-                                        <button value="{{ customer.id }}" type="button" style="width: 6rem;" class="reset_customer_btn btn btn-outline-warning btn-sm">認証Reset</button>
-                                    {% else %}
-                                        <button value="{{ customer.id }}" type="button" style="width: 6rem;" class="btn btn-outline-warning btn-sm" disabled>認証Reset</button>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    {% if customer.delete_hash == False %}
-                                        <button value="{{ customer.id }}" type="button" style="width: 6rem;" class="delete_hash_change_true btn btn-outline-secondary btn-sm">通常</button>
-                                    {% else %}
-                                        <button value="{{ customer.id }}" type="button" style="width: 6rem;" class="delete_hash_change_false btn btn-outline-success btn-sm">＃削除中</button>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    <button value="{{ customer.id }}" type="button" style="width: 6rem;" class="delete_customer_btn btn btn-outline-danger btn-sm">削除</button>
                                 </td>
                             </tr>
                         {% endfor %}

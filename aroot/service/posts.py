@@ -20,3 +20,13 @@ class Post:
         self.permalink = permalink
         self.wordpress_link = wordpress_link
         self.customer_name = customer_name
+
+    def get_wordpress_link(self):
+        if self.wordpress_link is None:
+            return ""
+        return self.wordpress_link[:30] + "..."
+
+    def get_permalink(self):
+        if self.permalink is None:
+            return ""
+        return self.permalink[:30] + "..."

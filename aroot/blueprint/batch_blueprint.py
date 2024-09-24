@@ -47,7 +47,6 @@ def handle_customer(customer):
 
 def process_batch():
     if lock.acquire(blocking=False) is False:
-        print("block")
         return
 
     # Facebook認証が終わっている顧客の一覧を取得する

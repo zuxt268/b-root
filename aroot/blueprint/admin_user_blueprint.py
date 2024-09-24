@@ -128,6 +128,20 @@ def index():
     )
 
 
+@bp.route("/admin/customers/<customer_id>")
+@admin_login_required
+def show_customer(customer_id):
+    with UnitOfWork() as unit_of_work:
+        customer_repo = CustomersRepository(unit_of_work.session)
+        customer_service = CustomersService(customer_repo)
+        customer = customer_service.get_customer_by_id(customer_id)
+        post_repo = PostsRepository(unit_of_work.session)
+        posts_service = PostsService(post_repo)
+        posts = posts_service.find_by_customer_id(customer_id)
+    return render_template("admin_user/customer.html",
+                           customer=customer, posts=posts)
+
+
 @bp.route("/admin/register_customer", methods=("GET", "POST"))
 @admin_login_required
 def register_customer():
