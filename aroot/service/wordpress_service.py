@@ -39,7 +39,7 @@ class WordpressService:
         return image_html
 
     def get_html_for_carousel(self, caption, resp_upload_list: list[WordPressSource]):
-        html = '<div class="a-root-wordpress-instagram-slider">'
+        html = "<div class='a-root-wordpress-instagram-slider'>"
         for resp_upload in resp_upload_list:
             if resp_upload.media_type == "IMAGE":
                 html += f"""
