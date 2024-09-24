@@ -1,5 +1,7 @@
 import os
 import re
+import tempfile
+
 import requests
 
 from requests.auth import HTTPBasicAuth
@@ -129,17 +131,18 @@ class WordpressService:
             raise WordpressApiError(response.json())
 
     def transfer_image(self, media_url) -> WordPressSource:
-        f_path = "image_files/tmp.jpeg"
-        urlretrieve(media_url, f_path)
-        resp_upload = self.upload_image(f_path)
-        os.remove(f_path)
+        # NamedTemporaryFile を使って自動的に一時ファイルを作成
+        with tempfile.NamedTemporaryFile(suffix=".jpeg", delete=True) as temp_file:
+            urlretrieve(media_url, temp_file.name)
+            resp_upload = self.upload_image(temp_file.name)
+        # temp_file は with ブロックの終了と共に自動で削除される
         return resp_upload
 
     def transfer_video(self, media_url) -> WordPressSource:
-        f_path = "image_files/tmp.mp4"
-        urlretrieve(media_url, f_path)
-        resp_upload = self.upload_video(f_path)
-        os.remove(f_path)
+        # NamedTemporaryFile を使って自動的に一時ファイルを作成
+        with tempfile.NamedTemporaryFile(suffix=".mp4", delete=True) as temp_file:
+            urlretrieve(media_url, temp_file.name)
+            resp_upload = self.upload_video(temp_file.name)
         return resp_upload
 
     def create_post(self, title: str, content: str, media_id: int):

@@ -1,3 +1,5 @@
+import traceback
+
 from flask import Flask, render_template
 from blueprint import (
     customer_blueprint,
@@ -29,7 +31,12 @@ def handle_404(error):
 
 @app.errorhandler(Exception)
 def handle_exception(error):
-    SlackService().send_alert(error)
+    stack_trace = traceback.format_exc()
+    msg = f"""error: {error}
+    stacktrace
+    {stack_trace}
+    """
+    SlackService().send_alert(msg)
     return render_template("errors.html", errors=error)
 
 
