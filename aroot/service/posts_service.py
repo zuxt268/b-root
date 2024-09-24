@@ -20,7 +20,12 @@ class PostsService:
             self.save_post(post)
             linked_ids.append(post["media_id"])
 
-    def find_by_customer_id(self, customer_id: int, page: int = 1) -> list[Post]:
+    def find_by_customer_id(self, customer_id: int) -> list[Post]:
+        return self.posts_repository.find_by_customer_id(customer_id)
+
+    def find_by_customer_id_for_page(
+        self, customer_id: int, page: int = 1
+    ) -> list[Post]:
         offset = (page - 1) * self.limit
         return self.posts_repository.find_by_customer_id(
             customer_id, limit=self.limit, offset=offset

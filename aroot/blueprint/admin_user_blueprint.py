@@ -137,9 +137,8 @@ def show_customer(customer_id):
         customer = customer_service.get_customer_by_id(customer_id)
         post_repo = PostsRepository(unit_of_work.session)
         posts_service = PostsService(post_repo)
-        posts = posts_service.find_by_customer_id(customer_id, post_page)
+        posts = posts_service.find_by_customer_id_for_page(customer_id, post_page)
         posts_block = posts_service.block_count()
-        print(posts_block)
     return render_template(
         "admin_user/customer.html",
         customer=customer,

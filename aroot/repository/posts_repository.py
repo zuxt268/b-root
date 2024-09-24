@@ -24,16 +24,21 @@ class PostsRepository:
             return Post(**post.dict())
 
     def find_by_customer_id(
-        self, customer_id, limit, offset
+        self, customer_id, limit=None, offset=None
     ) -> list[service.posts.Post]:
-        query = self.session.query(PostsModel)
-        records = (
-            query.filter(PostsModel.customer_id == customer_id)
+        query = (
+            self.session.query(PostsModel)
+            .filter(PostsModel.customer_id == customer_id)
             .order_by(desc(PostsModel.id))
-            .limit(limit)
-            .offset(offset)
-            .all()
         )
+
+        if limit is not None:
+            query = query.limit(limit)
+        if offset is not None:
+            query = query.offset(offset)
+
+        records = query.all()
+
         return [Post(**record.dict()) for record in records]
 
     def count(self):
