@@ -15,7 +15,7 @@ class PostsRepository:
         self.session.add(record)
         return Post(**record.dict())
 
-    def _get(self, _id) -> PostsModel:
+    def _get(self, _id) -> PostsModel | None:
         return self.session.query(PostsModel).filter(PostsModel.id == _id).first()
 
     def find_by_id(self, post_id):

@@ -13,7 +13,7 @@ class CustomersRepository:
         self.session.add(record)
         return Customer(**record.dict())
 
-    def _get(self, _id) -> CustomersModel:
+    def _get(self, _id) -> CustomersModel | None:
         return (
             self.session.query(CustomersModel).filter(CustomersModel.id == _id).first()
         )

@@ -1,11 +1,14 @@
 import base64
-import functools
 import hashlib
 import hmac
 import json
 import os
 
-from flask import Blueprint, flash, g, session, redirect, render_template, request, url_for, jsonify
+from flask import (
+    Blueprint,
+    request,
+    jsonify,
+)
 
 from repository.admin_user_repository import AdminUserRepository
 from repository.customers_repository import CustomersRepository
@@ -13,7 +16,7 @@ from service.admin_users_service import (
     AdminUsersService,
 )
 from repository.unit_of_work import UnitOfWork
-from service.customers_service import (CustomersService, CustomerValidationError)
+from service.customers_service import CustomersService
 
 
 bp = Blueprint("api", __name__)
@@ -22,24 +25,34 @@ bp = Blueprint("api", __name__)
 @bp.before_request
 def verification():
     data = request.json
-    if not data or 'message' not in data or 'hmac' not in data:
-        return jsonify({'status': 'error', 'message': 'Bad Request: Missing required parameters'}), 400
+    if not data or "message" not in data or "hmac" not in data:
+        return (
+            jsonify(
+                {
+                    "status": "error",
+                    "message": "Bad Request: Missing required parameters",
+                }
+            ),
+            400,
+        )
     message = json.dumps(data["message"], sort_keys=True)
     received_hmac_base64 = data["hmac"]
     received_hmac = base64.b64decode(received_hmac_base64)
-    hmac_obj = hmac.new(os.getenv("A_ROOT_SECRET_KEY").encode(), message.encode(), hashlib.sha256)
+    hmac_obj = hmac.new(
+        os.getenv("A_ROOT_SECRET_KEY").encode(), message.encode(), hashlib.sha256
+    )
     if hmac.compare_digest(hmac_obj.digest(), received_hmac) is False:
-        return jsonify({'status': 'error', 'message': 'permission denied'}), 403
+        return jsonify({"status": "error", "message": "permission denied"}), 403
 
 
 @bp.errorhandler(Exception)
 def handle_exception(e):
-    response = jsonify({'status': 'error', 'message': f"{e}"})
+    response = jsonify({"status": "error", "message": f"{e}"})
     response.status_code = 500
     return response
 
 
-@bp.route("/api/v1/customers", methods=('POST',))
+@bp.route("/api/v1/customers", methods=("POST",))
 def post_customer():
     result = ""
     customers = request.json["customers"]
