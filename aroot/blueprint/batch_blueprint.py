@@ -24,14 +24,18 @@ def handle_customer(customer):
         meta_service = MetaService()
         try:
             print(f"<Start> customer_id: {customer.id}, customer_name: {customer.name}")
-            wordpress_service = WordpressService(customer.wordpress_url, customer.delete_hash)
-            media_ids = meta_service.get_media_ids(customer.facebook_token, customer.instagram_business_account_id)
+            wordpress_service = WordpressService(
+                customer.wordpress_url, customer.delete_hash
+            )
+            instagram_media_list = meta_service.get_media_list(
+                customer.facebook_token, customer.instagram_business_account_id
+            )
             linked_post = posts_service.find_by_customer_id(customer.id)
-            not_linked_media_ids = posts_service.exclude_linked_media(linked_post, media_ids)
-            media_list = meta_service.get_media_list(customer.facebook_token, not_linked_media_ids)
-            targets = posts_service.abstract_targets(media_list, customer.start_date)
+            targets = posts_service.abstract_targets(
+                instagram_media_list, linked_post, customer.start_date
+            )
             results = wordpress_service.posts(targets)
-            posts_service.save_posts(results, not_linked_media_ids, customer.id)
+            posts_service.save_posts(results, customer.id)
             unit_of_work.commit()
         except Exception as e:
             err_txt = str(e)
@@ -43,7 +47,6 @@ def handle_customer(customer):
 
 def process_batch():
     if lock.acquire(blocking=False) is False:
-        print("block")
         return
 
     # Facebook認証が終わっている顧客の一覧を取得する
@@ -54,12 +57,15 @@ def process_batch():
 
     # 処理時間を短くするため、並列実行にする。
     with ThreadPoolExecutor(max_workers=10) as executor:
-        futures = {executor.submit(handle_customer, customer): customer for customer in customers}
+        futures = {
+            executor.submit(handle_customer, customer): customer
+            for customer in customers
+        }
         for future in as_completed(futures):
             try:
                 future.result()
             except Exception as exc:
-                print(f'Exception for customer {futures[future].name}: {str(exc)}')
+                print(f"Exception for customer {futures[future].name}: {str(exc)}")
     lock.release()
 
 

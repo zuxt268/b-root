@@ -56,9 +56,17 @@
             <!-- Circle Buttons -->
             <div class="card shadow mb-4">
                 <div class="card-header py-3">
-                    <h6 class="m-1 font-weight-bold">Wordpress: <span class="text-primary">{{ customer.wordpress_url }}</span></h6>
+                    <h6 class="m-1 font-weight-bold">Wordpress: <span class="text-primary">
+                        <a target="_blank" href="https://{{ customer.wordpress_url }}">
+                            {{ customer.wordpress_url }}
+                        </a>
+                    </span></h6>
                     {% if customer.instagram_business_account_name %}
-                    <h6 class="m-1 font-weight-bold">Instagram: <span class="text-primary">{{ customer.instagram_business_account_name }}({{ customer.instagram_business_account_id }})</span></h6>
+                        <h6 class="m-1 font-weight-bold">Instagram: <span class="text-primary">
+                            <a target="_blank" href="https://www.instagram.com/{{ customer.instagram_business_account_name }}">
+                                {{ customer.instagram_business_account_name }}({{ customer.instagram_business_account_id }})
+                            </a>
+                        </span></h6>
                     {% endif %}
                 </div>
                 <div class="card-body">

@@ -74,20 +74,35 @@
                         <tr>
                             <th>ID</th>
                             <th>Name</th>
-                            <th>Email</th>
+                            <th>Instagram</th>
                             <th>Wordpress</th>
                             <th>Facebook</th>
-                            <th></th>
                             <th></th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for customer in customers %}
                             <tr>
-                                <td>{{ customer["id"] }}</td>
+                                <td>
+                                    <a class="w-50 btn-outline-secondary btn" href="/admin/customers/{{ customer["id"] }}">
+                                        #{{ customer["id"] }}
+                                    </a>
+                                </td>
                                 <td>{{ customer["name"] }}</td>
-                                <td>{{ customer["email"] }}</td>
-                                <td>{{ customer["wordpress_url"] }}</td>
+                                <td>
+                                    {% if customer["instagram_business_account_name"] == None %}
+                                        -
+                                    {% else %}
+                                        <a target="_blank" href="https://www.instagram.com/{{ customer.instagram_business_account_name }}">
+                                            {{ customer.instagram_business_account_name }}
+                                        </a>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a target="_blank" href="https://{{ customer["wordpress_url"] }}">
+                                        {{ customer["wordpress_url"] }}
+                                    </a>
+                                </td>
                                 <td>
                                     {% if not customer.facebook_token %}
                                         <span class="p-2 badge badge-secondary"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-x" viewBox="2 2 16 16">
@@ -99,23 +114,6 @@
 </svg>連携済</span>
                                     {% endif %}
                                 </td>
-                                <td>
-                                    {% if customer.facebook_token %}
-                                        <button value="{{ customer.id }}" type="button" style="width: 6rem;" class="reset_customer_btn btn btn-outline-warning btn-sm">認証Reset</button>
-                                    {% else %}
-                                        <button value="{{ customer.id }}" type="button" style="width: 6rem;" class="btn btn-outline-warning btn-sm" disabled>認証Reset</button>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    {% if customer.delete_hash == False %}
-                                        <button value="{{ customer.id }}" type="button" style="width: 6rem;" class="delete_hash_change_true btn btn-outline-secondary btn-sm">通常</button>
-                                    {% else %}
-                                        <button value="{{ customer.id }}" type="button" style="width: 6rem;" class="delete_hash_change_false btn btn-outline-success btn-sm">＃削除中</button>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    <button value="{{ customer.id }}" type="button" style="width: 6rem;" class="delete_customer_btn btn btn-outline-danger btn-sm">削除</button>
-                                </td>
                             </tr>
                         {% endfor %}
                     </tbody>
@@ -125,20 +123,20 @@
                 <nav aria-label="Page navigation example">
                   <ul class="pagination">
                     <li class="page-item {{ 'disabled' if customer_page == 1 }}">
-                      <a class="page-link" href="/?customer_page={{ customer_page - 1 }}&admin_page={{ admin_page }}&post_page={{ post_page }}" aria-label="Previous">
+                      <a class="page-link" href="/?customer_page={{ customer_page - 1 }}&admin_page={{ admin_page }}" aria-label="Previous">
                         <span aria-hidden="true">&laquo;</span>
                         <span class="sr-only">Previous</span>
                       </a>
                     </li>
                     {% for i in range(customers_block) %}
                         {% if i + 1 == customer_page %}
-                            <li class="page-item disabled"><a class="page-link" href="/?customer_page={{ i + 1 }}&admin_page={{ admin_page }}&post_page={{ post_page }}">{{ i + 1 }}</a></li>
+                            <li class="page-item disabled"><a class="page-link" href="/?customer_page={{ i + 1 }}&admin_page={{ admin_page }}">{{ i + 1 }}</a></li>
                         {% else %}
-                            <li class="page-item"><a class="page-link" href="/?customer_page={{ i + 1 }}&admin_page={{ admin_page }}&post_page={{ post_page }}">{{ i + 1 }}</a></li>
+                            <li class="page-item"><a class="page-link" href="/?customer_page={{ i + 1 }}&admin_page={{ admin_page }}">{{ i + 1 }}</a></li>
                         {% endif %}
                     {% endfor %}
                     <li class="page-item {{ 'disabled' if customer_page == customers_block }}">
-                      <a class="page-link" href="/?customer_page={{ customer_page + 1 }}&admin_page={{ admin_page }}&post_page={{ post_page }}" aria-label="Next">
+                      <a class="page-link" href="/?customer_page={{ customer_page + 1 }}&admin_page={{ admin_page }}" aria-label="Next">
                         <span aria-hidden="true">&raquo;</span>
                         <span class="sr-only">Next</span>
                       </a>
@@ -195,95 +193,20 @@
                 <nav aria-label="Page navigation example">
                   <ul class="pagination">
                     <li class="page-item {{ 'disabled' if admin_page == 1 }}">
-                      <a class="page-link" href="/?customer_page={{ customer_page }}&admin_page={{ admin_page - 1 }}&post_page={{ post_page }}" aria-label="Previous">
+                      <a class="page-link" href="/?customer_page={{ customer_page }}&admin_page={{ admin_page - 1 }}" aria-label="Previous">
                         <span aria-hidden="true">&laquo;</span>
                         <span class="sr-only">Previous</span>
                       </a>
                     </li>
                     {% for i in range(admin_users_block) %}
                         {% if i + 1 == admin_page %}
-                            <li class="page-item disabled"><a class="page-link" href="/?customer_page={{ customer_page }}&admin_page={{ i + 1 }}&post_page={{ post_page }}">{{ i + 1 }}</a></li>
+                            <li class="page-item disabled"><a class="page-link" href="/?customer_page={{ customer_page }}&admin_page={{ i + 1 }}">{{ i + 1 }}</a></li>
                         {% else %}
-                            <li class="page-item"><a class="page-link" href="/?customer_page={{ customer_page }}&admin_page={{ i + 1 }}&post_page={{ post_page }}">{{ i + 1 }}</a></li>
+                            <li class="page-item"><a class="page-link" href="/?customer_page={{ customer_page }}&admin_page={{ i + 1 }}">{{ i + 1 }}</a></li>
                         {% endif %}
                     {% endfor %}
                     <li class="page-item {{ 'disabled' if admin_page == admin_users_block }}">
-                      <a class="page-link" href="/?customer_page={{ customer_page }}&admin_page={{ admin_page + 1 }}&post_page={{ post_page }}" aria-label="Next">
-                        <span aria-hidden="true">&raquo;</span>
-                        <span class="sr-only">Next</span>
-                      </a>
-                    </li>
-                  </ul>
-                </nav>
-            </div>
-        </div>
-    </div>
-
-    <h1 class="h3 mt-5 mb-2 text-gray-800">連携ログ</h1>
-    <!-- DataTales Example -->
-    <div class="card shadow mb-4">
-        <div class="card-header py-3">
-            <div class="row">
-                <h6 class="col m-0 font-weight-bold text-primary">
-                    Posts Tables
-                </h6>
-                <div class="col">
-                    <div class="row justify-content-end">
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table" id="logsTables" width="100%" cellspacing="0">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>CustomerName</th>
-                            <th>InstagramURL</th>
-                            <th>WordpressURL</th>
-                            <th>LinkedDatetime</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for post in posts %}
-                            <tr>
-                                <td>{{ post["id"] }}</td>
-                                <td>{{ post["customer_name"] }}</td>
-                                {% if post["permalink"] %}
-                                <td>
-                                    <a href="{{ post['permalink'] }}" target="_blank">{{ post["permalink"][0:35] }}...</a>
-                                </td>
-                                <td>
-                                    <a href="{{ post['wordpress_link'] }}" target="_blank">{{ post["wordpress_link"][0:35] }}...</a>
-                                </td>
-                                {% else %}
-                                <td colspan="2">（対象外） Instagram Media ID: {{ post["media_id"] }}</td>
-                                {% endif %}
-                                <td>{{ post["created_at"] }}</td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            <div class="my-2">
-                <nav aria-label="Page navigation example">
-                  <ul class="pagination">
-                    <li class="page-item {{ 'disabled' if post_page == 1 }}">
-                      <a class="page-link" href="/admin?customer_page={{ customer_page }}&admin_page={{ admin_page }}&post_page={{ post_page - 1 }}" aria-label="Previous">
-                        <span aria-hidden="true">&laquo;</span>
-                        <span class="sr-only">Previous</span>
-                      </a>
-                    </li>
-                    {% for i in range(posts_block) %}
-                        {% if i + 1 == post_page %}
-                            <li class="page-item disabled"><a class="page-link" href="/admin?customer_page={{ customer_page }}&admin_page={{ admin_page }}&post_page={{ i + 1 }}">{{ i + 1 }}</a></li>
-                        {% else %}
-                            <li class="page-item"><a class="page-link" href="/admin?customer_page={{ customer_page }}&admin_page={{ admin_page }}&post_page={{ i + 1 }}">{{ i + 1 }}</a></li>
-                        {% endif %}
-                    {% endfor %}
-                    <li class="page-item {{ 'disabled' if post_page == posts_block }}">
-                      <a class="page-link" href="/admin?customer_page={{ customer_page }}&admin_page={{ admin_page }}&post_page={{ post_page + 1 }}" aria-label="Next">
+                      <a class="page-link" href="/?customer_page={{ customer_page }}&admin_page={{ admin_page + 1 }}" aria-label="Next">
                         <span aria-hidden="true">&raquo;</span>
                         <span class="sr-only">Next</span>
                       </a>
@@ -295,26 +218,6 @@
     </div>
 </div>
 <script>
-    document.querySelectorAll(".reset_customer_btn").forEach((ele) => {
-       ele.addEventListener("click", (event) => {
-           const customer_id = event.target.value;
-           if (window.confirm(`ID: ${customer_id}、Facebookの連携をリセットします。よろしいですか？`)) {
-               showLoadingOverlay();
-               event.target.disabled = true;
-               post("/admin/reset_customer", {customer_id});
-           }
-       })
-    });
-    document.querySelectorAll(".delete_customer_btn").forEach((ele) => {
-        ele.addEventListener("click", (event) => {
-            const customer_id = event.target.value;
-            if (window.confirm(`ID: ${customer_id}の顧客を削除します。よろしいですか？`)) {
-                showLoadingOverlay();
-                event.target.disabled = true;
-                post("/admin/delete_customer", {customer_id});
-            }
-        });
-    });
     document.querySelectorAll(".delete_user_btn").forEach((ele) => {
         ele.addEventListener("click", (event) => {
             const admin_user_id = event.target.value;
@@ -325,26 +228,7 @@
             }
         });
     });
-    document.querySelectorAll(".delete_hash_change_true").forEach((ele) => {
-        ele.addEventListener("click", (event) => {
-            const customer_id = event.target.value;
-            if (window.confirm(`ID: ${customer_id} ハッシュタグを削除するように設定します`)) {
-                showLoadingOverlay();
-                event.target.disabled = true;
-                post("/admin/customer/delete_hash", {customer_id, "delete_hash": true});
-            }
-        });
-    });
-    document.querySelectorAll(".delete_hash_change_false").forEach((ele) => {
-        ele.addEventListener("click", (event) => {
-            const customer_id = event.target.value;
-            if (window.confirm(`ID: ${customer_id} ハッシュタグを削除を解除します`)) {
-                showLoadingOverlay();
-                event.target.disabled = true;
-                post("/admin/customer/delete_hash", {customer_id, "delete_hash": false});
-            }
-        });
-    });
+
 
 </script>
 <script type="text/javascript" src="//cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"></script>

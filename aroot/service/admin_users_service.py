@@ -1,5 +1,3 @@
-
-
 class AdminUserNotFountError(Exception):
     pass
 
@@ -35,7 +33,9 @@ class AdminUsersService:
 
     def find_all(self, page=1):
         offset = (page - 1) * AdminUsersService.limit
-        return self.admin_users_repository.find_all(limit=AdminUsersService.limit, offset=offset)
+        return self.admin_users_repository.find_all(
+            limit=AdminUsersService.limit, offset=offset
+        )
 
     def check_use_email(self, email):
         admin_user = self.admin_users_repository.find_by_email(email)
@@ -46,18 +46,14 @@ class AdminUsersService:
         self.admin_users_repository.add(admin_user)
 
     def register_users(self, admin_users):
-        result = {
-            "success": [],
-            "fail": []
-        }
+        result = {"success": [], "fail": []}
         for admin_user in admin_users:
             try:
                 self.register_user(admin_user)
                 result["success"].append(admin_user.name)
             except Exception as e:
-                result["fail"].append({"name": admin_user.name, "error": f"str(e)"})
+                result["fail"].append({"name": admin_user.name, "error": f"{str(e)}"})
         return result
 
     def remove_user(self, admin_user):
         self.admin_users_repository.delete(admin_user)
-

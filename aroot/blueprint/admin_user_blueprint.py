@@ -1,6 +1,14 @@
 import functools
 
-from flask import Blueprint, flash, g, session, redirect, render_template, request, url_for, jsonify
+from flask import (
+    Blueprint,
+    flash,
+    session,
+    redirect,
+    render_template,
+    request,
+    url_for,
+)
 
 from repository.admin_user_repository import AdminUserRepository
 from repository.customers_repository import CustomersRepository
@@ -10,11 +18,11 @@ from service.admin_users_service import (
     AdminUsersService,
     AdminUserNotFountError,
     AdminUserAuthError,
-    AdminUserValidationError
+    AdminUserValidationError,
 )
 from repository.unit_of_work import UnitOfWork
 from service.customers import Customer, CustomerValidator
-from service.customers_service import (CustomersService, CustomerValidationError)
+from service.customers_service import CustomersService, CustomerValidationError
 from service.posts_service import PostsService
 
 bp = Blueprint("admin_user", __name__)
@@ -83,14 +91,6 @@ def index():
     else:
         customer_page = int(customer_page)
 
-    post_page = request.args.get("post_page")
-    if post_page is None:
-        post_page = 1
-    elif str(post_page).isdecimal() is False:
-        post_page = 1
-    else:
-        post_page = int(post_page)
-
     admin_user_id = session.get("admin_user_id")
     with UnitOfWork() as unit_of_work:
         admin_user_repo = AdminUserRepository(unit_of_work.session)
@@ -102,23 +102,51 @@ def index():
         posts_service = PostsService(posts_repo)
         admin_users = admin_user_service.find_all(admin_page)
         customers = customer_service.find_all(customer_page)
-        posts = posts_service.find_all(post_page)
         admin_users_block = admin_user_service.block_count()
         customers_block = customer_service.block_count()
         posts_block = posts_service.block_count()
         unit_of_work.commit()
-    return render_template("admin_user/index.html",
-                           posts=posts,
-                           customers=customers,
-                           admin_users=admin_users,
-                           login_name=admin_user.name,
-                           admin_users_block=admin_users_block,
-                           customers_block=customers_block,
-                           posts_block=posts_block,
-                           admin_page=admin_page,
-                           customer_page=customer_page,
-                           post_page=post_page,
-                           )
+    return render_template(
+        "admin_user/index.html",
+        customers=customers,
+        admin_users=admin_users,
+        login_name=admin_user.name,
+        admin_users_block=admin_users_block,
+        customers_block=customers_block,
+        posts_block=posts_block,
+        admin_page=admin_page,
+        customer_page=customer_page,
+    )
+
+
+@bp.route("/admin/customers/<customer_id>")
+@admin_login_required
+def show_customer(customer_id):
+    post_page = request.args.get("post_page")
+    if post_page is None:
+        post_page = 1
+    elif str(post_page).isdecimal() is False:
+        post_page = 1
+    else:
+        post_page = int(post_page)
+    print(post_page)
+
+    with UnitOfWork() as unit_of_work:
+        customer_repo = CustomersRepository(unit_of_work.session)
+        customer_service = CustomersService(customer_repo)
+        customer = customer_service.get_customer_by_id(customer_id)
+        post_repo = PostsRepository(unit_of_work.session)
+        posts_service = PostsService(post_repo)
+        posts = posts_service.find_by_customer_id(customer_id, post_page)
+        posts_block = posts_service.block_count()
+        print(posts_block)
+    return render_template(
+        "admin_user/customer.html",
+        customer=customer,
+        posts=posts,
+        post_page=post_page,
+        posts_block=posts_block,
+    )
 
 
 @bp.route("/admin/register_customer", methods=("GET", "POST"))
@@ -147,7 +175,11 @@ def register_customer():
                 return redirect(url_for("admin_user.index"))
     except CustomerValidationError as e:
         flash(str(e))
-    return render_template("admin_user/register_customer.html", customer=new_customer, login_name=admin_user.name)
+    return render_template(
+        "admin_user/register_customer.html",
+        customer=new_customer,
+        login_name=admin_user.name,
+    )
 
 
 @bp.route("/admin/delete_customer", methods=("POST",))
@@ -174,9 +206,10 @@ def change_delete_hash():
         else:
             customer_service.remove_delete_hash(customer_id)
         unit_of_work.commit()
-    return redirect(url_for("admin_user.index"))
+    return redirect("/admin/customers/" + customer_id)
 
-@bp.route('/admin/register_user', methods=('GET', 'POST'))
+
+@bp.route("/admin/register_user", methods=("GET", "POST"))
 @admin_login_required
 def register_user():
     try:
@@ -186,7 +219,7 @@ def register_user():
             admin_user_service = AdminUsersService(admin_user_repo)
             admin_user_id = session.get("admin_user_id")
             admin_user = admin_user_service.find_by_id(admin_user_id)
-            if request.method == 'POST':
+            if request.method == "POST":
                 new_admin_user.name = request.form["name"]
                 new_admin_user.email = request.form["email"]
                 new_admin_user.password = request.form["password"]
@@ -198,7 +231,11 @@ def register_user():
                 return redirect(url_for("admin_user.index"))
     except AdminUserValidationError as e:
         flash(str(e))
-    return render_template("admin_user/register_user.html", admin_user=new_admin_user, login_name=admin_user.name)
+    return render_template(
+        "admin_user/register_user.html",
+        admin_user=new_admin_user,
+        login_name=admin_user.name,
+    )
 
 
 @bp.route("/admin/delete_user", methods=("POST",))
@@ -224,4 +261,4 @@ def reset_customer():
             customer_service = CustomersService(customer_repo)
             customer_service.reset_customer_info_by_id(customer_id)
             unit_of_work.commit()
-    return redirect(url_for("admin_user.index"))
+    return redirect("/admin/customers/" + customer_id)

@@ -1,6 +1,12 @@
-import uuid
-
-from sqlalchemy import Column, Integer, String, DateTime, Text, ForeignKey, create_engine, Boolean, DefaultClause
+from sqlalchemy import (
+    Column,
+    Integer,
+    String,
+    DateTime,
+    Text,
+    ForeignKey,
+    Boolean,
+)
 from sqlalchemy.ext.declarative import declarative_base
 
 
@@ -8,7 +14,7 @@ Base = declarative_base()
 
 
 class AdminUsersModel(Base):
-    __tablename__ = 'admin_users'
+    __tablename__ = "admin_users"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(255), nullable=False)
@@ -25,7 +31,7 @@ class AdminUsersModel(Base):
 
 
 class CustomersModel(Base):
-    __tablename__ = 'customers'
+    __tablename__ = "customers"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(255), nullable=False)
@@ -54,11 +60,11 @@ class CustomersModel(Base):
 
 
 class PostsModel(Base):
-    __tablename__ = 'posts'
+    __tablename__ = "posts"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     media_id = Column(String(45), nullable=False)
-    customer_id = Column(Integer, ForeignKey('customers.id'), nullable=False)
+    customer_id = Column(Integer, ForeignKey("customers.id"), nullable=False)
     timestamp = Column(String(45))
     media_url = Column(Text)
     created_at = Column(DateTime)
@@ -74,5 +80,5 @@ class PostsModel(Base):
             "media_url": self.media_url,
             "created_at": self.created_at,
             "permalink": self.permalink,
-            "wordpress_link": self.wordpress_link
+            "wordpress_link": self.wordpress_link,
         }
