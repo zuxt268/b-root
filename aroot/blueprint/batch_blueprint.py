@@ -6,7 +6,7 @@ from repository.unit_of_work import UnitOfWork
 from repository.customers_repository import CustomersRepository
 from service.customers_service import CustomersService
 from repository.posts_repository import PostsRepository
-from service.meta_service import MetaService
+from service.meta_service import MetaService, MetaApiError
 from service.posts_service import PostsService
 from service.slack_service import SlackService
 from service.wordpress_service import WordpressService

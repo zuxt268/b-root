@@ -74,4 +74,21 @@ class MetaService:
 
 
 class MetaApiError(Exception):
-    pass
+    def __init__(self, error_data: dict):
+        # 必要なキーが存在しない場合はデフォルト値を設定
+        self.message = error_data.get("error", {}).get(
+            "message", "Unknown error occurred"
+        )
+        self.error_type = error_data.get("error", {}).get("type", "UnknownError")
+        self.code = error_data.get("error", {}).get("code", 0)
+        self.error_subcode = error_data.get("error", {}).get("error_subcode", None)
+        self.fbtrace_id = error_data.get("error", {}).get("fbtrace_id", None)
+
+        # 親クラスの初期化
+        super().__init__(self.message)
+
+    def __str__(self):
+        return (
+            f"MetaApiError: {self.message} (Type: {self.error_type}, "
+            f"Code: {self.code}, Subcode: {self.error_subcode}, FBTrace ID: {self.fbtrace_id})"
+        )
