@@ -194,7 +194,6 @@ class WordpressService:
             elif post.media_type == "VIDEO":
                 resp_uploads.append(self.transfer_video(post.media_url))
         html = self.get_html_for_carousel(media.caption, resp_uploads)
-        SlackService().send_message(html)
         resp_post = self.create_post(media.caption, html, int(resp_uploads[0].media_id))
         return {
             "media_id": media.id,
