@@ -52,10 +52,14 @@ class CustomersService:
     def update_customer_after_login(
         self, id_, access_token, instagram_business_account_id, instagram_user_name
     ):
+        customer = self.customers_repository.find_by_id(id_)
+        start_date = datetime.datetime.now()
+        if customer.start_date is not None:
+            start_date = customer.start_date
         self.customers_repository.update(
             id_,
             facebook_token=access_token,
-            start_date=datetime.datetime.now(),
+            start_date=start_date,
             instagram_business_account_id=instagram_business_account_id,
             instagram_business_account_name=instagram_user_name,
         )
