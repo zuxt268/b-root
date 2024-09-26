@@ -8,6 +8,7 @@ from blueprint import (
     api_blueprint,
 )
 from dotenv import load_dotenv
+from datetime import timedelta
 from service.slack_service import SlackService
 
 
@@ -16,7 +17,7 @@ load_dotenv()
 app = Flask(__name__)
 
 app.config.from_mapping(SECRET_KEY="aroot")
-
+app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(days=365)
 
 app.register_blueprint(customer_blueprint.bp)
 app.register_blueprint(admin_user_blueprint.bp)

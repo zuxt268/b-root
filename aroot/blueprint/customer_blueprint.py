@@ -42,8 +42,8 @@ def login_required(view):
 @bp.route("/login", methods=("GET", "POST"))
 def login():
     if request.method == "POST":
-        email = request.form["email"]
-        password = request.form["password"]
+        email = request.form.get("email")
+        password = request.form.get("password")
         if not email or not password:
             error = "メールアドレスかパスワードが間違っています"
         else:
@@ -54,6 +54,7 @@ def login():
                     customer = customer_service.get_customer_by_email(email)
                     customer.check_password_hash(password)
                     session["customer_id"] = customer.id
+                    session.permanent = True
                     unit_of_work.commit()
                     return redirect(url_for("customer.index"))
             except CustomerNotFoundError:
