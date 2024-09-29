@@ -61,7 +61,7 @@ def login():
                 error = "Email、またはPasswordが間違っています。"
             except AdminUserAuthError:
                 error = "Email、またはPasswordが間違っています。"
-        flash(error)
+        flash(error, category="warning")
     return render_template("admin_user/login.html")
 
 
@@ -129,7 +129,6 @@ def show_customer(customer_id):
         post_page = 1
     else:
         post_page = int(post_page)
-    print(post_page)
 
     with UnitOfWork() as unit_of_work:
         customer_repo = CustomersRepository(unit_of_work.session)
@@ -173,7 +172,7 @@ def register_customer():
                 unit_of_work.commit()
                 return redirect(url_for("admin_user.index"))
     except CustomerValidationError as e:
-        flash(str(e))
+        flash(message=str(e), category="warning")
     return render_template(
         "admin_user/register_customer.html",
         customer=new_customer,
@@ -229,7 +228,7 @@ def register_user():
                 unit_of_work.commit()
                 return redirect(url_for("admin_user.index"))
     except AdminUserValidationError as e:
-        flash(str(e))
+        flash(message=str(e), category="warning")
     return render_template(
         "admin_user/register_user.html",
         admin_user=new_admin_user,

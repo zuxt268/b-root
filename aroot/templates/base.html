@@ -26,13 +26,19 @@
         </div>
     </div>
 
-    {% for message in get_flashed_messages() %}
-        <div class="container">
-            <div class="mt-5 alert alert-warning" role="alert">
-              {{ message }}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+            {% if category == "warning" %}
+            <div class="container">
+                <div class="mt-5 alert alert-warning" role="alert">
+                  {{ message }}
+                </div>
             </div>
-        </div>
-    {% endfor %}
+            {% elif category == "alert" %}
+
+            {% endif %}
+        {% endfor %}
+    {% endwith %}
 
     {% block content %}{% endblock %}
 

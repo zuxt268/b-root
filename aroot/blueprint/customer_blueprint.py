@@ -61,7 +61,7 @@ def login():
                 error = "メールアドレスかパスワードが間違っています"
             except CustomerAuthError:
                 error = "メールアドレスかパスワードが間違っています"
-        flash(error)
+        flash(message=error, category="warning")
     return render_template("customer/login.html")
 
 
@@ -109,7 +109,8 @@ def facebook_auth():
         msg = f"```{err_txt}\n{stack_trace}```"
         SlackService().send_alert(msg)
         flash(
-            f"Instagramアカウントの取得に失敗しました。設定を確認してください: {str(e)}"
+            message=f"Instagramアカウントの取得に失敗しました。設定を確認してください: {str(e)}",
+            category="warning",
         )
     return redirect(url_for("customer.index"))
 
