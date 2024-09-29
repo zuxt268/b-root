@@ -16,10 +16,12 @@ function post(path, dict) {
 
 // オーバーレイを表示する関数
 function showLoadingOverlay() {
-    document.getElementById('loadingOverlay').classList.remove('d-none');
+    document.getElementById('loading-overlay').classList.remove('d-none');
+    document.getElementById('loading-overlay').classList.add('d-flex');
 }
 
 // オーバーレイを非表示にする関数
 function hideLoadingOverlay() {
-    document.getElementById('loadingOverlay').classList.add('d-none');
+    document.getElementById('loading-overlay').classList.add('d-none');
+    document.getElementById('loading-overlay').classList.remove('d-flex');
 }
