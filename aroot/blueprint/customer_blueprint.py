@@ -1,5 +1,6 @@
 import functools
 import traceback
+import pytz
 from flask import (
     Blueprint,
     flash,
@@ -11,6 +12,7 @@ from flask import (
     jsonify,
 )
 
+from datetime import timedelta, datetime
 from repository.posts_repository import PostsRepository
 from repository.unit_of_work import UnitOfWork
 from repository.customers_repository import CustomersRepository
@@ -24,6 +26,7 @@ from service.meta_service import MetaService, MetaApiError
 from service.slack_service import SlackService
 from service.wordpress_service import WordpressService
 from domain.instagram_media import convert_to_json
+from util.const import EXPIRED
 
 bp = Blueprint("customer", __name__)
 
@@ -83,8 +86,35 @@ def index():
         posts_service = PostsService(posts_repo)
         posts = posts_service.find_by_customer_id(customer_id)
         unit_of_work.commit()
-        print(posts)
-    return render_template("customer/index.html", customer=customer, posts=posts)
+        formatted_date = customer.start_date + timedelta(hours=9)
+        if customer.instagram_token_status == EXPIRED:
+            flash(
+                message="トークンの期限が切れました。再認証してください",
+                category="danger",
+            )
+    return render_template(
+        "customer/index.html",
+        customer=customer,
+        posts=posts,
+        formatted_date=formatted_date,
+    )
+
+
+@bp.route("/start_date", methods=("POST",))
+@login_required
+def start_date():
+    customer_id = session.get("customer_id")
+    new_start_date = request.form.get("start_date")
+    if new_start_date:
+        utc_time = datetime.strptime(new_start_date, "%Y-%m-%dT%H:%M:%S") - timedelta(
+            hours=9
+        )
+        with UnitOfWork() as unit_of_work:
+            customer_repo = CustomersRepository(unit_of_work.session)
+            customer_repo.update(customer_id, start_date=utc_time)
+            unit_of_work.commit()
+            flash(message="日時を更新しました", category="success")
+    return redirect(url_for("customer.index"))
 
 
 @bp.route("/facebook/auth", methods=("POST",))

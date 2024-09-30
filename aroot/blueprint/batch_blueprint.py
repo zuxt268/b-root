@@ -11,17 +11,21 @@ from service.posts_service import PostsService
 from service.slack_service import SlackService
 from service.wordpress_service import WordpressService
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from domain.customers import Customer
+
+from util.const import EXPIRED
 
 bp = Blueprint("batch", __name__)
 
 lock = Lock()
 
 
-def handle_customer(customer):
+def handle_customer(customer: Customer):
     with UnitOfWork() as unit_of_work:
         posts_repo = PostsRepository(unit_of_work.session)
         posts_service = PostsService(posts_repo)
         meta_service = MetaService()
+        customer_repository = CustomersRepository(unit_of_work.session)
         try:
             print(f"<Start> customer_id: {customer.id}, customer_name: {customer.name}")
             wordpress_service = WordpressService(
@@ -37,12 +41,25 @@ def handle_customer(customer):
             results = wordpress_service.posts(targets)
             posts_service.save_posts(results, customer.id)
             unit_of_work.commit()
+        except MetaApiError as e:
+            if str(e.error_subcode) == 463:
+                customer_repository.update(customer.id, instagram_token_status=EXPIRED)
+            else:
+                err_txt = str(e)
+                stack_trace = traceback.format_exc()
+                msg = f"```{customer.name}\n\n{err_txt}\n\n{stack_trace}```"
+                SlackService().send_alert(msg)
+                unit_of_work.rollback()
         except Exception as e:
-            err_txt = str(e)
-            stack_trace = traceback.format_exc()
-            msg = f"```{customer.name}\n\n{err_txt}\n\n{stack_trace}```"
-            SlackService().send_alert(msg)
+            send_alert(e, customer)
             unit_of_work.rollback()
+
+
+def send_alert(e: Exception, customer):
+    err_txt = str(e)
+    stack_trace = traceback.format_exc()
+    msg = f"```{customer.name}\n\n{err_txt}\n\n{stack_trace}```"
+    SlackService().send_alert(msg)
 
 
 def process_batch():

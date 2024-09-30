@@ -1,7 +1,10 @@
+from typing import Optional
+
 from sqlalchemy.orm import Session
 from repository.models import CustomersModel
-from sqlalchemy import func
-from service.customers import Customer
+from sqlalchemy import func, and_
+from domain.customers import Customer
+from util import const
 
 
 class CustomersRepository:
@@ -13,25 +16,30 @@ class CustomersRepository:
         self.session.add(record)
         return Customer(**record.dict())
 
-    def _get(self, _id) -> CustomersModel | None:
+    def _get(self, _id) -> Optional[CustomersModel]:
         return (
             self.session.query(CustomersModel).filter(CustomersModel.id == _id).first()
         )
 
-    def find_by_id(self, _id):
+    def find_by_id(self, _id) -> Optional[Customer]:
         customer = self._get(_id)
         if customer is not None:
             return Customer(**customer.dict())
 
-    def find_by_email(self, email):
+    def find_by_email(self, email) -> Optional[Customer]:
         query = self.session.query(CustomersModel)
         record = query.filter(CustomersModel.email == email).first()
         if record is not None:
             return Customer(**record.dict())
 
-    def find_already_linked(self):
+    def find_already_linked(self) -> list[Customer]:
         query = self.session.query(CustomersModel)
-        records = query.filter(CustomersModel.facebook_token != None).all()
+        records = query.filter(
+            and_(
+                CustomersModel.facebook_token != None,
+                CustomersModel.instagram_token_status == const.CONNECTED,
+            )
+        )
         return [Customer(**record.dict()) for record in records]
 
     def find_all(self, limit=None, offset=None) -> list[Customer]:

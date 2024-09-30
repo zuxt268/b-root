@@ -1,13 +1,4 @@
-class AdminUserNotFountError(Exception):
-    pass
-
-
-class AdminUserAuthError(Exception):
-    pass
-
-
-class AdminUserValidationError(Exception):
-    pass
+from domain.errors import AdminUserNotFountError, AdminUserValidationError
 
 
 class AdminUsersService:

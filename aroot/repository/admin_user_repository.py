@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from repository.models import AdminUsersModel
-from service.admin_users import AdminUser
+from domain.admin_users import AdminUser
 from sqlalchemy import func
 
 

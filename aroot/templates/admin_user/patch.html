@@ -1,0 +1,48 @@
+{% extends 'admin.html' %}
+
+{% block content %}
+<div class="container">
+
+    <h1 class="h3 mb-2 text-gray-800">パッチ</h1>
+
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">#</th>
+          <th scope="col">Title</th>
+          <th scope="col">Timestamp</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for patch in patches %}
+        <tr>
+          <th scope="row">{{ patch["id"] }}</th>
+          <td>{{ patch["title"] }}</td>
+          <td>{{ patch["timestamp"] }}</td>
+          <td><button value="{{ patch["id"] }}" type="button" class="patch_btn btn btn-sm btn-outline-danger {{ "disabled" if not patch["status"] }}">実行</button></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="mb-3">
+        <label for="logTextarea" class="form-label">Logs</label>
+        <div class="form-control" id="logTextarea" style="height: 300px; overflow-y: auto;">
+            <pre class="mb-0">{% for log in logs %}{{ log }}
+            {% endfor %}</pre>
+        </div>
+    </div>
+
+</div>
+
+<script>
+document.querySelectorAll(".patch_btn").forEach((node) => {
+    node.addEventListener("click", (e) => {
+        const patch_id = e.target.value;
+        post("/admin/patch", {patch_id});
+    })
+})
+</script>
+
+{% endblock %}

@@ -13,15 +13,14 @@ from flask import (
 from repository.admin_user_repository import AdminUserRepository
 from repository.customers_repository import CustomersRepository
 from repository.posts_repository import PostsRepository
-from service.admin_users import AdminUserValidator, AdminUser
+from domain.admin_users import AdminUserValidator, AdminUser
 from service.admin_users_service import (
     AdminUsersService,
     AdminUserNotFountError,
-    AdminUserAuthError,
     AdminUserValidationError,
 )
 from repository.unit_of_work import UnitOfWork
-from service.customers import Customer, CustomerValidator
+from domain.customers import Customer, CustomerValidator
 from service.customers_service import CustomersService, CustomerValidationError
 from service.posts_service import PostsService
 

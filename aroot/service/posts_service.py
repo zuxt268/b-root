@@ -1,6 +1,6 @@
 import datetime
 from domain.instagram_media import InstagramMedia
-from service.posts import Post
+from domain.posts import Post
 
 
 class PostsService:

@@ -25,3 +25,9 @@ function hideLoadingOverlay() {
     document.getElementById('loading-overlay').classList.add('d-none');
     document.getElementById('loading-overlay').classList.remove('d-flex');
 }
+
+window.addEventListener('pageshow', function (event) {
+    if (event.persisted) { // Checks if the page was loaded from cache
+        hideLoadingOverlay(); // Your function to hide the loading overlay
+    }
+});

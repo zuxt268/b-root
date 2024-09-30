@@ -6,6 +6,7 @@ from blueprint import (
     admin_user_blueprint,
     batch_blueprint,
     api_blueprint,
+    patch_blueprint,
 )
 from dotenv import load_dotenv
 from datetime import timedelta
@@ -23,6 +24,7 @@ app.register_blueprint(customer_blueprint.bp)
 app.register_blueprint(admin_user_blueprint.bp)
 app.register_blueprint(batch_blueprint.bp)
 app.register_blueprint(api_blueprint.bp)
+app.register_blueprint(patch_blueprint.bp)
 
 
 @app.errorhandler(404)
@@ -37,7 +39,7 @@ def handle_exception(error):
     stacktrace
     {stack_trace}
     """
-    SlackService().send_alert(msg)
+    # SlackService().send_alert(msg)
     return render_template("errors.html", errors=error)
 
 

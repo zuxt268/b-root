@@ -1,16 +1,12 @@
 import datetime
 
-
-class CustomerNotFoundError(Exception):
-    pass
-
-
-class CustomerAuthError(Exception):
-    pass
-
-
-class CustomerValidationError(Exception):
-    pass
+from domain.customers import Customer
+from domain.errors import (
+    CustomerValidationError,
+    CustomerAuthError,
+    CustomerNotFoundError,
+)
+from util.const import CONNECTED, NOT_CONNECTED
 
 
 class CustomersService:
@@ -49,6 +45,12 @@ class CustomersService:
             id_, facebook_token=access_token, start_date=datetime.datetime.now()
         )
 
+    def update_instagram_token_status(self, id_, status):
+        self.customers_repository.update(
+            id_,
+            instagram_token=status,
+        )
+
     def update_customer_after_login(
         self, id_, access_token, instagram_business_account_id, instagram_user_name
     ):
@@ -62,6 +64,7 @@ class CustomersService:
             start_date=start_date,
             instagram_business_account_id=instagram_business_account_id,
             instagram_business_account_name=instagram_user_name,
+            instagram_token_status=CONNECTED,
         )
 
     def block_count(self):
@@ -73,7 +76,10 @@ class CustomersService:
             limit=CustomersService.limit, offset=offset
         )
 
-    def find_already_linked(self):
+    def get_all(self):
+        return self.customers_repository.find_all()
+
+    def find_already_linked(self) -> list[Customer]:
         return self.customers_repository.find_already_linked()
 
     def remove_customer_by_id(self, customer_id):
@@ -86,6 +92,7 @@ class CustomersService:
             start_date=None,
             instagram_business_account_id=None,
             instagram_business_account_name=None,
+            instagram_token_status=NOT_CONNECTED,
         )
 
     def set_delete_hash(self, id_):

@@ -1,9 +1,9 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import desc, text, func
 
-import service.posts
+import domain.posts
 from repository.models import PostsModel
-from service.posts import Post
+from domain.posts import Post
 
 
 class PostsRepository:
@@ -25,7 +25,7 @@ class PostsRepository:
 
     def find_by_customer_id(
         self, customer_id, limit=None, offset=None
-    ) -> list[service.posts.Post]:
+    ) -> list[domain.posts.Post]:
         query = (
             self.session.query(PostsModel)
             .filter(PostsModel.customer_id == customer_id)
