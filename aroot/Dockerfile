@@ -5,6 +5,7 @@ RUN pip install --upgrade pip
 
 # get curl for healthchecks
 RUN apk add curl
+RUN apk add --no-cache tcl tk
 
 # permissions and nonroot user for tightened security
 RUN adduser -D nonroot
@@ -24,6 +25,7 @@ ENV VIRTUAL_ENV=/home/app/venv
 RUN python -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 RUN export FLASK_APP=app.py
+
 RUN pip install -r requirements.txt
 
 # define the port number the container should expose

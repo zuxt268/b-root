@@ -1,28 +1,19 @@
-import base64
-import hashlib
-import hmac
-import json
-import os
 import sys
 from domain import const
-from idlelib.autocomplete import ATTRS
-from time import strftime
+
 
 from flask import (
     Blueprint,
     request,
-    jsonify,
     flash,
     render_template,
 )
 
 from util import const
 from blueprint.admin_user_blueprint import admin_login_required
-from repository.admin_user_repository import AdminUserRepository
+
 from repository.customers_repository import CustomersRepository
-from service.admin_users_service import (
-    AdminUsersService,
-)
+
 from repository.unit_of_work import UnitOfWork
 from service.customers_service import CustomersService
 from service.meta_service import MetaService, MetaApiError
