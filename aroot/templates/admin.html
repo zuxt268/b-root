@@ -1,23 +1,23 @@
 {% extends "base.html" %}
 
 {% block logoutmodal %}
-    <div class="modal fade" id="adminLogoutModal" tabindex="-1" role="dialog" aria-labelledby="adminModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="adminModalLabel">ログアウトしますか？</h5>
-                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">×</span>
-                    </button>
-                </div>
-                <div class="modal-footer">
-                    <div class="dropdown-divider"></div>
-                    <a class="btn btn-primary" href="/admin/logout">Logout</a>
-                </div>
+<div class="modal fade" id="adminLogoutModal" tabindex="-1" aria-labelledby="adminLogoutModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="adminLogoutModalLabel">Confirm Logout</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                ログアウトしますか？
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <a href="/admin/logout" class="btn btn-primary">ログアウト</a>
             </div>
         </div>
     </div>
+</div>
 {% endblock %}
 
 {% block header %}
@@ -52,21 +52,5 @@
 </nav>
 
     <!-- Modal Structure -->
-{#<div class="modal fade" id="adminLogoutModal" tabindex="-1" aria-labelledby="adminLogoutModalLabel" aria-hidden="true">#}
-{#    <div class="modal-dialog">#}
-{#        <div class="modal-content">#}
-{#            <div class="modal-header">#}
-{#                <h5 class="modal-title" id="adminLogoutModalLabel">Confirm Logout</h5>#}
-{#                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>#}
-{#            </div>#}
-{#            <div class="modal-body">#}
-{#                ログアウトしますか？#}
-{#            </div>#}
-{#            <div class="modal-footer">#}
-{#                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>#}
-{#                <a href="/admin/logout" class="btn btn-primary">ログアウト</a>#}
-{#            </div>#}
-{#        </div>#}
-{#    </div>#}
-{#</div>#}
+
 {% endblock %}
