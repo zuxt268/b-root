@@ -82,7 +82,7 @@ def patch_1() -> list[str]:
                 )
                 logs.append(f"{customer.name}: ok")
             except MetaApiError as e:
-                if str(e.error_subcode) == "463":
+                if e.is_token_expired():
                     customer_service.update_instagram_token_status(
                         customer.id, const.EXPIRED
                     )

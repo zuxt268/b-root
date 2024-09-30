@@ -92,3 +92,6 @@ class MetaApiError(Exception):
             f"MetaApiError: {self.message} (Type: {self.error_type}, "
             f"Code: {self.code}, Subcode: {self.error_subcode}, FBTrace ID: {self.fbtrace_id})"
         )
+
+    def is_token_expired(self) -> bool:
+        return str(self.error_subcode) == "463"
