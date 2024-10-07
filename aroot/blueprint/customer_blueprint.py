@@ -86,6 +86,7 @@ def index():
         posts_service = PostsService(posts_repo)
         posts = posts_service.find_by_customer_id(customer_id)
         unit_of_work.commit()
+        formatted_date = None
         if customer.start_date is not None:
             formatted_date = customer.start_date + timedelta(hours=9)
         if customer.instagram_token_status == EXPIRED:
