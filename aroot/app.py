@@ -39,7 +39,7 @@ def handle_exception(error):
     stacktrace
     {stack_trace}
     """
-    # SlackService().send_alert(msg)
+    SlackService().send_alert(msg)
     return render_template("errors.html", errors=error)
 
 
