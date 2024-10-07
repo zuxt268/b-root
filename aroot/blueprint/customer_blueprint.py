@@ -13,8 +13,6 @@ from flask import (
 
 from datetime import timedelta, datetime
 
-
-import util.const
 from repository.posts_repository import PostsRepository
 from repository.unit_of_work import UnitOfWork
 from repository.customers_repository import CustomersRepository
@@ -24,13 +22,11 @@ from service.customers_service import (
     CustomerAuthError,
 )
 from service.openai_service import OpenAIService
-from service.redis_client import get_redis
 from service.posts_service import PostsService
 from service.meta_service import MetaService, MetaApiError
 from service.slack_service import SlackService
 from service.wordpress_service import WordpressService
 from domain.instagram_media import convert_to_json
-from util.const import EXPIRED, TOKEN_EXPIRED, LOGIN, TOKEN_EXPIRED
 
 bp = Blueprint("customer", __name__)
 

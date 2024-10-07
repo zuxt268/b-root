@@ -42,7 +42,7 @@ def handle_customer(customer: Customer):
             posts_service.save_posts(results, customer.id)
             unit_of_work.commit()
         except MetaApiError as e:
-            if str(e.error_subcode) == 463:
+            if str(e.error_subcode) == "463":
                 customer_repository.update(customer.id, instagram_token_status=EXPIRED)
                 SlackService().send_alert(
                     f"トークンの期限が切れました: {customer.name}"
