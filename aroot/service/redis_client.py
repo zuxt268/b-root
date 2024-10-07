@@ -1,3 +1,7 @@
+import redis
+import os
+from flask import g
+
 
 def get_redis():
     if "redis" not in g:

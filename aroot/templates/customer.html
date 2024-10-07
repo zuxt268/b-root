@@ -1,2 +1,46 @@
 {% extends "base.html" %}
 
+{% block logoutmodal %}
+    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">ログアウトしますか？</h5>
+                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-footer">
+                    <div class="dropdown-divider"></div>
+                    <a class="btn btn-primary" href="/logout">Logout</a>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block header %}
+    <nav class="navbar navbar-expand navbar-light topbar mb-3 static-top shadow" style="background-color: rgba(255, 203, 2, 0.3); padding: 0.5rem 1rem;">
+    <ul class="navbar" style="margin: 0; padding: 0;">
+        <span class="navbar-logo ms-3"></span>
+    </ul>
+    <ul class="navbar-nav ms-auto" style="margin: 0;">
+        <div class="topbar-divider d-none d-sm-block"></div>
+        <!-- Nav Item - User Information -->
+        <li class="nav-item dropdown no-arrow">
+            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <span class="me-2 d-none d-lg-inline text-gray-600 small">{{ customer.name }}</span>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end shadow animated--grow-in" aria-labelledby="userDropdown">
+                <li>
+                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">
+                        <i class="fas fa-sign-out-alt fa-sm fa-fw me-2 text-gray-400"></i>
+                        ログアウト
+                    </a>
+                </li>
+            </ul>
+        </li>
+    </ul>
+</nav>
+{% endblock %}

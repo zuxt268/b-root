@@ -1,6 +1,5 @@
 import functools
 import traceback
-import pytz
 from flask import (
     Blueprint,
     flash,
@@ -13,6 +12,9 @@ from flask import (
 )
 
 from datetime import timedelta, datetime
+
+
+import util.const
 from repository.posts_repository import PostsRepository
 from repository.unit_of_work import UnitOfWork
 from repository.customers_repository import CustomersRepository
@@ -21,12 +23,14 @@ from service.customers_service import (
     CustomerNotFoundError,
     CustomerAuthError,
 )
+from service.openai_service import OpenAIService
+from service.redis_client import get_redis
 from service.posts_service import PostsService
 from service.meta_service import MetaService, MetaApiError
 from service.slack_service import SlackService
 from service.wordpress_service import WordpressService
 from domain.instagram_media import convert_to_json
-from util.const import EXPIRED
+from util.const import EXPIRED, TOKEN_EXPIRED, LOGIN, TOKEN_EXPIRED
 
 bp = Blueprint("customer", __name__)
 
@@ -85,18 +89,13 @@ def index():
         posts_repo = PostsRepository(unit_of_work.session)
         posts_service = PostsService(posts_repo)
         posts = posts_service.find_by_customer_id(customer_id)
-        unit_of_work.commit()
-        formatted_date = customer.start_date + timedelta(hours=9)
-        if customer.instagram_token_status == EXPIRED:
-            flash(
-                message="トークンの期限が切れました。再認証してください",
-                category="danger",
-            )
+        openai_client = OpenAIService()
+        ai_message = openai_client.generate_index_message(customer)
     return render_template(
         "customer/index.html",
         customer=customer,
         posts=posts,
-        formatted_date=formatted_date,
+        ai_message=ai_message,
     )
 
 
@@ -133,6 +132,10 @@ def facebook_auth():
                 customer_id, long_token, instagram["id"], instagram["username"]
             )
             unit_of_work.commit()
+            flash(
+                message=f"インスタグラムアカウントとの連携に成功しました",
+                category="success",
+            )
     except MetaApiError as e:
         err_txt = str(e)
         stack_trace = traceback.format_exc()

@@ -28,7 +28,7 @@ class CustomersService:
                 result["fail"].append({"name": customer.name, "error": f"{str(e)}"})
         return result
 
-    def get_customer_by_id(self, customer_id):
+    def get_customer_by_id(self, customer_id) -> Customer:
         customer = self.customers_repository.find_by_id(customer_id)
         if customer is not None:
             return customer

@@ -1,3 +1,6 @@
+from datetime import timedelta
+from typing import Optional
+
 from werkzeug.security import check_password_hash, generate_password_hash
 from domain.errors import CustomerAuthError, CustomerValidationError
 
@@ -59,6 +62,11 @@ class Customer:
         if self.wordpress_url is not None:
             result["wordpress_url"] = self.wordpress_url
         return result
+
+    def formatted_date(self):
+        if self.start_date is None:
+            return None
+        return self.start_date + timedelta(hours=9)
 
 
 class CustomerValidator:

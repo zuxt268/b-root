@@ -36,6 +36,21 @@ services:
     networks:
       - shared-network
 
+  redis:
+    image: redis:latest
+    restart: always
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+    volumes:
+      - redis-data:/data
+    expose:
+      - 6379
+    networks:
+      - shared-network
+
 volumes:
   db-data:
 

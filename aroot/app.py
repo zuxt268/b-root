@@ -1,6 +1,6 @@
 import traceback
 
-from flask import Flask, render_template
+from flask import Flask, render_template, g
 from blueprint import (
     customer_blueprint,
     admin_user_blueprint,
@@ -27,6 +27,13 @@ app.register_blueprint(api_blueprint.bp)
 app.register_blueprint(patch_blueprint.bp)
 
 
+@app.teardown_appcontext
+def close_redis(exception):
+    redis_client = g.pop("redis", None)
+    if redis_client is not None:
+        redis_client.close()
+
+
 @app.errorhandler(404)
 def handle_404(error):
     return render_template("404.html"), 404
@@ -39,7 +46,7 @@ def handle_exception(error):
     stacktrace
     {stack_trace}
     """
-    # SlackService().send_alert(msg)
+    SlackService().send_alert(msg)
     return render_template("errors.html", errors=error)
 
 
@@ -51,6 +58,11 @@ def terms():
 @app.route("/privacy")
 def privacy():
     return render_template("etc/privacy.html")
+
+
+@app.route("/releases")
+def releases():
+    return render_template("etc/releases.html")
 
 
 @app.route("/flask-health-check")

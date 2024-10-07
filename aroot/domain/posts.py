@@ -1,3 +1,6 @@
+import urllib.parse
+
+
 class Post:
     def __init__(
         self,
@@ -29,4 +32,15 @@ class Post:
     def get_permalink(self):
         if self.permalink is None:
             return ""
-        return self.permalink[:30] + "..."
+        decoded_url = urllib.parse.unquote(self.permalink)
+        extracted = decoded_url.split("/")[-2]
+        return extracted
+
+    def get_wordpress_title(self):
+        if self.wordpress_link is None:
+            return ""
+        decoded_url = urllib.parse.unquote(self.wordpress_link)
+        extracted = decoded_url.split("/")[-2]
+        if len(extracted) > 30:
+            extracted = extracted[:30] + "..."
+        return extracted
