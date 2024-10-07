@@ -35,7 +35,6 @@ services:
       - 33060
     networks:
       - shared-network
-
   redis:
     image: redis:latest
     restart: always
@@ -53,6 +52,7 @@ services:
 
 volumes:
   db-data:
+  redis-data:
 
 networks:
   shared-network:
