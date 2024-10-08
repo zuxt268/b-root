@@ -13,6 +13,11 @@ from flask import (
 
 from datetime import timedelta, datetime
 
+from flask.sessions import SessionMixin
+from typing_extensions import Optional
+
+from util.const import DashboardStatus, EXPIRED, NOT_CONNECTED
+
 from repository.posts_repository import PostsRepository
 from repository.unit_of_work import UnitOfWork
 from repository.customers_repository import CustomersRepository
@@ -24,9 +29,11 @@ from service.customers_service import (
 from service.openai_service import OpenAIService
 from service.posts_service import PostsService
 from service.meta_service import MetaService, MetaApiError
+from service.redis_client import get_redis
 from service.slack_service import SlackService
-from service.wordpress_service import WordpressService
+from service.wordpress_service import WordpressService, WordpressAuthError
 from domain.instagram_media import convert_to_json
+
 
 bp = Blueprint("customer", __name__)
 
@@ -85,13 +92,19 @@ def index():
         posts_repo = PostsRepository(unit_of_work.session)
         posts_service = PostsService(posts_repo)
         posts = posts_service.find_by_customer_id(customer_id)
-        openai_client = OpenAIService()
-        ai_message = openai_client.generate_index_message(customer)
+    dashboard_status = session.pop("dashboard_status", None)
+    if dashboard_status is None:
+        if customer.instagram_token_status == EXPIRED:
+            dashboard_status = DashboardStatus.TOKEN_EXPIRED.value
+        elif customer.instagram_token_status == NOT_CONNECTED:
+            dashboard_status = DashboardStatus.AUTH_PENDING.value
+        else:
+            dashboard_status = DashboardStatus.HEALTHY.value
     return render_template(
         "customer/index.html",
         customer=customer,
         posts=posts,
-        ai_message=ai_message,
+        dashboard_status=dashboard_status,
     )
 
 
@@ -109,6 +122,7 @@ def start_date():
             customer_repo.update(customer_id, start_date=utc_time)
             unit_of_work.commit()
             flash(message="日時を更新しました", category="success")
+            set_dashboard_status(session, DashboardStatus.MOD_START_DATE.value)
     return redirect(url_for("customer.index"))
 
 
@@ -121,27 +135,45 @@ def facebook_auth():
         with UnitOfWork() as unit_of_work:
             customers_repo = CustomersRepository(unit_of_work.session)
             customer_service = CustomersService(customers_repo)
+            customer = customer_service.get_customer_by_id(customer_id)
             meta_service = MetaService()
             long_token = meta_service.get_long_term_token(access_token)
             instagram = meta_service.get_instagram_account(access_token)
             customer_service.update_customer_after_login(
                 customer_id, long_token, instagram["id"], instagram["username"]
             )
+            wordpress_service = WordpressService(
+                customer.wordpress_url, customer.delete_hash, customer.name
+            )
+            wordpress_service.get_wordpress_posts()
             unit_of_work.commit()
             flash(
                 message=f"インスタグラムアカウントとの連携に成功しました",
                 category="success",
             )
+            set_dashboard_status(session, DashboardStatus.AUTH_SUCCESS.value)
+    except WordpressAuthError as e:
+        send_alert(e)
+        flash(
+            message=f"Wordpressとの疎通に失敗しました。管理者にご連絡ください: {str(e)}",
+            category="alert",
+        )
+        set_dashboard_status(session, DashboardStatus.AUTH_ERROR_WORDPRESS.value)
     except MetaApiError as e:
-        err_txt = str(e)
-        stack_trace = traceback.format_exc()
-        msg = f"```{err_txt}\n{stack_trace}```"
-        SlackService().send_alert(msg)
+        send_alert(e)
         flash(
             message=f"Instagramアカウントの取得に失敗しました。設定を確認してください: {str(e)}",
             category="warning",
         )
+        set_dashboard_status(session, DashboardStatus.AUTH_ERROR_INSTAGRAM.value)
     return redirect(url_for("customer.index"))
+
+
+def send_alert(e: Exception):
+    err_txt = str(e)
+    stack_trace = traceback.format_exc()
+    msg = f"```{err_txt}\n{stack_trace}```"
+    SlackService().send_alert(msg)
 
 
 @bp.route("/instagram", methods=("POST",))
@@ -202,3 +234,33 @@ def post_wordpress():
         msg = f"```{customer.name}\n\n{err_txt}\n\n{stack_trace}```"
         SlackService().send_alert(msg)
         return jsonify({"error": str(e)})
+
+
+@bp.route("/maika/dashboard", methods=("POST",))
+def maika_dashboard():
+    customer_id = request.json.get("customer_id")
+    dashboard_status_str = request.json.get("dashboard_status")
+    dashboard_status = DashboardStatus(dashboard_status_str)
+    openai_client = OpenAIService()
+    ai_message = openai_client.generate_message(customer_id, dashboard_status)
+    return jsonify({"status": "success", "message": ai_message})
+
+
+def get_dashboard_status(session_mixin: SessionMixin) -> Optional[DashboardStatus]:
+    dashboard_status = session_mixin.get("dashboard_status")
+    if dashboard_status is not None:
+        timestamp = session_mixin.get("dashboard_status_timestamp")
+        if timestamp is not None:
+            expiration_time = timestamp + timedelta(minutes=60)
+            if datetime.now() < expiration_time:
+                return DashboardStatus(dashboard_status)
+    session_mixin.pop("dashboard_status", None)
+    session_mixin.pop("dashboard_status_timestamp", None)
+    return None
+
+
+def set_dashboard_status(
+    session_mixin: SessionMixin, dashboard_status: DashboardStatus
+):
+    session_mixin["dashboard_status"] = dashboard_status
+    session_mixin["dashboard_status_timestamp"] = datetime.now()

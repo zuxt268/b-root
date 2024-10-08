@@ -130,11 +130,10 @@
   </div>
 </div>
 
-<div id="chatWindow" class="bg-white rounded {{ "in-message" if ai_message != "" }}">
+<div id="chatWindow" class="bg-white rounded">
     <div class="modal-content">
         <div class="container">
             <div class="modal-header">
-
                 <div style="cursor: pointer;" class="row" onclick="toggleChat()">
                     <div class="ms-1 mt-3 col-2">
                         <span class="maika-image"></span>
@@ -144,15 +143,19 @@
                     </div>
                 </div>
             </div>
-            <div class="m-2 modal-body">
+            <div class="m-2 modal-body" style="max-height: 300px; overflow-y: auto;">
                 <p id="ai-message">
+                    <div id="chat-spinner" class="ms-2 spinner-border text-primary" role="status">
+                      <span class="visually-hidden">Loading...</span>
+                    </div>
                 </p>
             </div>
         </div>
-
     </div>
 </div>
 
+<input id="customer_id" type="hidden" value="{{ customer.id }}">
+<input id="dashboard_status" type="hidden" value="{{ dashboard_status }}">
 
 <script>
     function toggleChat() {
@@ -160,29 +163,50 @@
         chatWindow.classList.toggle('minimized');
 
         // Toggle the minimize/maximize button symbol
-        var minimizeBtn = document.getElementById('minimizeBtn');
+        let minimizeBtn = document.getElementById('minimizeBtn');
         minimizeBtn.textContent = chatWindow.classList.contains('minimized') ? '+' : '-';
     }
 
-    // The text to display
-    {#const text = "こんにちは！サポートデスクのMaikaです✨ ダッシュボードにログインしていただき、ありがとうございます！初めてのご利用ですか？それとも、何度か使ったことがありますか？何か気になることや操作についてわからないことがあれば、ぜひお気軽にご相談くださいね😊 私は皆さんのサポートをするためにここにいますので、どんな小さなことでも遠慮なく声をかけてください♪一緒に快適にお使いいただけるよう、精一杯サポートさせていただきます！";#}
-    {% if ai_message != "" %}
-        const text = "{{ ai_message }}";
-        const messageElement = document.getElementById('ai-message');
-        let index = 0;
+    const customer_id = document.getElementById("customer_id").value;
+    const dashboard_status = document.getElementById("dashboard_status").value;
 
-        // Function to display text one character at a time
-        function typeWriter() {
-            if (index < text.length) {
-                messageElement.innerHTML += text[index];
-                index++;
-                setTimeout(typeWriter, 100); // Adjust speed here (100ms)
-            }
+    const data = {
+        customer_id, // 送信するcustomer_id
+        dashboard_status // 送信するdashboard_status（例として文字列）
+    };
+
+    fetch('/maika/dashboard', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.status === 'success') {
+            console.log('AI Message:', result.message);
+            const msg = result.message;
+            typeWriter(msg);
+        } else {
+            console.error('Failed to get AI message');
         }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    }).finally(() => {
+        document.getElementById('chat-spinner').style.display = 'none';
+    });
 
-        // Start the typing effect
-        typeWriter();
-    {% endif %}
+    // Function to display text one character at a time
+    function typeWriter(text, index=0) {
+        const messageElement = document.getElementById('ai-message');
+        if (index < String(text).length) {
+            messageElement.innerHTML += text[index];
+            index++;
+            setTimeout(() => typeWriter(text, index), 100); // Adjust speed here (100ms)
+        }
+    }
 
 </script>
 

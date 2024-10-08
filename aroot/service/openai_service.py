@@ -1,10 +1,11 @@
 import os
+
+
 from openai import OpenAI
 
 
-from domain.prompt import pending_authentication, token_expired, connected
+from domain.prompt import get_prompt
 from service.redis_client import get_redis
-from domain.customers import Customer
 from util.const import (
     NOT_CONNECTED,
     EXPIRED,
@@ -33,24 +34,15 @@ class OpenAIService:
             },
         ]
 
-    def generate_index_message(self, customer: Customer) -> str:
-        prompt = ""
-        key = ""
-        if customer.instagram_token_status == NOT_CONNECTED:
-            prompt = pending_authentication()
-            key = f"customer:{customer.id}:{DashboardStatus.AUTH_PENDING}"
-        elif customer.instagram_token_status == EXPIRED:
-            prompt = token_expired()
-            key = f"customer:{customer.id}:{DashboardStatus.TOKEN_EXPIRED}"
-        elif customer.instagram_token_status == CONNECTED:
-            prompt = connected()
-            key = f"customer:{customer.id}:{DashboardStatus.HEALTHY}"
-
+    def generate_message(
+        self, customer_id: int, dashboard_status: DashboardStatus
+    ) -> str:
         redis_client = get_redis()
-        if key != "":
-            msg = redis_client.get(key)
-            if msg is not None:
-                return msg.decode("utf-8").replace("\n", " ")
+        key = f"customer_id:{customer_id}_dashboard_status:{dashboard_status}"
+        msg = redis_client.get(key)
+        if msg is not None:
+            return msg.decode("utf-8").replace("\n", " ")
+        prompt = get_prompt(dashboard_status)
         ai_message = self.create(prompt).replace("\n", " ")
         redis_client.set(key, ai_message, ex=60)
         return ai_message

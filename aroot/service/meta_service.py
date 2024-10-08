@@ -41,7 +41,7 @@ class MetaService:
                             "id": i["instagram_business_account"]["id"],
                             "username": i["instagram_business_account"]["username"],
                         }
-            raise MetaApiError("Not found instagram_business_account")
+            raise MetaAccountNotFoundError("Not found instagram_business_account")
         raise MetaApiError(response.json())
 
     def get_media_list(
@@ -71,6 +71,10 @@ class MetaService:
             else:
                 return []
         raise MetaApiError(response.json())
+
+
+class MetaAccountNotFoundError(Exception):
+    pass
 
 
 class MetaApiError(Exception):

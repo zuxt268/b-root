@@ -78,6 +78,16 @@ class WordpressService:
                 )
         return results
 
+    def get_wordpress_posts(self):
+        params = {"per_page": 1, "page": 1}
+        try:
+            response = requests.get(
+                f"https://{self.wordpress_url}/wp-json/wp/v2/posts", params=params
+            )
+            response.raise_for_status()  # HTTPエラーチェック
+        except requests.exceptions.RequestException as e:
+            raise WordpressAuthError("Wordpressの疎通に失敗")
+
     def upload_image(self, image_path) -> WordPressSource:
         print("upload_image is invoked")
         headers = {
@@ -199,6 +209,10 @@ class WordpressService:
             "permalink": media.permalink,
             "wordpress_link": resp_post["link"],
         }
+
+
+class WordpressAuthError(Exception):
+    pass
 
 
 class WordpressApiError(Exception):

@@ -12,15 +12,13 @@ class InstagramTokenStatus(Enum):
 
 
 class DashboardStatus(Enum):
-    AUTH_PENDING = "200"
+    STARTER = "100"
+    AUTH_PENDING = "101"
+    AUTH_ERROR_INSTAGRAM = "102"
+    AUTH_ERROR_WORDPRESS = "103"
+    AUTH_SUCCESS = "200"
     TOKEN_EXPIRED = "201"
+    EXECUTE_SUCCESS = "202"
+    MOD_START_DATE = "203"
+    UPDATE_INFORMATION = "301"
     HEALTHY = "0"
-
-
-# 正常系
-LOGIN = 100
-
-# 認証系
-AUTH_PENDING = "200"
-TOKEN_EXPIRED = "201"
-HEALTHY = 0
