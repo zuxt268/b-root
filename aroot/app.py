@@ -42,10 +42,11 @@ def handle_404(error):
 @app.errorhandler(Exception)
 def handle_exception(error):
     stack_trace = traceback.format_exc()
-    msg = f"""error: {error}
-    stacktrace
-    {stack_trace}
-    """
+    msg = f"""```● Error: {error}
+    ● method: {request.method}
+    ● url: {request.url}
+    
+    {stack_trace}```"""
     SlackService().send_alert(msg)
     return render_template("errors.html", errors=error)
 
