@@ -145,7 +145,7 @@ def facebook_auth():
             wordpress_service = WordpressService(
                 customer.wordpress_url, customer.delete_hash, customer.name
             )
-            wordpress_service.get_wordpress_posts()
+            wordpress_service.ping()
             unit_of_work.commit()
             flash(
                 message=f"インスタグラムアカウントとの連携に成功しました",
