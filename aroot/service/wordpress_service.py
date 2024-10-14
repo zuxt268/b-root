@@ -4,8 +4,8 @@ import tempfile
 
 import requests
 
-from requests.auth import HTTPBasicAuth
 from urllib.request import urlretrieve
+
 from service.slack_service import SlackService
 from domain.instagram_media import InstagramMedia
 from domain.wordpress_source import WordPressSource
@@ -15,9 +15,8 @@ class WordpressService:
     def __init__(self, wordpress_url, delete_hash, name):
         self.wordpress_url = wordpress_url
         self.delete_hash = delete_hash
-        self.auth = HTTPBasicAuth(
-            os.getenv("WORDPRESS_ADMIN_ID"), os.getenv("WORDPRESS_ADMIN_PASSWORD")
-        )
+        self.admin_email = os.getenv("WORDPRESS_ADMIN_EMAIL")
+        self.api_key = os.getenv("WORDPRESS_API_KEY")
         self.name = name
 
     @staticmethod
@@ -40,15 +39,24 @@ class WordpressService:
         html = "<div class='a-root-wordpress-instagram-slider'>"
         for resp_upload in resp_upload_list:
             if resp_upload.media_type == "IMAGE":
-                html += f"<div><img src='{resp_upload.source_url}' style='margin: 0 auto;' width='500px' height='500px'/></div>"
+                html += (
+                    f"<div><img src='{resp_upload.source_url}' style='margin: 0 auto;' width='500px' "
+                    f"height='500px'/></div>"
+                )
             elif resp_upload.media_type == "VIDEO":
-                html += f"<div><video src='{resp_upload.source_url}' style='margin: 0 auto;' width='500px' height='500px' controls>Sorry, your browser does not support embedded videos.</video></div>"
+                html += (
+                    f"<div><video src='{resp_upload.source_url}' style='margin: 0 auto;' width='500px' "
+                    f"height='500px' controls>Sorry, your browser does not support embedded videos.</video></div>"
+                )
         html += "</div>"
         html += self.get_contents_html(caption, self.delete_hash)
         return html
 
     def get_html_for_video(self, caption, url):
-        video_html = f"<div><video src='{url}' style='margin: 0 auto;' width='500px' height='500px' controls>Sorry, your browser does not support embedded videos.</video></div>"
+        video_html = (
+            f"<div><video src='{url}' style='margin: 0 auto;' width='500px' height='500px' controls>Sorry, "
+            f"your browser does not support embedded videos.</video></div>"
+        )
         video_html += self.get_contents_html(caption, self.delete_hash)
         return video_html
 
@@ -78,6 +86,19 @@ class WordpressService:
                 )
         return results
 
+    def ping(self):
+        try:
+            data = {
+                "api_key": self.api_key,
+                "email": self.admin_email,
+            }
+            response = requests.get(
+                f"https://{self.wordpress_url}?rest_route=/v1/rodut/ping", data=data
+            )
+            response.raise_for_status()
+        except Exception as e:
+            raise WordpressAuthError("Wordpressの疎通に失敗")
+
     def get_wordpress_posts(self):
         params = {"per_page": 1, "page": 1}
         try:
@@ -89,55 +110,76 @@ class WordpressService:
             raise WordpressAuthError("Wordpressの疎通に失敗")
 
     def upload_image(self, image_path) -> WordPressSource:
-        print("upload_image is invoked")
-        headers = {
-            "Content-Type": "image/jpeg",
-            "Content-Disposition": f'attachment; filename="{image_path}"',
-        }
+        data = {"api_key": self.api_key, "email": self.admin_email}
+        print(f"https://{self.wordpress_url}?rest_route=/rodut/v1/upload-media")
         with open(image_path, "rb") as img:
-            binary = img.read()
+            files = {"file": (image_path, img, "image/jpeg")}
             response = requests.post(
-                f"https://{self.wordpress_url}/wp-json/wp/v2/media",
-                headers=headers,
-                data=binary,
-                auth=self.auth,
+                f"https://{self.wordpress_url}?rest_route=/rodut/v1/upload-media",
+                data=data,
+                files=files,
             )
-            print(f"response: {response.json()}, status: {response.status_code}")
+            print(response)
             if 200 <= response.status_code < 300:
                 return WordPressSource(
                     response.json()["id"], "IMAGE", response.json()["source_url"]
                 )
-            raise WordpressApiError(response.json())
+            raise WordpressApiError(response.text)
 
     def upload_video(self, video_path):
-        url = f"https://{self.wordpress_url}/wp-json/wp/v2/media"
-        headers = {
-            "Content-Disposition": 'attachment; filename="{}.mp4"'.format(
-                os.path.basename(video_path)
-            ),
-            "Content-Type": "video/mp4",
+        data = {
+            "api_key": self.api_key,
+            "email": self.admin_email,
         }
-        with open(video_path, "rb") as f:
-            response = requests.post(url, headers=headers, data=f, auth=self.auth)
+        with open(video_path, "rb") as img:
+            files = {"file": (video_path, img, "video/mp4")}
+            response = requests.post(
+                f"https://{self.wordpress_url}?rest_route=/rodut/v1/upload-media",
+                data=data,
+                files=files,
+            )
+            print(response)
             if 200 <= response.status_code < 300:
                 return WordPressSource(
                     response.json()["id"], "VIDEO", response.json()["source_url"]
                 )
-            raise WordpressApiError(response.json())
+            raise WordpressApiError(response.text)
 
     def transfer_image(self, media_url) -> WordPressSource:
-        # NamedTemporaryFile を使って自動的に一時ファイルを作成
-        with tempfile.NamedTemporaryFile(suffix=".jpeg", delete=True) as temp_file:
-            urlretrieve(media_url, temp_file.name)
-            resp_upload = self.upload_image(temp_file.name)
-        # temp_file は with ブロックの終了と共に自動で削除される
+        with tempfile.NamedTemporaryFile(suffix=".jpeg", delete=False) as temp_file:
+            try:
+                # URLからファイルをダウンロード
+                urlretrieve(media_url, temp_file.name)
+                print(f"Downloaded image to: {temp_file.name}")
+            finally:
+                # temp_fileが閉じられているか確認して、明示的に削除する
+                temp_file.close()
+
+            # 画像をアップロード
+            try:
+                resp_upload = self.upload_image(temp_file.name)
+            finally:
+                # アップロード後にファイルを削除
+                os.remove(temp_file.name)
         return resp_upload
 
     def transfer_video(self, media_url) -> WordPressSource:
         # NamedTemporaryFile を使って自動的に一時ファイルを作成
-        with tempfile.NamedTemporaryFile(suffix=".mp4", delete=True) as temp_file:
-            urlretrieve(media_url, temp_file.name)
-            resp_upload = self.upload_video(temp_file.name)
+        with tempfile.NamedTemporaryFile(suffix=".mp4", delete=False) as temp_file:
+            try:
+                # URLからファイルをダウンロード
+                urlretrieve(media_url, temp_file.name)
+                print(f"Downloaded image to: {temp_file.name}")
+            finally:
+                # temp_fileが閉じられているか確認して、明示的に削除する
+                temp_file.close()
+
+            # 画像をアップロード
+            try:
+                resp_upload = self.upload_video(temp_file.name)
+            finally:
+                # アップロード後にファイルを削除
+                os.remove(temp_file.name)
         return resp_upload
 
     def create_post(self, title: str, content: str, media_id: int):
@@ -145,16 +187,16 @@ class WordpressService:
         print("create_post is invoked")
         headers = {"Content-Type": "application/json"}
         data = {
+            "api_key": self.api_key,
+            "email": self.admin_email,
             "title": title,
             "content": content,
-            "status": "publish",
             "featured_media": media_id,
         }
         response = requests.post(
-            f"https://{self.wordpress_url}/wp-json/wp/v2/posts",
+            f"https://{self.wordpress_url}/?rest_route=/rodut/v1/create-post",
             headers=headers,
             json=data,
-            auth=self.auth,
         )
         print(f"response: {response.json()}, status: {response.status_code}")
         if 200 <= response.status_code < 300:
@@ -174,7 +216,7 @@ class WordpressService:
             "timestamp": media.timestamp,
             "media_url": media.media_url,
             "permalink": media.permalink,
-            "wordpress_link": resp_post["link"],
+            "wordpress_link": resp_post["post_url"],
         }
 
     def post_for_carousel(self, media: InstagramMedia):
@@ -191,7 +233,7 @@ class WordpressService:
             "timestamp": media.timestamp,
             "media_url": media.media_url,
             "permalink": media.permalink,
-            "wordpress_link": resp_post["link"],
+            "wordpress_link": resp_post["post_url"],
         }
 
     def post_for_video(self, media: InstagramMedia):
@@ -207,7 +249,7 @@ class WordpressService:
             "timestamp": media.timestamp,
             "media_url": media.media_url,
             "permalink": media.permalink,
-            "wordpress_link": resp_post["link"],
+            "wordpress_link": resp_post["post_url"],
         }
 
 
