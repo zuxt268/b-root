@@ -45,7 +45,7 @@ class WordpressService:
                 )
             elif resp_upload.media_type == "VIDEO":
                 html += (
-                    f"<div><video src='{resp_upload.source_url}' style='margin: 0 auto;' width='500px' "
+                    f"<div style='text-align: center;'><video src='{resp_upload.source_url}' style='margin: 0 auto;' width='500px' "
                     f"height='500px' controls>Sorry, your browser does not support embedded videos.</video></div>"
                 )
         html += "</div>"
@@ -54,7 +54,8 @@ class WordpressService:
 
     def get_html_for_video(self, caption, url):
         video_html = (
-            f"<div><video src='{url}' style='margin: 0 auto;' width='500px' height='500px' controls>Sorry, "
+            f"<div style='text-align: center;'><video src='{url}'"
+            f" style='margin: 0 auto;' width='500px' height='500px' controls>Sorry, "
             f"your browser does not support embedded videos.</video></div>"
         )
         video_html += self.get_contents_html(caption, self.delete_hash)
