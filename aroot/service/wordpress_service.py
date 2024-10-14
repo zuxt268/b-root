@@ -31,7 +31,7 @@ class WordpressService:
         return contents
 
     def get_html_for_image(self, caption, url):
-        image_html = f"<div><img src='{url}' style='margin: 0 auto;' width='500px' height='500px'/></div>"
+        image_html = f"<div style='text-align: center;'><img src='{url}' style='margin: 0 auto;' width='500px' height='500px'/></div>"
         image_html += self.get_contents_html(caption, self.delete_hash)
         return image_html
 
@@ -40,7 +40,7 @@ class WordpressService:
         for resp_upload in resp_upload_list:
             if resp_upload.media_type == "IMAGE":
                 html += (
-                    f"<div><img src='{resp_upload.source_url}' style='margin: 0 auto;' width='500px' "
+                    f"<div style='text-align: center;'><img src='{resp_upload.source_url}' style='margin: 0 auto;' width='500px' "
                     f"height='500px'/></div>"
                 )
             elif resp_upload.media_type == "VIDEO":
