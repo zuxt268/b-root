@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 from google.oauth2.service_account import Credentials
 from repository.site_repository import SiteRepository
 from repository.unit_of_work import UnitOfWork
+from fastapi import APIRouter
 
 load_dotenv()
 
@@ -116,23 +117,24 @@ from fastapi import FastAPI, Request
 
 api = FastAPI()
 
-
-@api.post("/slack/events")
-async def endpoint(req: Request):
-    return await app_handler.handle(req)
-
-
-@api.get("/")
-async def root(req: Request):
-    return "ok"
-
-
 @api.get("/health-check")
 async def health_check():
     return "ok"
 
+router = APIRouter(prefix="/dolis")
 
-@api.get("/data/link")
+
+@router.post("/slack/events")
+async def endpoint(req: Request):
+    return await app_handler.handle(req)
+
+
+@router.get("/")
+async def root(req: Request):
+    return "ok"
+
+
+@router.get("/data/link")
 async def link():
     with UnitOfWork() as unit_of_work:
         site_repo = SiteRepository(unit_of_work.session)
@@ -143,6 +145,9 @@ async def link():
             site_repo.insert(row)
         unit_of_work.commit()
     return "ok!!"
+
+
+api.include_router(router)
 
 # pip install -r requirements.txt
 # export SLACK_SIGNING_SECRET=***
