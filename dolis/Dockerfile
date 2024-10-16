@@ -1,17 +1,21 @@
-FROM python:3.13
+FROM python:3.13.0-alpine
 
-WORKDIR /app
+# upgrade pip
+RUN pip install --upgrade pip
 
-COPY ./requirements.txt /code/requirements.txt
-
-RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
+# get curl for healthchecks
+RUN apk add curl
+RUN apk add --no-cache tcl tk
 
 RUN adduser -D nonroot
-RUN mkdir /app/ && chown -R nonroot:nonroot /app
+RUN mkdir /home/app/ && chown -R nonroot:nonroot /home/app
 
+WORKDIR /home/app
 USER nonroot
 
 COPY --chown=nonroot:nonroot . .
+
+RUN pip install -r requirements.txt
 
 EXPOSE 8003
 
