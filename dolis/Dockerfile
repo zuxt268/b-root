@@ -24,7 +24,9 @@ USER nonroot
 
 COPY --chown=nonroot:nonroot . .
 
-RUN pip install -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
+
+RUN pip install uvicorn
 
 EXPOSE 8003
 
