@@ -1,11 +1,19 @@
-FROM python:3.13.0-alpine
+FROM python:3.12.7-alpine
 
 # upgrade pip
 RUN pip install --upgrade pip
 
 # get curl for healthchecks
 RUN apk add curl
-RUN apk add --no-cache tcl tk
+RUN apk add --no-cache \
+    curl \
+    tcl tk \
+    gcc \
+    g++ \
+    musl-dev \
+    libffi-dev \
+    make \
+    cargo
 
 # permissions and nonroot user for tightened security
 RUN adduser -D nonroot
