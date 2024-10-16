@@ -1,6 +1,6 @@
 import traceback
 
-from flask import Flask, render_template, g
+from flask import Flask, render_template, g, request
 from blueprint import (
     customer_blueprint,
     admin_user_blueprint,
