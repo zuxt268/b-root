@@ -5,15 +5,7 @@ RUN pip install --upgrade pip
 
 # get curl for healthchecks
 RUN apk add curl
-RUN apk add --no-cache \
-    curl \
-    tcl tk \
-    gcc \
-    g++ \
-    musl-dev \
-    libffi-dev \
-    make \
-    cargo
+RUN apk add --no-cache tcl tk
 
 # permissions and nonroot user for tightened security
 RUN adduser -D nonroot
@@ -26,9 +18,12 @@ USER nonroot
 # copy all the files to the container
 COPY --chown=nonroot:nonroot . .
 
+# venv
+ENV VIRTUAL_ENV=/home/app/venv
 
 # python setup
-
+RUN python -m venv $VIRTUAL_ENV
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 RUN export FLASK_APP=app.py
 
 RUN pip install -r requirements.txt
