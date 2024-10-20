@@ -41,10 +41,12 @@ def handle_404(error):
 
 @app.errorhandler(Exception)
 def handle_exception(error):
+    client_ip = request.headers.get("X-Forwarded-For", request.remote_addr)
     stack_trace = traceback.format_exc()
     msg = f"""```● Error: {error}
     ● method: {request.method}
     ● url: {request.url}
+    ● client IP: {client_ip}
     
     {stack_trace}```"""
     SlackService().send_alert(msg)
