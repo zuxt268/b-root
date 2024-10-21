@@ -28,7 +28,7 @@ from service.customers_service import (
 )
 from service.openai_service import OpenAIService
 from service.posts_service import PostsService
-from service.meta_service import MetaService, MetaApiError
+from service.meta_service import MetaService, MetaApiError, MetaAccountNotFoundError
 from service.redis_client import get_redis
 from service.slack_service import SlackService
 from service.wordpress_service import WordpressService, WordpressAuthError
@@ -152,6 +152,13 @@ def facebook_auth():
                 category="success",
             )
             set_dashboard_status(session, DashboardStatus.AUTH_SUCCESS.value)
+    except MetaAccountNotFoundError as e:
+        send_alert(e)
+        flash(
+            message=f"Instagramアカウントの取得に失敗しました。設定を確認してください: {str(e)}",
+            category="alert",
+        )
+        set_dashboard_status(session, DashboardStatus.AUTH_ERROR_INSTAGRAM.value)
     except WordpressAuthError as e:
         send_alert(e)
         flash(

@@ -93,7 +93,7 @@ class WordpressService:
                 "api_key": self.api_key,
                 "email": self.admin_email,
             }
-            response = requests.get(
+            response = requests.post(
                 f"https://{self.wordpress_url}?rest_route=/rodut/v1/ping", data=data
             )
             response.raise_for_status()
