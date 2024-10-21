@@ -94,7 +94,7 @@ class WordpressService:
                 "email": self.admin_email,
             }
             response = requests.post(
-                f"https://{self.wordpress_url}?rest_route=/rodut/v1/ping", data=data
+                f"https://{self.wordpress_url}?rest_route=/rodut/v1/ping", json=data
             )
             response.raise_for_status()
         except Exception as e:
