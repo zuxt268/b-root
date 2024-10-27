@@ -2,6 +2,8 @@ import os
 import json
 import requests
 
+from domain.customers import Customer
+
 
 class SlackService(object):
     def __init__(self):
@@ -29,3 +31,18 @@ class SlackService(object):
         self.request(
             {"icon_emoji": ":wink:", "username": "A-Root", "text": f"{message}"}
         )
+
+
+def send_support_team(customer: Customer):
+    msg = "トークンの期限が切れましたので、ご連絡、再認証お願いします。"
+    msg += f"\n- {customer.name}"
+    response = requests.post(
+        os.getenv("SLACK_WEBHOOK_URL_AROOT"),
+        data=json.dumps(
+            {
+                "username": "池澤勇輝",
+                "text": f"<@U01TJ6JC877>\n{msg}",
+            }
+        ),
+        headers={"Content-Type": "application/json"},
+    )

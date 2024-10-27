@@ -8,7 +8,7 @@ from service.customers_service import CustomersService
 from repository.posts_repository import PostsRepository
 from service.meta_service import MetaService, MetaApiError
 from service.posts_service import PostsService
-from service.slack_service import SlackService
+from service.slack_service import SlackService, send_support_team
 from service.wordpress_service import WordpressService
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from domain.customers import Customer
@@ -47,6 +47,7 @@ def handle_customer(customer: Customer):
                 SlackService().send_alert(
                     f"トークンの期限が切れました: {customer.name}"
                 )
+                send_support_team(customer)
                 unit_of_work.commit()
             else:
                 send_alert(e, customer)
