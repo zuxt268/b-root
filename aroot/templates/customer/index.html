@@ -114,15 +114,13 @@
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">Instagram</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
+        <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div id="modal-body" class="modal-body">
         <p>モーダルボディ</p>
       </div>
       <div class="modal-footer">
-        <button id="execute_post_wordpress" type="button" class="btn btn-primary" data-dismiss="modal"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="mr-1 bi bi-send" viewBox="0 0 16 16">
+        <button id="execute_post_wordpress" type="button" class="btn btn-primary" data-bs-dismiss="modal"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="mr-1 bi bi-send" viewBox="0 0 16 16">
   <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576 6.636 10.07Zm6.787-8.201L1.591 6.602l4.339 2.76 7.494-7.493Z"/>
 </svg>連携</button>
       </div>
@@ -205,6 +203,11 @@
             messageElement.innerHTML += text[index];
             index++;
             setTimeout(() => typeWriter(text, index), 100); // Adjust speed here (100ms)
+        } else {
+            // 3秒後に処理を実行
+            setTimeout(() => {
+                toggleChat();
+            }, 3000); // 3000ミリ秒 = 3秒
         }
     }
 
