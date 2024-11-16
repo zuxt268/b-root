@@ -59,6 +59,8 @@ class PostsService:
                 continue
             if media.id in linked_id_list:
                 continue
+            if media.media_url is None:
+                continue
             targets.append(media)
         return targets
 
