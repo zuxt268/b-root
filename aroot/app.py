@@ -1,6 +1,8 @@
 import traceback
+import os
 
 from flask import Flask, render_template, g, request
+from flask_wtf import CSRFProtect
 from blueprint import (
     customer_blueprint,
     admin_user_blueprint,
@@ -19,6 +21,8 @@ app = Flask(__name__)
 
 app.config.from_mapping(SECRET_KEY="aroot")
 app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(days=365)
+csrf = CSRFProtect()
+csrf.init_app(app)
 
 app.register_blueprint(customer_blueprint.bp)
 app.register_blueprint(admin_user_blueprint.bp)
@@ -39,18 +43,20 @@ def handle_404(error):
     return render_template("404.html"), 404
 
 
-@app.errorhandler(Exception)
-def handle_exception(error):
-    client_ip = request.headers.get("X-Forwarded-For", request.remote_addr)
-    stack_trace = traceback.format_exc()
-    msg = f"""```● Error: {error}
-    ● method: {request.method}
-    ● url: {request.url}
-    ● client IP: {client_ip}
+if os.getenv("ENVIRONMENT") != "develop":
+
+    @app.errorhandler(Exception)
+    def handle_exception(error):
+        client_ip = request.headers.get("X-Forwarded-For", request.remote_addr)
+        stack_trace = traceback.format_exc()
+        msg = f"""```● Error: {error}
+        ● method: {request.method}
+        ● url: {request.url}
+        ● client IP: {client_ip}
     
-    {stack_trace}```"""
-    SlackService().send_alert(msg)
-    return render_template("errors.html", errors=error)
+        {stack_trace}```"""
+        SlackService().send_alert(msg)
+        return render_template("errors.html", errors=error)
 
 
 @app.route("/terms")

@@ -16,6 +16,7 @@ from datetime import timedelta, datetime
 from flask.sessions import SessionMixin
 from typing_extensions import Optional
 
+from domain.customers import Customer
 from util.const import DashboardStatus, EXPIRED, NOT_CONNECTED
 
 from repository.posts_repository import PostsRepository
@@ -47,6 +48,13 @@ def login_required(view):
         return view(**kwargs)
 
     return wrapped_view
+
+
+@bp.route("/register", methods=("GET", "POST"))
+def register():
+    customer = Customer()
+    print("koko")
+    return render_template("customer/register.html", customer=customer)
 
 
 @bp.route("/login", methods=("GET", "POST"))
