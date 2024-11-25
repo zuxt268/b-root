@@ -1,5 +1,7 @@
 import functools
 import traceback
+import uuid
+
 from flask import (
     Blueprint,
     flash,
@@ -9,6 +11,7 @@ from flask import (
     request,
     url_for,
     jsonify,
+    abort,
 )
 
 from datetime import timedelta, datetime
@@ -16,8 +19,17 @@ from datetime import timedelta, datetime
 from flask.sessions import SessionMixin
 from typing_extensions import Optional
 
-from domain.customers import Customer
-from util.const import DashboardStatus, EXPIRED, NOT_CONNECTED
+from domain.customers import Customer, CustomerValidator
+from domain.errors import CustomerValidationError
+from service.account_service import AccountService
+from service.sendgrid_service import SendGridService
+from util.const import (
+    DashboardStatus,
+    EXPIRED,
+    NOT_CONNECTED,
+    PAYMENT_TYPE_STRIPE,
+    PAYMENT_STATUS_YET,
+)
 
 from repository.posts_repository import PostsRepository
 from repository.unit_of_work import UnitOfWork
@@ -50,11 +62,91 @@ def login_required(view):
     return wrapped_view
 
 
-@bp.route("/register", methods=("GET", "POST"))
-def register():
+@bp.route("/send_verification_email", methods=("POST",))
+def send_verification_email():
+    email = request.form["email"]
+    try:
+        with UnitOfWork() as unit_of_work:
+            customer_repo = CustomersRepository(unit_of_work.session)
+            customer_service = CustomersService(customer_repo)
+            customer_service.check_use_email(email)
+            token = generate_register_uuid()
+            redis_cli = get_redis()
+            account_service = AccountService(redis_cli)
+            account_service.set_temp_register(token, email)
+            SendGridService().send_register_mail(email, token)
+        return render_template("customer/mail_confirm.html")
+    except CustomerValidationError as e:
+        flash(str(e), "warning")
+    return redirect(url_for("customer.mail_input"))
+
+
+@bp.route("/verify_email_token", methods=("GET",))
+def verify_email_token():
+    token = request.args.get("token")
+    redis_cli = get_redis()
+    account_service = AccountService(redis_cli)
+    user = account_service.get_temp_register(token)
+    if user is None:
+        flash("セッションがタイムアウトしました", category="warning")
+        return render_template("customer/mail_input.html")
+    session["register_email"] = user.get("email")
+    return redirect(url_for("customer.get_register"))
+
+
+@bp.route("/mail_input", methods=("GET",))
+def mail_input():
+    return render_template("customer/mail_input.html")
+
+
+@bp.route("/pre_payment", methods=("GET",))
+def pre_payment():
+    return render_template("customer/pre_payment.html")
+
+
+@bp.route("/pre_register", methods=("GET",))
+def pre_register():
+    return render_template("customer/pre_register.html")
+
+
+@bp.route("/register", methods=("GET",))
+def get_register():
+    register_email = session.get("register_email")
+    if not register_email:
+        flash("セッションがタイムアウトしました", category="warning")
+        return render_template("customer/mail_input.html")
     customer = Customer()
-    print("koko")
+    customer.email = register_email
     return render_template("customer/register.html", customer=customer)
+
+
+@bp.route("/register", methods=("POST",))
+def post_register():
+    register_email = session.get("register_email")
+    if not register_email:
+        flash("セッションがタイムアウトしました", category="warning")
+        return render_template("customer/mail_input.html")
+    new_customer = Customer()
+    try:
+        with UnitOfWork() as unit_of_work:
+            new_customer.name = request.form.get("name")
+            new_customer.email = register_email
+            new_customer.set_wordpress_url(request.form.get("wordpress_url"))
+            new_customer.password = request.form.get("password")
+            new_customer.payment_type = PAYMENT_TYPE_STRIPE
+            new_customer.payment_status = PAYMENT_STATUS_YET
+            print(new_customer.dict())
+            CustomerValidator.validate(new_customer)
+            new_customer.generate_hash_password()
+            customers_repo = CustomersRepository(unit_of_work.session)
+            customers_service = CustomersService(customers_repo)
+            customers_service.check_use_email(register_email)
+            customers_service.register_customer(new_customer.dict())
+            unit_of_work.commit()
+        return redirect(url_for("customer.pre_payment"))
+    except CustomerValidationError as e:
+        flash(message=str(e), category="warning")
+    return render_template("customer/register.html", customer=new_customer)
 
 
 @bp.route("/login", methods=("GET", "POST"))
@@ -279,3 +371,7 @@ def set_dashboard_status(
 ):
     session_mixin["dashboard_status"] = dashboard_status
     session_mixin["dashboard_status_timestamp"] = datetime.now()
+
+
+def generate_register_uuid() -> str:
+    return "rgr_" + str(uuid.uuid4())

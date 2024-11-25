@@ -14,12 +14,26 @@
                         <div class="">
                             <h1 class="h4 text-gray-900 mb-4">顧客登録</h1>
                         </div>
-                        <form method="post" class="user">
+                        <p>Email: {{ customer.email }}</p>
+                        <form method="post" class="user" action="/register">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                                                        <div class="mb-3 form-group">
+                                <input value="{{ customer.name }}" name="name" type="text" class="form-control form-control-user" id="name"
+                                    placeholder="名前">
+                            </div>
+                            <div class="mb-3 form-group">
+                                <input value="{{ customer.wordpress_url }}" name="wordpress_url" type="text" class="form-control form-control-user" id="wordpress_url"
+                                    placeholder="Wordpress URL">
+                            </div>
+                            <div class="mb-3 form-group">
+                                <input value="{{ customer.password }}" name="password" type="text" class="form-control form-control-user"
+                                        id="password" placeholder="パスワード">
+                            </div>
                             <div class="mb-3 form-group">
                                 <input name="business_category" type="text" class="form-control form-control-user" id="business_category" placeholder="事業区分">
                             </div>
                             <div class="mb-3 form-group">
-                                <input name="company_name" type="text" class="form-control form-control-user" id="company_name" placeholder="会社名">
+                                <input name="company_name" value="{{ customer.company_name }}" type="text" class="form-control form-control-user" id="company_name" placeholder="会社名">
                             </div>
                             <div class="mb-3 form-group">
                                 <input name="company_name_kana" type="text" class="form-control form-control-user" id="company_name_kana" placeholder="会社名（カナ）">
@@ -29,21 +43,6 @@
                             </div>
                             <div class="mb-3 form-group">
                                 <input name="representative_name_kana" type="text" class="form-control form-control-user" id="representative_name_kana" placeholder="代表者名（カナ）">
-                            </div>
-                            <div class="mb-3 form-group">
-                                <input name="postal_code" type="text" class="form-control form-control-user" id="postal_code" placeholder="郵便番号">
-                            </div>
-                            <div class="mb-3 form-group">
-                                <input name="prefecture" type="text" class="form-control form-control-user" id="prefecture" placeholder="都道府県">
-                            </div>
-                            <div class="mb-3 form-group">
-                                <input name="city" type="text" class="form-control form-control-user" id="city" placeholder="市区町村">
-                            </div>
-                            <div class="mb-3 form-group">
-                                <input name="address" type="text" class="form-control form-control-user" id="address" placeholder="市区町村以降の住所">
-                            </div>
-                            <div class="mb-3 form-group">
-                                <input name="phone_number" type="tel" class="form-control form-control-user" id="phone_number" placeholder="電話番号">
                             </div>
                             <input id="save" type="submit" value="登録" class="form-control form-control-user btn btn-primary" />
                         </form>
