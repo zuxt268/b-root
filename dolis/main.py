@@ -3,10 +3,13 @@ import json
 import boto3
 import re
 
+import requests
 from slack_bolt import App
 from slack_bolt.adapter.fastapi import SlackRequestHandler
 from dotenv import load_dotenv
 from google.oauth2.service_account import Credentials
+from urllib3 import request
+
 from repository.site_repository import SiteRepository
 from repository.unit_of_work import UnitOfWork
 from fastapi import APIRouter
@@ -31,6 +34,8 @@ scope = [
 
 creds = Credentials.from_service_account_info(client_secret, scopes=scope)
 site_sheet = gspread.authorize(creds).open("サイト管理シート").worksheet("サイト")
+seisaku_sheet = gspread.authorize(creds).open("制作管理シート").worksheet("JIRA")
+
 
 app = App()
 app_handler = SlackRequestHandler(app)
@@ -145,6 +150,24 @@ async def link():
             site_repo.insert(row)
         unit_of_work.commit()
     return "ok!!"
+
+
+# トークンを発行すべき仮ドメインを取得する
+@router.get("/temp_domain")
+async def temp_domain():
+    result = []
+    sheet = seisaku_sheet.get_values()
+    sheet.reverse()
+    for row in sheet:
+        print(row[0])
+        temp_url = str(row[0]).split("/?token")[0]
+        url = "https://" + temp_url
+        resp = requests.get(url)
+        print(resp.text)
+        if "トークンが見つかりません" in resp.text:
+            break
+        result.append(temp_url)
+    return result
 
 
 api.include_router(router)
