@@ -2,6 +2,7 @@ import gspread
 import json
 import boto3
 import re
+import requests
 
 from slack_bolt import App
 from slack_bolt.adapter.fastapi import SlackRequestHandler
@@ -31,6 +32,7 @@ scope = [
 
 creds = Credentials.from_service_account_info(client_secret, scopes=scope)
 site_sheet = gspread.authorize(creds).open("サイト管理シート").worksheet("サイト")
+jira_sheet = gspread.authorize(creds).open("制作管理シート").worksheet("JIRA")
 
 app = App()
 app_handler = SlackRequestHandler(app)
@@ -146,6 +148,23 @@ async def link():
         unit_of_work.commit()
     return "ok!!"
 
+
+# トークンを発行すべき仮ドメインを取得する
+@router.get("/temp_domain")
+async def temp_domain():
+    result = []
+    sheet = jira_sheet.get_values()
+    sheet.reverse()
+    for row in sheet:
+        print(row[0])
+        temp_url = str(row[0]).split("/?token")[0]
+        url = "https://" + temp_url
+        resp = requests.get(url)
+        print(resp.text)
+        if "トークンが見つかりません" in resp.text:
+            break
+        result.append(temp_url)
+    return result
 
 api.include_router(router)
 
