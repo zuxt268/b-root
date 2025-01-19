@@ -75,16 +75,11 @@ def process_batch():
         customers = customer_service.find_already_linked()
 
     # 処理時間を短くするため、並列実行にする。
-    with ThreadPoolExecutor(max_workers=10) as executor:
-        futures = {
-            executor.submit(handle_customer, customer): customer
-            for customer in customers
-        }
-        for future in as_completed(futures):
-            try:
-                future.result()
-            except Exception as exc:
-                print(f"Exception for customer {futures[future].name}: {str(exc)}")
+    for customer in customers:
+        try:
+            handle_customer(customer)
+        except Exception as exc:
+            print(f"Exception for customer {customer.name}: {str(exc)}")
     lock.release()
 
 
