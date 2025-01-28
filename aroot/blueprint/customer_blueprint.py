@@ -254,6 +254,7 @@ def maika_dashboard():
 
 
 @bp.route("/relink", methods=("GET",))
+@login_required
 def relink():
     return render_template("customer/relink.html")
 
