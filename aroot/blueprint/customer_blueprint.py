@@ -253,6 +253,11 @@ def maika_dashboard():
     return jsonify({"status": "success", "message": ai_message})
 
 
+@bp.route("/relink", methods=("GET",))
+def relink():
+    return render_template("customer/relink.html")
+
+
 def get_dashboard_status(session_mixin: SessionMixin) -> Optional[DashboardStatus]:
     dashboard_status = session_mixin.get("dashboard_status")
     if dashboard_status is not None:

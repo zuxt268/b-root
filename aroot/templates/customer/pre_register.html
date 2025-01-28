@@ -1,0 +1,51 @@
+{% extends 'customer.html' %}
+
+{% block header %}
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="h3 mb-4 text-gray-800">新規顧客登録</h1>
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <p>以下のステップに従って新規顧客登録を完了してください。</p>
+
+            <h5 class="mt-4">1. 登録フォームの入力</h5>
+            <p>登録フォームに基本情報（氏名、メールアドレス、電話番号など）を入力してください。</p>
+
+            <h5 class="mt-4">2. ビジネス情報の登録</h5>
+            <p>ビジネスカテゴリーや会社情報（会社名、所在地など）を入力します。</p>
+
+            <h5 class="mt-4">3. インスタグラム連携の設定</h5>
+            <p>
+                インスタグラムとの連携を行うため、以下の条件を満たしていることを確認してください：
+                <ul>
+                    <li>インスタグラムの<b>プロアカウント</b>であること。</li>
+                    <li>プロアカウントがFacebookページにリンクされていること。</li>
+                </ul>
+                <a href="https://help.instagram.com/" target="_blank" class="text-primary">インスタグラムプロアカウントへの切り替え方法はこちら</a>。
+            </p>
+
+            <h5 class="mt-4">4. 確認と完了</h5>
+            <p>すべての情報を入力し、インスタグラム連携が正常に完了すると、登録が完了します。</p>
+        </div>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header">
+            <h6 class="font-weight-bold text-primary">よくある質問</h6>
+        </div>
+        <div class="card-body">
+            <p><strong>Q: インスタグラムプロアカウントでないと登録できないのですか？</strong></p>
+            <p>はい、インスタグラムプロアカウントでのみ、当サービスの連携機能を利用できます。</p>
+
+            <p><strong>Q: プロアカウントにアップグレードするにはどうすればいいですか？</strong></p>
+            <p>インスタグラムアプリの「設定」→「アカウント」→「プロアカウントに切り替える」からアップグレードできます。</p>
+        </div>
+    </div>
+
+    <div class="text-center my-4">
+        <a href="/mail_input" class="btn btn-primary btn-lg">新規顧客登録フォームへ進む</a>
+    </div>
+</div>
+{% endblock %}
