@@ -1,10 +1,26 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends 'customer.html' %}
+
+{% block header %}
+{% endblock %}
+
+{% block content %}
+<div style="max-width: 550px;  " id="container" class="container mt-5">
+    <div class="progress px-1" style="height: 3px;">
+        <div class="progress-bar" role="progressbar" style="width: 100%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+    </div>
+    <div class="step-container d-flex justify-content-between">
+        <div class="step-circle-done">1</div>
+        <div class="step-circle-done">2</div>
+        <div class="step-circle-done">3</div>
+        <div class="step-circle-current">4</div>
+    </div>
+</div>
+
+<div class="container mt-5">
+    <h1 class="h3 mb-4 text-gray-800 text-center">登録完了しました🎉</h1>
+    <div class="text-center m-5">
+        <a class="text-center btn btn-success" href="/">ダッシュボードへ移動</a>
+    </div>
+</div>
+
+{% endblock %}

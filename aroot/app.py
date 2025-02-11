@@ -1,6 +1,8 @@
+import os
 import traceback
 
 from flask import Flask, render_template, g, request
+from flask_wtf import CSRFProtect
 from blueprint import (
     customer_blueprint,
     admin_user_blueprint,
@@ -12,10 +14,12 @@ from dotenv import load_dotenv
 from datetime import timedelta
 from service.slack_service import SlackService
 
-
 load_dotenv()
 
 app = Flask(__name__)
+
+csrf = CSRFProtect()
+csrf.init_app(app)
 
 app.config.from_mapping(SECRET_KEY="aroot")
 app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(days=365)
@@ -25,6 +29,12 @@ app.register_blueprint(admin_user_blueprint.bp)
 app.register_blueprint(batch_blueprint.bp)
 app.register_blueprint(api_blueprint.bp)
 app.register_blueprint(patch_blueprint.bp)
+
+
+@app.context_processor
+def inject_env():
+    print(os.getenv("ENVIRONMENT"))
+    return dict(env=os.getenv("ENVIRONMENT"))
 
 
 @app.teardown_appcontext

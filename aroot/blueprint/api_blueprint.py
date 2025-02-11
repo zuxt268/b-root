@@ -3,6 +3,7 @@ import hashlib
 import hmac
 import json
 import os
+import stripe
 
 from flask import (
     Blueprint,
@@ -20,6 +21,11 @@ from service.customers_service import CustomersService
 
 
 bp = Blueprint("api", __name__)
+
+stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
+
+# This is your Stripe CLI webhook secret for testing your endpoint locally.
+endpoint_secret = os.getenv("STRIPE_ENDPOINT_SECRET")
 
 
 @bp.before_request
@@ -74,3 +80,28 @@ def admin_users():
             admin_users_service = AdminUsersService(admin_users_repo)
             result = admin_users_service.register_users(admin_users)
     return jsonify({"status": "success", "data": result})
+
+
+@bp.route("/api/v1/stripe/webhook", methods=["POST"])
+def webhook():
+    event = None
+    payload = request.data
+    sig_header = request.headers["STRIPE_SIGNATURE"]
+
+    try:
+        event = stripe.Webhook.construct_event(payload, sig_header, endpoint_secret)
+    except ValueError as e:
+        # Invalid payload
+        raise e
+    except stripe.error.SignatureVerificationError as e:
+        # Invalid signature
+        raise e
+
+    # Handle the event
+    if event["type"] == "payment_intent.succeeded":
+        payment_intent = event["data"]["object"]
+    # ... handle other event types
+    else:
+        print("Unhandled event type {}".format(event["type"]))
+
+    return jsonify(success=True)

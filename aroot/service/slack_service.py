@@ -19,6 +19,9 @@ class SlackService(object):
             print(response.text)
 
     def send_alert(self, message):
+        if "develop" == os.getenv("ENVIRONMENT"):
+            print(message)
+            return
         self.request(
             {
                 "icon_emoji": ":cold_sweat:",
@@ -28,6 +31,9 @@ class SlackService(object):
         )
 
     def send_message(self, message):
+        if "local" == os.getenv("ENVIRONMENT"):
+            print(message)
+            return
         self.request(
             {"icon_emoji": ":wink:", "username": "A-Root", "text": f"{message}"}
         )

@@ -45,12 +45,12 @@ class SendGridService:
         content = f"""
         <p>A-Rootをご利用いただきありがとうございます！</p>
         <p>以下のURLをクリックし、顧客情報登録に進んでください。</p>
-        <p>{u}</p>
+        <a href="{f"{os.getenv('A_ROOT_HOST')}/verify_email_token?token={token}"}">{u}</a>
         """
         msg = Mail(
             subject="A-Rootへようこそ",
             to_emails=email,
-            from_email="",
+            from_email=os.getenv("FROM_EMAIL"),
             html_content=content,
         )
         resp = self.client.send(msg)

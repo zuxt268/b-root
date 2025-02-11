@@ -19,6 +19,8 @@ class Customer:
         instagram_business_account_name=None,
         instagram_token_status=None,
         delete_hash=0,
+        payment_type="",
+        payment_status="",
     ):
         self.id = id
         self.name = name
@@ -31,6 +33,8 @@ class Customer:
         self.instagram_business_account_name = instagram_business_account_name
         self.instagram_token_status = instagram_token_status
         self.delete_hash = delete_hash
+        self.payment_type = payment_type
+        self.payment_status = payment_status
 
     def set_wordpress_url(self, _wordpress_url):
         wordpress_url = _wordpress_url

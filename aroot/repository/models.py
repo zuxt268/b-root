@@ -42,9 +42,9 @@ class CustomersModel(Base):
     start_date = Column(DateTime)
     instagram_business_account_id = Column(String(255))
     instagram_business_account_name = Column(String(255))
-    instagram_token_status = Column(
-        Integer, nullable=False, default=0
-    )  # Changed to SmallInteger
+    instagram_token_status = Column(Integer, nullable=False, default=0)
+    payment_type = Column(String(45), nullable=False)
+    payment_status = Column(String(45), nullable=False)
 
     delete_hash = Column(Boolean, default=False)
 
@@ -61,6 +61,8 @@ class CustomersModel(Base):
             "instagram_business_account_name": self.instagram_business_account_name,
             "instagram_token_status": self.instagram_token_status,
             "delete_hash": self.delete_hash,
+            "payment_type": self.payment_type,
+            "payment_status": self.payment_status,
         }
 
 

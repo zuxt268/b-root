@@ -1,5 +1,8 @@
 import functools
 import traceback
+import uuid
+
+import requests
 from flask import (
     Blueprint,
     flash,
@@ -10,7 +13,7 @@ from flask import (
     url_for,
     jsonify,
 )
-
+from werkzeug.security import check_password_hash, generate_password_hash
 from datetime import timedelta, datetime
 
 from flask.sessions import SessionMixin
@@ -32,8 +35,20 @@ from service.meta_service import MetaService, MetaApiError, MetaAccountNotFoundE
 from service.redis_client import get_redis
 from service.slack_service import SlackService
 from service.wordpress_service import WordpressService, WordpressAuthError
+from service.account_service import AccountService
+from service.sendgrid_service import SendGridService
 from domain.instagram_media import convert_to_json
-
+from domain.customers import Customer, CustomerValidator
+from domain.errors import CustomerValidationError
+from service.account_service import AccountService
+from service.sendgrid_service import SendGridService
+from util.const import (
+    DashboardStatus,
+    EXPIRED,
+    NOT_CONNECTED,
+    PAYMENT_TYPE_STRIPE,
+    PAYMENT_STATUS_YET,
+)
 
 bp = Blueprint("customer", __name__)
 
@@ -75,10 +90,42 @@ def login():
     return render_template("customer/login.html")
 
 
+@bp.route("/verify_email_token", methods=("GET",))
+def verify_email_token():
+    token = request.args.get("token")
+    redis_cli = get_redis()
+    account_service = AccountService(redis_cli)
+    user = account_service.get_temp_register(token)
+    if user is None:
+        flash("セッションがタイムアウトしました", category="warning")
+        return render_template("customer/mail_input.html")
+    session["register_email"] = user.get("email")
+    return redirect(url_for("customer.register"))
+
+
 @bp.route("/logout")
 def logout():
     session.clear()
     return redirect(url_for("customer.login"))
+
+
+@bp.route("/send_verification_email", methods=("POST",))
+def send_verification_email():
+    email = request.form["email"]
+    try:
+        with UnitOfWork() as unit_of_work:
+            customer_repo = CustomersRepository(unit_of_work.session)
+            customer_service = CustomersService(customer_repo)
+            customer_service.check_use_email(email)
+            token = generate_register_uuid()
+            redis_cli = get_redis()
+            account_service = AccountService(redis_cli)
+            account_service.set_temp_register(token, email)
+            SendGridService().send_register_mail(email, token)
+        return render_template("customer/mail_confirm.html")
+    except CustomerValidationError as e:
+        flash(str(e), "warning")
+    return redirect(url_for("customer.mail_input"))
 
 
 @bp.route("/")
@@ -253,6 +300,77 @@ def maika_dashboard():
     return jsonify({"status": "success", "message": ai_message})
 
 
+@bp.route("/pre_register", methods=("GET",))
+def pre_register():
+    return render_template("customer/pre_register.html")
+
+
+@bp.route("/register", methods=("POST",))
+def post_register():
+    customer = Customer()
+    register_email = session.get("register_email")
+    customer.email = register_email
+    password = request.form["password"]
+    password_confirm = request.form["password_confirm"]
+    wordpress_url = request.form["wordpress_url"]
+    customer.wordpress_url = wordpress_url
+    if password != password_confirm:
+        flash(message="パスワードが不一致です。", category="warning")
+        return render_template("customer/register.html", customer=customer)
+    if wordpress_url.startswith("http"):
+        wordpress_url = wordpress_url.replace("http://", "")
+        wordpress_url = wordpress_url.replace("https://", "")
+    url = f"https://{wordpress_url}/?rest_route=/rodut/v1/title"
+    resp = requests.get(url)
+    if resp.status_code != 200:
+        flash(
+            message="ストラテジードライブ製のサイトのみ対応しています",
+            category="warning",
+        )
+        return render_template("customer/register.html", customer=customer)
+    title = resp["title"]
+    hash_password = generate_password_hash(password)
+    customer.password = hash_password
+    customer.name = title
+    with UnitOfWork() as unit_of_work:
+        customers_repo = CustomersRepository(unit_of_work.session)
+        customer_service = CustomersService(customers_repo)
+        created = customer_service.register_customer(customer)
+        session["customer_id"] = created.id
+    return render_template("customer/pre_payment.html")
+
+
+@bp.route("/register", methods=("GET",))
+def get_register():
+    register_email = session.get("register_email")
+    if not register_email:
+        flash("セッションがタイムアウトしました", category="warning")
+        return render_template("customer/mail_input.html")
+    customer = Customer()
+    customer.email = register_email
+    return render_template("customer/register.html", customer=customer)
+
+
+@bp.route("/mail_input", methods=("GET",))
+def mail_input():
+    return render_template("customer/mail_input.html")
+
+
+@bp.route("/mail_confirm", methods=("GET",))
+def mail_confirm():
+    return render_template("customer/mail_confirm.html")
+
+
+@bp.route("/pre_payment", methods=("GET",))
+def pre_payment():
+    return render_template("customer/pre_payment.html")
+
+
+@bp.route("/payment_completed", methods=("GET",))
+def payment_completed():
+    return render_template("customer/payment_completed.html")
+
+
 @bp.route("/relink", methods=("GET",))
 @login_required
 def relink():
@@ -277,3 +395,7 @@ def set_dashboard_status(
 ):
     session_mixin["dashboard_status"] = dashboard_status
     session_mixin["dashboard_status_timestamp"] = datetime.now()
+
+
+def generate_register_uuid() -> str:
+    return "rgr_" + str(uuid.uuid4())

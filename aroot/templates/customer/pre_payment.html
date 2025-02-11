@@ -5,6 +5,32 @@
 
 
 {% block content %}
-次は決算
+
+<div style="max-width: 550px;  " id="container" class="container mt-5">
+    <div class="progress px-1" style="height: 3px;">
+        <div class="progress-bar" role="progressbar" style="width: 66%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+    </div>
+    <div class="step-container d-flex justify-content-between">
+        <div class="step-circle-done">1</div>
+        <div class="step-circle-done">2</div>
+        <div class="step-circle-current">3</div>
+        <div class="step-circle">4</div>
+    </div>
+</div>
+
+<div class="container">
+    <div style="width:300px;display: block; margin: 8rem auto;">
+        <script async
+          src="https://js.stripe.com/v3/buy-button.js">
+        </script>
+        <stripe-buy-button
+          buy-button-id="buy_btn_1QnwygJbvH46VV0ixWuOdiI2"
+          publishable-key="pk_test_51Kuc11JbvH46VV0ihNVrSFwt0FSZxM6wOZ3Bl4YTLpWEIkdDV65KSClSReTQfYCH4MRg4RvVLUYokiIzCm3zj3Sh00Xh3tvjhG"
+          customer-email="example@example.com"
+        >
+        </stripe-buy-button>
+    </div>
+</div>
+
 
 {% endblock %}

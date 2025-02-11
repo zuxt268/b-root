@@ -5,5 +5,22 @@
 
 
 {% block content %}
-メールを確認してください
+
+<div style="max-width: 550px;  " id="container" class="container mt-5">
+    <div class="progress px-1" style="height: 3px;">
+        <div class="progress-bar" role="progressbar" style="width: 0;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+    </div>
+    <div class="step-container d-flex justify-content-between">
+        <div class="step-circle-current">1</div>
+        <div class="step-circle">2</div>
+        <div class="step-circle">3</div>
+        <div class="step-circle">4</div>
+    </div>
+</div>
+
+<div class="container mt-5">
+    <h1 class="h3 mb-4 text-gray-800 text-center">認証メールを送信しました</h1>
+    <h3 class="h5 mb-4 text-gray-800 text-center">認証メールを確認してください</h3>
+</div>
+
 {% endblock %}

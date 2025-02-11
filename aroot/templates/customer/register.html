@@ -3,8 +3,20 @@
 {% block header %}
 {% endblock %}
 
-
 {% block content %}
+
+<div style="max-width: 550px;  " id="container" class="container mt-5">
+    <div class="progress px-1" style="height: 3px;">
+        <div class="progress-bar" role="progressbar" style="width: 33%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+    </div>
+    <div class="step-container d-flex justify-content-between">
+        <div class="step-circle-done">1</div>
+        <div class="step-circle-current">2</div>
+        <div class="step-circle">3</div>
+        <div class="step-circle">4</div>
+    </div>
+</div>
+
 <div class="container">
     <div class="card o-hidden border-0 shadow-lg my-5">
         <div class="card-body p-0">
@@ -12,38 +24,43 @@
                 <div class="col-lg-12">
                     <div class="p-5">
                         <div class="">
-                            <h1 class="h4 text-gray-900 mb-4">顧客登録</h1>
+                            <h1 class="h4 text-gray-900 mb-4">ユーザー登録</h1>
                         </div>
                         <p>Email: {{ customer.email }}</p>
                         <form method="post" class="user" action="/register">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-                                                        <div class="mb-3 form-group">
-                                <input value="{{ customer.name }}" name="name" type="text" class="form-control form-control-user" id="name"
-                                    placeholder="名前">
-                            </div>
+                            <input type="hidden" name="email" value="{{ customer.email }}" />
+{#                                                        <div class="mb-3 form-group">#}
+{#                                <input value="{{ customer.name }}" name="name" type="text" class="form-control form-control-user" id="name"#}
+{#                                    placeholder="名前">#}
+{#                            </div>#}
                             <div class="mb-3 form-group">
                                 <input value="{{ customer.wordpress_url }}" name="wordpress_url" type="text" class="form-control form-control-user" id="wordpress_url"
                                     placeholder="Wordpress URL">
                             </div>
                             <div class="mb-3 form-group">
-                                <input value="{{ customer.password }}" name="password" type="text" class="form-control form-control-user"
+                                <input value="" name="password" type="password" class="form-control form-control-user"
                                         id="password" placeholder="パスワード">
                             </div>
                             <div class="mb-3 form-group">
-                                <input name="business_category" type="text" class="form-control form-control-user" id="business_category" placeholder="事業区分">
+                                <input value="" name="password_confirm" type="password" class="form-control form-control-user"
+                                        id="password_confirm" placeholder="パスワード(確認)">
                             </div>
-                            <div class="mb-3 form-group">
-                                <input name="company_name" value="{{ customer.company_name }}" type="text" class="form-control form-control-user" id="company_name" placeholder="会社名">
-                            </div>
-                            <div class="mb-3 form-group">
-                                <input name="company_name_kana" type="text" class="form-control form-control-user" id="company_name_kana" placeholder="会社名（カナ）">
-                            </div>
-                            <div class="mb-3 form-group">
-                                <input name="representative_name" type="text" class="form-control form-control-user" id="representative_name" placeholder="代表者名">
-                            </div>
-                            <div class="mb-3 form-group">
-                                <input name="representative_name_kana" type="text" class="form-control form-control-user" id="representative_name_kana" placeholder="代表者名（カナ）">
-                            </div>
+{#                            <div class="mb-3 form-group">#}
+{#                                <input name="business_category" type="text" class="form-control form-control-user" id="business_category" placeholder="事業区分">#}
+{#                            </div>#}
+{#                            <div class="mb-3 form-group">#}
+{#                                <input name="company_name" value="{{ customer.company_name }}" type="text" class="form-control form-control-user" id="company_name" placeholder="会社名">#}
+{#                            </div>#}
+{#                            <div class="mb-3 form-group">#}
+{#                                <input name="company_name_kana" type="text" class="form-control form-control-user" id="company_name_kana" placeholder="会社名（カナ）">#}
+{#                            </div>#}
+{#                            <div class="mb-3 form-group">#}
+{#                                <input name="representative_name" type="text" class="form-control form-control-user" id="representative_name" placeholder="代表者名">#}
+{#                            </div>#}
+{#                            <div class="mb-3 form-group">#}
+{#                                <input name="representative_name_kana" type="text" class="form-control form-control-user" id="representative_name_kana" placeholder="代表者名（カナ）">#}
+{#                            </div>#}
                             <input id="save" type="submit" value="登録" class="form-control form-control-user btn btn-primary" />
                         </form>
                         <hr>
