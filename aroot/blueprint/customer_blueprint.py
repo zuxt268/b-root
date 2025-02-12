@@ -328,7 +328,7 @@ def post_register():
             category="warning",
         )
         return render_template("customer/register.html", customer=customer)
-    title = resp["title"]
+    title = resp.json()["title"]
     hash_password = generate_password_hash(password)
     customer.password = hash_password
     customer.name = title

@@ -6,9 +6,10 @@ from sqlalchemy.orm import sessionmaker
 
 class UnitOfWork:
     def __init__(self):
+        port = os.getenv("DATABASE_PORT", "3306")
         connection_string = (
             f"mysql+pymysql://{os.getenv('DATABASE_USER')}:"
-            f"{os.getenv('DATABASE_PASSWORD')}@{os.getenv('DATABASE_HOST')}"
+            f"{os.getenv('DATABASE_PASSWORD')}@{os.getenv('DATABASE_HOST')}:{port}"
             f"/{os.getenv('DATABASE_SCHEME')}"
         )
         self.session_maker = sessionmaker(

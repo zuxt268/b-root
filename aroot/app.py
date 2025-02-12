@@ -30,6 +30,9 @@ app.register_blueprint(batch_blueprint.bp)
 app.register_blueprint(api_blueprint.bp)
 app.register_blueprint(patch_blueprint.bp)
 
+csrf.exempt(api_blueprint.bp)
+csrf.exempt(batch_blueprint.bp)
+
 
 @app.context_processor
 def inject_env():
