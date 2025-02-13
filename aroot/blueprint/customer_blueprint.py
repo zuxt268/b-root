@@ -100,7 +100,7 @@ def verify_email_token():
         flash("セッションがタイムアウトしました", category="warning")
         return render_template("customer/mail_input.html")
     session["register_email"] = user.get("email")
-    return redirect(url_for("customer.register"))
+    return redirect(url_for("customer.get_register"))
 
 
 @bp.route("/logout")
@@ -332,12 +332,15 @@ def post_register():
     hash_password = generate_password_hash(password)
     customer.password = hash_password
     customer.name = title
+    customer.payment_type = PAYMENT_TYPE_STRIPE
+    customer.payment_status = PAYMENT_STATUS_YET
     with UnitOfWork() as unit_of_work:
         customers_repo = CustomersRepository(unit_of_work.session)
         customer_service = CustomersService(customers_repo)
-        created = customer_service.register_customer(customer)
+        created = customer_service.register_customer(customer.dict())
+        unit_of_work.commit()
         session["customer_id"] = created.id
-    return render_template("customer/pre_payment.html")
+    return redirect(url_for("customer.pre_payment"))
 
 
 @bp.route("/register", methods=("GET",))
@@ -363,7 +366,9 @@ def mail_confirm():
 
 @bp.route("/pre_payment", methods=("GET",))
 def pre_payment():
-    return render_template("customer/pre_payment.html")
+    email = session.get("register_email")
+    print(email)
+    return render_template("customer/pre_payment.html", email=email)
 
 
 @bp.route("/payment_completed", methods=("GET",))

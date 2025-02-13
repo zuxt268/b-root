@@ -51,6 +51,12 @@ class CustomersService:
             instagram_token=status,
         )
 
+    def update_payment_status(self, id_, status):
+        self.customers_repository.update(
+            id_,
+            payment_status=status,
+        )
+
     def update_customer_after_login(
         self, id_, access_token, instagram_business_account_id, instagram_user_name
     ):

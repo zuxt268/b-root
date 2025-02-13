@@ -19,6 +19,7 @@ from service.admin_users_service import (
 from repository.unit_of_work import UnitOfWork
 from service.customers_service import CustomersService
 from service.slack_service import SlackService
+from util.const import PAYMENT_STATUS_DONE, PAYMENT_STATUS_FAIL
 
 bp = Blueprint("api", __name__)
 
@@ -105,17 +106,29 @@ def webhook():
 
     SlackService().send_message(event)
 
-    # Handle the event
-    if event["type"] == "payment_intent.succeeded":
-        payment_intent = event["data"]["object"]
-        # print(payment_intent)
-        # ... handle other event types
-    elif event["type"] == "invoice.payment_succeeded":
-        subscription = event["data"]["object"]
-        customer_id = subscription["customer"]
+    print(event["type"])
+    if event["type"] == "invoice.payment_failed":
+        invoice = event["data"]["object"]
+        customer_id = invoice["customer"]
         customer_obj = stripe.Customer.retrieve(customer_id)
         email = customer_obj.email
-        print(email)
+        with UnitOfWork() as unit_of_work:
+            customers_repo = CustomersRepository(unit_of_work.session)
+            customers_service = CustomersService(customers_repo)
+            customer = customers_service.get_customer_by_email(email)
+            customers_service.update_payment_status(customer.id, PAYMENT_STATUS_FAIL)
+            unit_of_work.commit()
+    elif event["type"] == "invoice.payment_succeeded":
+        invoice = event["data"]["object"]
+        customer_id = invoice["customer"]
+        customer_obj = stripe.Customer.retrieve(customer_id)
+        email = customer_obj.email
+        with UnitOfWork() as unit_of_work:
+            customers_repo = CustomersRepository(unit_of_work.session)
+            customers_service = CustomersService(customers_repo)
+            customer = customers_service.get_customer_by_email(email)
+            customers_service.update_payment_status(customer.id, PAYMENT_STATUS_DONE)
+            unit_of_work.commit()
     else:
         print("Unhandled event type {}".format(event["type"]))
 

@@ -27,6 +27,7 @@ class DashboardStatus(Enum):
 PAYMENT_TYPE_NONE = "none"
 PAYMENT_TYPE_STRIPE = "stripe"
 
+PAYMENT_STATUS_NONE = "none"
 PAYMENT_STATUS_YET = "yet"
 PAYMENT_STATUS_DONE = "done"
 PAYMENT_STATUS_FAIL = "fail"

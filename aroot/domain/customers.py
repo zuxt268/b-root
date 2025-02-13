@@ -65,6 +65,10 @@ class Customer:
             result["password"] = self.password
         if self.wordpress_url is not None:
             result["wordpress_url"] = self.wordpress_url
+        if self.payment_status is not None:
+            result["payment_status"] = self.payment_status
+        if self.payment_type is not None:
+            result["payment_type"] = self.payment_type
         return result
 
     def formatted_date(self):

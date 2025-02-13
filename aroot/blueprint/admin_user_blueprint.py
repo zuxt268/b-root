@@ -23,6 +23,7 @@ from repository.unit_of_work import UnitOfWork
 from domain.customers import Customer, CustomerValidator
 from service.customers_service import CustomersService, CustomerValidationError
 from service.posts_service import PostsService
+from util.const import PAYMENT_STATUS_NONE, PAYMENT_TYPE_NONE
 
 bp = Blueprint("admin_user", __name__)
 
@@ -164,6 +165,8 @@ def register_customer():
                 new_customer.delete_hash = request.form["delete_hash"]
                 CustomerValidator.validate(new_customer)
                 new_customer.generate_hash_password()
+                new_customer.payment_status = PAYMENT_STATUS_NONE
+                new_customer.payment_type = PAYMENT_TYPE_NONE
                 customers_repo = CustomersRepository(unit_of_work.session)
                 customers_service = CustomersService(customers_repo)
                 customers_service.check_use_email(request.form["email"])
