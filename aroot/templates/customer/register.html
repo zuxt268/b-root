@@ -28,7 +28,6 @@
                         </div>
                         <p>Email: {{ customer.email }}</p>
                         <form method="post" class="user" action="/register">
-                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
                             <input type="hidden" name="email" value="{{ customer.email }}" />
 {#                                                        <div class="mb-3 form-group">#}
 {#                                <input value="{{ customer.name }}" name="name" type="text" class="form-control form-control-user" id="name"#}

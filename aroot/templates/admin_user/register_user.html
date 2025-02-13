@@ -12,7 +12,6 @@
                             <h1 class="h4 text-gray-900 mb-4">管理者登録</h1>
                         </div>
                         <form method="post" class="user">
-                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                             <div class="mb-3 form-group">
                                 <input value="{{ admin_user.name }}" name="name" type="text" class="form-control form-control-user" id="name"
                                     placeholder="名前">

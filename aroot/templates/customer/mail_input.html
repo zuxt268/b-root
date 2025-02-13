@@ -25,7 +25,6 @@
             <div class="card shadow mb-4">
                 <div class="card-body">
                     <form method="post" action="/send_verification_email">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
                         <div class="mb-3">
                             <label for="email" class="form-label">メールアドレス</label>
                             <input type="email" id="email" name="email" class="form-control" placeholder="example@example.com" required>

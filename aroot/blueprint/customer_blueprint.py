@@ -78,6 +78,7 @@ def login():
                     customer_service = CustomersService(customer_repo)
                     customer = customer_service.get_customer_by_email(email)
                     customer.check_password_hash(password)
+                    session.clear()
                     session["customer_id"] = customer.id
                     session.permanent = True
                     unit_of_work.commit()
@@ -367,7 +368,6 @@ def mail_confirm():
 @bp.route("/pre_payment", methods=("GET",))
 def pre_payment():
     email = session.get("register_email")
-    print(email)
     return render_template("customer/pre_payment.html", email=email)
 
 
