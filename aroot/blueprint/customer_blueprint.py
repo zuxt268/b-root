@@ -257,6 +257,12 @@ def get_instagram():
         return jsonify({"error": str(e)})
 
 
+@bp.route("/pre_cancel")
+@login_required
+def pre_cancel():
+    return render_template("customer/pre_cancel.html")
+
+
 @bp.route("/post/wordpress", methods=("POST",))
 @login_required
 def post_wordpress():
