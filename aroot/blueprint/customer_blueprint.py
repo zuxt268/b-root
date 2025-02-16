@@ -101,6 +101,7 @@ def verify_email_token():
         flash("セッションがタイムアウトしました", category="warning")
         return render_template("customer/mail_input.html")
     session["register_email"] = user.get("email")
+    session.permanent = True
     return redirect(url_for("customer.get_register"))
 
 
@@ -309,13 +310,16 @@ def maika_dashboard():
 
 @bp.route("/pre_register", methods=("GET",))
 def pre_register():
+    print("pre_register is invoked")
     return render_template("customer/pre_register.html")
 
 
 @bp.route("/register", methods=("POST",))
 def post_register():
+    print("post_register is invoked")
     customer = Customer()
     register_email = session.get("register_email")
+    print("register_email", register_email)
     customer.email = register_email
     password = request.form["password"]
     password_confirm = request.form["password_confirm"]
@@ -344,15 +348,16 @@ def post_register():
     with UnitOfWork() as unit_of_work:
         customers_repo = CustomersRepository(unit_of_work.session)
         customer_service = CustomersService(customers_repo)
-        created = customer_service.register_customer(customer.dict())
+        customer_service.register_customer(customer.dict())
         unit_of_work.commit()
-        session["customer_id"] = created.id
     return redirect(url_for("customer.pre_payment"))
 
 
 @bp.route("/register", methods=("GET",))
 def get_register():
+    print("get_register is invoked")
     register_email = session.get("register_email")
+    print("register_email", register_email)
     if not register_email:
         flash("セッションがタイムアウトしました", category="warning")
         return render_template("customer/mail_input.html")
@@ -363,22 +368,32 @@ def get_register():
 
 @bp.route("/mail_input", methods=("GET",))
 def mail_input():
+    print("mail_input is invoked")
     return render_template("customer/mail_input.html")
 
 
 @bp.route("/mail_confirm", methods=("GET",))
 def mail_confirm():
+    print("mail_confirm is invoked")
     return render_template("customer/mail_confirm.html")
 
 
 @bp.route("/pre_payment", methods=("GET",))
 def pre_payment():
+    print("pre_payment is invoked")
     email = session.get("register_email")
+    print("email", email)
     return render_template("customer/pre_payment.html", email=email)
 
 
 @bp.route("/payment_completed", methods=("GET",))
 def payment_completed():
+    print("payment_completed is invoked")
+    print("session customer_id", session.get("customer_id"))
+    with UnitOfWork() as unit_of_work:
+        customers_repo = CustomersRepository(unit_of_work.session)
+        customer_service = CustomersService(customers_repo)
+    session.permanent = True
     return render_template("customer/payment_completed.html")
 
 
