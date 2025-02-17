@@ -393,7 +393,7 @@ def payment_completed():
     with UnitOfWork() as unit_of_work:
         customers_repo = CustomersRepository(unit_of_work.session)
         customer_service = CustomersService(customers_repo)
-    session.permanent = True
+        session.permanent = True
     return render_template("customer/payment_completed.html")
 
 

@@ -21,6 +21,7 @@ class Customer:
         delete_hash=0,
         payment_type="",
         payment_status="",
+        subscription_id="",
     ):
         self.id = id
         self.name = name
@@ -35,6 +36,7 @@ class Customer:
         self.delete_hash = delete_hash
         self.payment_type = payment_type
         self.payment_status = payment_status
+        self.subscription_id = subscription_id
 
     def set_wordpress_url(self, _wordpress_url):
         wordpress_url = _wordpress_url
@@ -69,6 +71,8 @@ class Customer:
             result["payment_status"] = self.payment_status
         if self.payment_type is not None:
             result["payment_type"] = self.payment_type
+        if self.subscription_id is not None:
+            result["subscription_id"] = self.subscription_id
         return result
 
     def formatted_date(self):

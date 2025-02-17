@@ -6,7 +6,7 @@ from domain.errors import (
     CustomerAuthError,
     CustomerNotFoundError,
 )
-from util.const import CONNECTED, NOT_CONNECTED
+from util.const import CONNECTED, NOT_CONNECTED, PAYMENT_STATUS_FAIL
 
 
 class CustomersService:
@@ -51,10 +51,17 @@ class CustomersService:
             instagram_token=status,
         )
 
-    def update_payment_status(self, id_, status):
+    def update_payment_status(self, id_, status, subscription_id):
         self.customers_repository.update(
             id_,
             payment_status=status,
+            subscription_id=subscription_id,
+        )
+
+    def update_payment_status_fail(self, id_):
+        self.customers_repository.update(
+            id_,
+            payment_status=PAYMENT_STATUS_FAIL,
         )
 
     def update_customer_after_login(

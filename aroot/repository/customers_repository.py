@@ -2,7 +2,7 @@ from typing import Optional
 
 from sqlalchemy.orm import Session
 from repository.models import CustomersModel
-from sqlalchemy import func, and_
+from sqlalchemy import func, and_, or_
 from domain.customers import Customer
 from util import const
 
@@ -38,6 +38,13 @@ class CustomersRepository:
             and_(
                 CustomersModel.facebook_token != None,
                 CustomersModel.instagram_token_status == const.CONNECTED,
+                or_(
+                    and_(
+                        CustomersModel.payment_type == const.PAYMENT_TYPE_STRIPE,
+                        CustomersModel.payment_status == const.PAYMENT_STATUS_DONE,
+                    ),
+                    CustomersModel.payment_type == const.PAYMENT_TYPE_NONE,
+                ),
             )
         )
         return [Customer(**record.dict()) for record in records]

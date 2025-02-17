@@ -116,18 +116,21 @@ def webhook():
             customers_repo = CustomersRepository(unit_of_work.session)
             customers_service = CustomersService(customers_repo)
             customer = customers_service.get_customer_by_email(email)
-            customers_service.update_payment_status(customer.id, PAYMENT_STATUS_FAIL)
+            customers_service.update_payment_status_fail(customer.id)
             unit_of_work.commit()
     elif event["type"] == "invoice.payment_succeeded":
         invoice = event["data"]["object"]
         customer_id = invoice["customer"]
+        subscription_id = invoice["subscription"]
         customer_obj = stripe.Customer.retrieve(customer_id)
         email = customer_obj.email
         with UnitOfWork() as unit_of_work:
             customers_repo = CustomersRepository(unit_of_work.session)
             customers_service = CustomersService(customers_repo)
             customer = customers_service.get_customer_by_email(email)
-            customers_service.update_payment_status(customer.id, PAYMENT_STATUS_DONE)
+            customers_service.update_payment_status(
+                customer.id, PAYMENT_STATUS_DONE, subscription_id
+            )
             unit_of_work.commit()
     else:
         print("Unhandled event type {}".format(event["type"]))
