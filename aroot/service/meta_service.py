@@ -53,6 +53,7 @@ class MetaService:
             "media{id,permalink,caption,timestamp,"
             + "media_type,media_url,children{media_type,media_url}}"
         )
+        params["limit"] = 100
         response = requests.get(
             self.base_url + f"/{instagram_business_account_id}", params=params
         )
