@@ -264,6 +264,13 @@ def pre_cancel():
     return render_template("customer/pre_cancel.html")
 
 
+@bp.route("/cancel_confirm", methods=("POST",))
+@login_required
+def cancel_confirm():
+    session.clear()
+    return render_template("customer/cancel_confirm.html")
+
+
 @bp.route("/post/wordpress", methods=("POST",))
 @login_required
 def post_wordpress():
@@ -349,6 +356,9 @@ def post_register():
         customers_repo = CustomersRepository(unit_of_work.session)
         customer_service = CustomersService(customers_repo)
         customer_service.register_customer(customer.dict())
+        new_customer = customer_service.get_customer_by_email(customer.email)
+        session["customer_id"] = new_customer.id
+        session.permanent = True
         unit_of_work.commit()
     return redirect(url_for("customer.pre_payment"))
 
@@ -393,7 +403,6 @@ def payment_completed():
     with UnitOfWork() as unit_of_work:
         customers_repo = CustomersRepository(unit_of_work.session)
         customer_service = CustomersService(customers_repo)
-        session.permanent = True
     return render_template("customer/payment_completed.html")
 
 

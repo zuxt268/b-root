@@ -1,0 +1,19 @@
+{% extends 'customer.html' %}
+
+{% block header %}
+{% endblock %}
+
+
+{% block content %}
+
+<div class="container mt-5">
+    <h1 class="h3 mb-4 text-gray-800 text-center">ご利用ありがとうございました！</h1>
+</div>
+
+<script>
+    setTimeout(function() {
+        window.location.href = "/";
+    }, 5000);
+</script>
+
+{% endblock %}

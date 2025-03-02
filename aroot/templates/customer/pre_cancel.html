@@ -6,9 +6,11 @@
 
 {% block content %}
 
-<div class="container">
-    支払い処理をキャンセルしますがいいですか？
-    <button>はい</button>
+<div class="container mt-5">
+    <h1 class="h3 mb-4 text-gray-800 text-center">退会処理を行います</h1>
+    <form action="/cancel_confirm" method="post" class="d-flex justify-content-center">
+        <button type="submit" class="btn btn-danger">退会する</button>
+    </form>
 </div>
 
 {% endblock %}
