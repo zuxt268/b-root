@@ -1,4 +1,8 @@
-from domain.errors import AdminUserNotFountError, AdminUserValidationError
+from domain.errors import (
+    AdminUserNotFountError,
+    AdminUserValidationError,
+    AdminUserAuthError,
+)
 
 
 class AdminUsersService:

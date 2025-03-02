@@ -18,6 +18,7 @@
             <div class="table-responsive">
                 <table class="table" id="customerTables">
                     <tbody>
+                        <input type="hidden" id="customer_id" value="{{ customer.id }}" >
                         <tr>
                             <td class="w-25">名前</td>
                             <td>{{ customer["name"] }}</td>
@@ -69,7 +70,11 @@
                         {% if customer.facebook_token %}
                         <tr>
                             <td>連携開始日</td>
-                            <td>{{ customer["start_date"] }}</td>
+                            <td>
+                                <div class="col-4">
+                                    <input title="start_date" id="start_date" value="{{ customer.formatted_date() }}" type="datetime-local" class="form-control" name="start_date">
+                                </div>
+                            </td>
                         </tr>
                         {% endif %}
                         <tr>
@@ -183,15 +188,23 @@
         });
     });
     document.querySelectorAll(".delete_hash_change_false").forEach((ele) => {
-    ele.addEventListener("click", (event) => {
-        const customer_id = event.target.value;
-        if (window.confirm(`ID: ${customer_id} ハッシュタグを削除を解除します`)) {
+        ele.addEventListener("click", (event) => {
+            const customer_id = event.target.value;
+            if (window.confirm(`ID: ${customer_id} ハッシュタグを削除を解除します`)) {
+                showLoadingOverlay();
+                event.target.disabled = true;
+                post("/admin/customer/delete_hash", {customer_id, "delete_hash": false});
+            }
+        });
+    });
+    document.getElementById("start_date").addEventListener("blur", (event) => {
+        const start_date = event.target.value;
+        const customer_id = document.getElementById("customer_id").value;
+        if (confirm(`連携対象の開始日時を変更します \nID: ${customer_id} \n日本時間: ${start_date}`)) {
             showLoadingOverlay();
-            event.target.disabled = true;
-            post("/admin/customer/delete_hash", {customer_id, "delete_hash": false});
+            post("/admin/start_date", {start_date, customer_id});
         }
     });
-});
 </script>
 
 {% endblock %}

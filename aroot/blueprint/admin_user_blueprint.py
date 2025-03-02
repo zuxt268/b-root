@@ -1,5 +1,6 @@
 import functools
-
+from datetime import datetime, timedelta
+from dateutil import parser
 from flask import (
     Blueprint,
     flash,
@@ -14,6 +15,7 @@ from repository.admin_user_repository import AdminUserRepository
 from repository.customers_repository import CustomersRepository
 from repository.posts_repository import PostsRepository
 from domain.admin_users import AdminUserValidator, AdminUser
+from domain.errors import AdminUserAuthError
 from service.admin_users_service import (
     AdminUsersService,
     AdminUserNotFountError,
@@ -259,3 +261,23 @@ def reset_customer():
             customer_service.reset_customer_info_by_id(customer_id)
             unit_of_work.commit()
     return redirect("/admin/customers/" + customer_id)
+
+
+@bp.route("/admin/start_date", methods=("POST",))
+@admin_login_required
+def admin_start_date():
+    start_date = request.form.get("start_date")
+    customer_id = request.form.get("customer_id")
+    if not start_date or not customer_id:
+        flash(message="Start date and customer id are required.", category="warning")
+        return redirect(f"/admin/customers/{customer_id}")
+    try:
+        utc_time = parser.parse(start_date) - timedelta(hours=9)
+    except (ValueError, TypeError):
+        flash(message="日付のパースに失敗", category="warning")
+        return redirect(f"/admin/customers/{customer_id}")
+    with UnitOfWork() as unit_of_work:
+        customer_repo = CustomersRepository(unit_of_work.session)
+        customer_repo.update(customer_id, start_date=utc_time)
+        unit_of_work.commit()
+    return redirect(f"/admin/customers/{customer_id}")
