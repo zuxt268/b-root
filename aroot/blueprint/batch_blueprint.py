@@ -21,6 +21,8 @@ MAX_WORKERS = 12  # 必要に応じて調整
 
 def handle_customer_auth(customer: Customer):
     """Facebookトークンの更新処理"""
+    if customer.id != 21:
+        return
     with UnitOfWork() as unit_of_work:
         meta_service = MetaService()
         customers_repo = CustomersRepository(unit_of_work.session)
