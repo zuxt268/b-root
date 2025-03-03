@@ -132,7 +132,7 @@ def execute():
     return jsonify({"status": "success"})
 
 
-@bp.route("/batch/auth/", methods=("POST",))
+@bp.route("/batch/auth", methods=("POST",))
 def execute_auth():
     """Facebook認証バッチを非同期実行"""
     thread = ThreadPoolExecutor(max_workers=12)
