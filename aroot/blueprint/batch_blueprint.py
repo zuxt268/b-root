@@ -125,14 +125,12 @@ def process_batch_auth():
 @bp.route("/batch", methods=("POST",))
 def execute():
     """投稿データの取得バッチを非同期実行"""
-    thread = ThreadPoolExecutor(max_workers=12)
-    thread.submit(process_batch)
+    process_batch()
     return jsonify({"status": "success"})
 
 
 @bp.route("/batch/auth", methods=("POST",))
 def execute_auth():
     """Facebook認証バッチを非同期実行"""
-    thread = ThreadPoolExecutor(max_workers=12)
-    thread.submit(process_batch_auth)
+    process_batch_auth()
     return jsonify({"status": "success"})
