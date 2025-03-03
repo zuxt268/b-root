@@ -6,7 +6,7 @@ from domain.instagram_media import InstagramMedia
 
 class MetaService:
     def __init__(self):
-        self.base_url = "https://graph.facebook.com/v18.0"
+        self.base_url = "https://graph.facebook.com/v20.0"
         self.client_id = os.getenv("META_CLIENT_ID")
         self.client_secret = os.getenv("META_CLIENT_SECRET")
 
@@ -17,7 +17,7 @@ class MetaService:
         params["fb_exchange_token"] = access_token
         params["client_id"] = self.client_id
         params["client_secret"] = self.client_secret
-        response = requests.post(self.base_url + "/oauth/access_token", params=params)
+        response = requests.get(self.base_url + "/oauth/access_token", params=params)
         print(f"response: {response.json()}, status: {response.status_code}")
         if 200 <= response.status_code < 300:
             return response.json()["access_token"]
