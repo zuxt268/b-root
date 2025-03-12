@@ -26,7 +26,7 @@ def handle_customer_auth(customer: Customer):
         customers_repo = CustomersRepository(unit_of_work.session)
         customer_service = CustomersService(customers_repo)
         try:
-            new_token = meta_service.get_long_term_token(customer.facebook_token)
+            new_token = meta_service.refresh_token(customer.facebook_token)
             customer_service.update_facebook_token(customer.id, new_token)
             unit_of_work.commit()
         except Exception as e:

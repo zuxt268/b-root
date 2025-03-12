@@ -10,6 +10,16 @@ class MetaService:
         self.client_id = os.getenv("META_CLIENT_ID")
         self.client_secret = os.getenv("META_CLIENT_SECRET")
 
+    def refresh_token(self, access_token):
+        params = dict()
+        params["grant_type"] = "ig_refresh_token"
+        params["access_token"] = access_token
+        response = requests.get(self.base_url + "/refresh_access_token", params=params)
+        print(f"response: {response.json()}, status: {response.status_code}")
+        if 200 <= response.status_code < 300:
+            return response.json()["access_token"]
+        raise MetaApiError(response.json())
+
     def get_long_term_token(self, access_token):
         print("get_long_term_token is invoked")
         params = dict()
