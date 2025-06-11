@@ -23,7 +23,7 @@ class SlackService(object):
             {
                 "icon_emoji": ":cold_sweat:",
                 "username": "A-Root",
-                "text": f"<@U04P797HYPM>\n{message}",
+                "text": f"<@U08JVHM4KV3>\n{message}",
             }
         )
 
