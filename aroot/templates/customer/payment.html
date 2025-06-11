@@ -1,0 +1,47 @@
+{% extends 'customer.html' %}
+
+{% block slider %}
+  <!-- ======= Sidebar ======= -->
+  <aside id="sidebar" class="sidebar">
+
+    <ul class="sidebar-nav" id="sidebar-nav">
+
+      <li class="nav-item">
+        <a class="nav-link {{ 'collapsed' if request.path != '/faq' else '' }}" href="/faq">
+          <i class="bi bi-question-circle"></i>
+          <span>F.A.Q</span>
+        </a>
+      </li><!-- End F.A.Q Page Nav -->
+
+    </ul>
+
+  </aside><!-- End Sidebar-->
+{% endblock %}
+
+{% block content %}
+<main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>支払い方法</h1>
+    </div><!-- End Page Title -->
+
+    <section class="section profile">
+      <div class="row">
+        <div class="col-xl-12">
+            <script async
+              src="https://js.stripe.com/v3/buy-button.js">
+            </script>
+
+            <stripe-buy-button
+              buy-button-id="buy_btn_1RTczhQoGrRsz73eBxKd9Mfk"
+              publishable-key="pk_test_51RTaf3QoGrRsz73evJXhVcEfNZUhaMjmWMYqeWHmqILa4AJM1DoqibeXwlSFOUTdI0bTJhibJ5X4ZLX52IQWlx5B00ySjlELZp"
+              customer-email="{{ customer.email }}"
+            >
+            </stripe-buy-button>
+
+        </div>
+      </div>
+    </section>
+
+</main><!-- End #main -->
+{% endblock %}

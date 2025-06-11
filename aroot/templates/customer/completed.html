@@ -1,0 +1,56 @@
+{% extends 'customer.html' %}
+
+{% block slider %}
+  <!-- ======= Sidebar ======= -->
+  <aside id="sidebar" class="sidebar">
+
+    <ul class="sidebar-nav" id="sidebar-nav">
+
+      <li class="nav-item">
+        <a class="nav-link {{ 'collapsed' if request.path != '/faq' else '' }}" href="/faq">
+          <i class="bi bi-question-circle"></i>
+          <span>F.A.Q</span>
+        </a>
+      </li><!-- End F.A.Q Page Nav -->
+
+    </ul>
+
+  </aside><!-- End Sidebar-->
+{% endblock %}
+
+{% block content %}
+  <main id="main" class="main">
+    <div class="container">
+
+      <section class="section register d-flex flex-column align-items-center justify-content-center py-4">
+        <div class="container">
+          <div class="row justify-content-center">
+            <div class="col-lg-6 col-md-6 d-flex flex-column align-items-center justify-content-center">
+
+              <div class="d-flex justify-content-center py-4">
+                <a href="index.html" class="logo d-flex align-items-center w-auto">
+                  <img src="{{ url_for('static', filename='image/sd.png') }}" alt="">
+                  <span class="d-none d-lg-block">A-Root</span>
+                </a>
+              </div><!-- End Logo -->
+
+              <div class="w-100 card mb-3">
+                <div class="card-body">
+                  <div class="pt-4 pb-2">
+                    <h5 class="card-title text-center pb-0 fs-4">登録が完了しました🎉</h5>
+                    <p class="text-color">ダッシュボードに移動してインスタグラムとの連携をしましょう</p>
+                      <div class=" text-center">
+                          <a class="btn btn-success" href="/">ダッシュボードに移動</a>
+                      </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+    </div>
+  </main><!-- End #main -->
+{% endblock %}

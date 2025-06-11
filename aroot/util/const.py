@@ -22,3 +22,7 @@ class DashboardStatus(Enum):
     MOD_START_DATE = "203"
     UPDATE_INFORMATION = "301"
     HEALTHY = "0"
+
+
+PAYMENT_TYPE_NONE = "none"
+PAYMENT_TYPE_STRIPE = "stripe"

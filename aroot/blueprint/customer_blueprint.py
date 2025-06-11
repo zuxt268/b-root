@@ -1,8 +1,12 @@
 import functools
 import traceback
+import uuid
+from urllib.parse import urlparse
+
 from flask import (
     Blueprint,
     flash,
+    abort,
     session,
     redirect,
     render_template,
@@ -10,7 +14,7 @@ from flask import (
     url_for,
     jsonify,
 )
-
+from werkzeug.security import check_password_hash, generate_password_hash
 from datetime import timedelta, datetime
 
 from flask.sessions import SessionMixin
@@ -33,6 +37,16 @@ from service.redis_client import get_redis
 from service.slack_service import SlackService
 from service.wordpress_service import WordpressService, WordpressAuthError
 from domain.instagram_media import convert_to_json
+from domain.customers import Customer, CustomerValidator
+from domain.errors import CustomerValidationError
+from service.account_service import AccountService
+from service.sendgrid_service import SendGridService
+from util.const import (
+    DashboardStatus,
+    EXPIRED,
+    NOT_CONNECTED,
+    PAYMENT_TYPE_STRIPE,
+)
 
 
 bp = Blueprint("customer", __name__)
@@ -47,6 +61,89 @@ def login_required(view):
         return view(**kwargs)
 
     return wrapped_view
+
+
+# 許可するIPアドレス
+ALLOWED_IPS = ["127.0.0.1", "126.15.84.51"]
+
+
+def get_client_ip():
+    """信頼できるプロキシ環境を前提に、実際のクライアントIPを取得"""
+    if "X-Forwarded-For" in request.headers:
+        # 複数IPがカンマ区切りで並ぶ場合、先頭が実クライアントIP
+        return request.headers["X-Forwarded-For"].split(",")[0].strip()
+    return request.remote_addr
+
+
+def protected(view):
+    @functools.wraps(view)
+    def wrapped_view(**kwargs):
+        client_ip = get_client_ip()
+        print(client_ip)
+        if client_ip not in ALLOWED_IPS:
+            abort(403)  # 403 Forbidden
+        return view(**kwargs)
+
+    return wrapped_view
+
+
+@bp.route("/send_verification_email", methods=("POST",))
+@protected
+def send_verification_email():
+    email = request.form["email"]
+    print(email)
+    try:
+        with UnitOfWork() as unit_of_work:
+            customer_repo = CustomersRepository(unit_of_work.session)
+            customer_service = CustomersService(customer_repo)
+            customer_service.check_use_email(email)
+            token = generate_register_uuid()
+            redis_cli = get_redis()
+            account_service = AccountService(redis_cli)
+            account_service.set_temp_register(token, email)
+            SendGridService().send_register_mail(email, token)
+        return render_template("customer/mail_confirm.html")
+    except CustomerValidationError as e:
+        flash(str(e), "warning")
+    return redirect(url_for("customer.mail_input"))
+
+
+@bp.route("/verify_email_token", methods=("GET",))
+@protected
+def verify_email_token():
+    token = request.args.get("token")
+    redis_cli = get_redis()
+    account_service = AccountService(redis_cli)
+    user = account_service.get_temp_register(token)
+    if user is None:
+        flash("セッションがタイムアウトしました", category="warning")
+        return render_template("customer/mail_input.html")
+    session["register_email"] = user.get("email")
+    session.permanent = True
+    return redirect(url_for("customer.register"))
+
+
+@bp.route("/mail_input")
+@protected
+def mail_input():
+    return render_template("customer/mail_input.html")
+
+
+@bp.route("/completed", methods=("GET",))
+@protected
+def completed():
+    return render_template("customer/completed.html")
+
+
+@bp.route("/payment", methods=("GET",))
+@protected
+def payment():
+    customer_id = session.get("customer_id")
+    with UnitOfWork() as unit_of_work:
+        customer_repo = CustomersRepository(unit_of_work.session)
+        customers_service = CustomersService(customer_repo)
+        customer = customers_service.get_customer_by_id(customer_id)
+    return render_template("customer/payment.html", customer=customer)
 
 
 @bp.route("/login", methods=("GET", "POST"))
@@ -105,6 +202,26 @@ def index():
         customer=customer,
         posts=posts,
         dashboard_status=dashboard_status,
+    )
+
+
+@bp.route("/account")
+def account():
+    customer_id = session.get("customer_id")
+    with UnitOfWork() as unit_of_work:
+        customer_repo = CustomersRepository(unit_of_work.session)
+        customers_service = CustomersService(customer_repo)
+        customer = customers_service.get_customer_by_id(customer_id)
+    return render_template(
+        "customer/account.html",
+        customer=customer,
+    )
+
+
+@bp.route("/faq")
+def faq():
+    return render_template(
+        "customer/faq.html",
     )
 
 
@@ -181,6 +298,41 @@ def send_alert(e: Exception):
     stack_trace = traceback.format_exc()
     msg = f"```{err_txt}\n{stack_trace}```"
     SlackService().send_alert(msg)
+
+
+@bp.route("/register", methods=("POST", "GET"))
+def register():
+    register_email = session.get("register_email")
+    print("register_email", register_email)
+    customer = Customer()
+    customer.email = register_email
+    if request.method == "POST":
+        print("post_register is invoked")
+        name = request.form["name"]
+        password = request.form["password"]
+        wordpress_url = request.form["wordpress_url"]
+        parsed_url = urlparse(
+            wordpress_url
+            if wordpress_url.startswith("http")
+            else "http://" + wordpress_url
+        )
+        domain = parsed_url.hostname  # これで「ドメイン部分」だけ抽出される
+        customer.wordpress_url = domain
+        hash_password = generate_password_hash(password)
+        customer.password = hash_password
+        customer.name = name
+        customer.payment_type = PAYMENT_TYPE_STRIPE
+        with UnitOfWork() as unit_of_work:
+            customers_repo = CustomersRepository(unit_of_work.session)
+            customer_service = CustomersService(customers_repo)
+            customer_service.register_customer(customer.dict())
+            new_customer = customer_service.get_customer_by_email(customer.email)
+            session["customer_id"] = new_customer.id
+            session.permanent = True
+            unit_of_work.commit()
+        return redirect(url_for("customer.payment"))
+    else:
+        return render_template("customer/register.html", customer=customer)
 
 
 @bp.route("/instagram", methods=("POST",))
@@ -277,3 +429,7 @@ def set_dashboard_status(
 ):
     session_mixin["dashboard_status"] = dashboard_status
     session_mixin["dashboard_status_timestamp"] = datetime.now()
+
+
+def generate_register_uuid() -> str:
+    return "rgr_" + str(uuid.uuid4())

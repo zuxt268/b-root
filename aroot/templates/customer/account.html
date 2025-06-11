@@ -1,0 +1,131 @@
+{% extends 'customer.html' %}
+
+{% block content %}
+
+<main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>アカウント</h1>
+    </div><!-- End Page Title -->
+
+    <section class="section profile">
+      <div class="row">
+        <div class="col-xl-12">
+
+          <div class="card">
+            <div class="card-body pt-3">
+              <!-- Bordered Tabs -->
+              <ul class="nav nav-tabs nav-tabs-bordered">
+
+                <li class="nav-item">
+                  <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#wordpress-overview">設定</button>
+                </li>
+
+              </ul>
+              <div class="tab-content pt-2">
+
+                <div class="tab-pane fade show active instagram-overview pt-3" id="instagram-overview">
+
+                    <div class="row mb-3">
+                      <label for="Address" class="col-md-4 col-lg-3 col-form-label">Meta認証</label>
+                      <div class="col-md-8 col-lg-9 w-25">
+                          <button id="facebook_btn" class="btn btn-primary"><i class="bi bi-facebook me-2"></i>認証</button>
+                      </div>
+                    </div>
+
+                    <div class="row mb-3">
+                      <label for="startDate" class="col-md-4 col-lg-3 col-form-label">連携開始日</label>
+                      <div class="col-md-8 col-lg-9 w-25">
+                        <input title="start_date" id="start_date" value="{{ customer.formatted_date() }}" type="datetime-local" class="form-control" name="start_date">
+
+                      </div>
+                    </div>
+
+                    <hr class="my-5">
+
+                    <div class="row mb-3">
+                      <label for="Address" class="col-md-4 col-lg-3 col-form-label">ワードプレスプラグイン</label>
+                      <div class="col-md-8 col-lg-9 w-25">
+                        <a type="button" href="https://d2r013wwhibki7.cloudfront.net/a-root.zip"><i class="bi bi-download me-2"></i>ダウンロード</a>
+                      </div>
+                    </div>
+
+                    <div class="row mb-3">
+                      <label for="secretInput" class="col-md-4 col-lg-3 col-form-label">シークレットフレーズ</label>
+                      <div class="col-md-8 col-lg-9 w-25 d-flex align-items-center">
+                        <input type="password" id="secretInput" class="form-control me-2" value="シークレットキー" readonly>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="togglePassword()" style="line-height:1;">
+                          <i id="eye-icon" class="bi bi-eye"></i>
+                        </button>
+                      </div>
+                    </div>
+
+
+                <hr class="my-5">
+
+               <div class="row mb-3">
+                   <label for="Address" class="col-md-4 col-lg-3 col-form-label">ON/OFF</label>
+                      <div class="col-md-8 col-lg-9 w-25">
+                    <div class="form-check form-switch">
+                      <input class="form-check-input" type="checkbox" id="flexSwitchCheckChecked" checked>
+                      <label class="form-check-label" for="flexSwitchCheckChecked">Checked switch checkbox input</label>
+                    </div>
+                  </div>
+                </div>
+
+                </div>
+
+              </div><!-- End Bordered Tabs -->
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+</main><!-- End #main -->
+
+<script>
+    function togglePassword() {
+    const input = document.getElementById("secretInput");
+    const icon = document.getElementById("eye-icon");
+    const isPassword = input.type === "password";
+
+    input.type = isPassword ? "text" : "password";
+    icon.classList.toggle("bi-eye", !isPassword);
+    icon.classList.toggle("bi-eye-slash", isPassword);
+    }
+
+    const fb_btn = document.getElementById("facebook_btn");
+    if (fb_btn) {
+        fb_btn.addEventListener("click", (event) => {
+            document.getElementById("facebook_btn").disabled = true;
+            FB.login(function(response){
+                if (response.status === "connected") {
+                    showLoadingOverlay()
+                    const accessToken = response.authResponse.accessToken;
+                    post("/facebook/auth", {"access_token": accessToken})
+                } else {
+                    document.getElementById("facebook_btn").disabled = false;
+                }
+            }, {scope: 'public_profile, pages_show_list, business_management, instagram_basic'});
+        })
+    }
+
+    const start_date = document.getElementById("start_date");
+    if (start_date) {
+        start_date.addEventListener("blur", (event) => {
+        const start_date = event.target.value;
+        if (confirm(`連携対象の開始日時を変更します \n日本時間: ${start_date}`)) {
+            showLoadingOverlay();
+            console.log(event.target.value);
+            post("/start_date", {start_date});
+        }
+    });
+    }
+
+</script>
+
+{% endblock %}
+
