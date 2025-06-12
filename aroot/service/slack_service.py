@@ -23,7 +23,7 @@ class SlackService(object):
             {
                 "icon_emoji": ":cold_sweat:",
                 "username": "A-Root",
-                "text": f"<@U08JVHM4KV3>\n{message}",
+                "text": f"<@U04P797HYPM>\n{message}",
             }
         )
 
@@ -41,7 +41,7 @@ def send_support_team(customer: Customer):
         data=json.dumps(
             {
                 "username": "池澤勇輝",
-                "text": f"<@U01TJ6JC877>\n{msg}",
+                "text": f"<@U08JVHM4KV3>\n{msg}",
             }
         ),
         headers={"Content-Type": "application/json"},
