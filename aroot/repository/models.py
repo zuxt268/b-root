@@ -61,6 +61,7 @@ class CustomersModel(Base):
             "instagram_business_account_name": self.instagram_business_account_name,
             "instagram_token_status": self.instagram_token_status,
             "delete_hash": self.delete_hash,
+            "payment_type": self.payment_type,
         }
 
 

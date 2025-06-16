@@ -43,6 +43,8 @@
 
                     <hr class="my-5">
 
+                    {% if customer.payment_type == "stripe" and a_root_status == 0 %}
+
                     <div class="row mb-3">
                       <label for="Address" class="col-md-4 col-lg-3 col-form-label">ワードプレスプラグイン</label>
                       <div class="col-md-8 col-lg-9 w-25">
@@ -60,8 +62,8 @@
                       </div>
                     </div>
 
-
-                <hr class="my-5">
+                    <hr class="my-5">
+                    {% endif %}
 
                <div class="row mb-3">
                    <label for="Address" class="col-md-4 col-lg-3 col-form-label">ON/OFF</label>
@@ -122,7 +124,7 @@
             console.log(event.target.value);
             post("/start_date", {start_date});
         }
-    });
+      });
     }
 
 </script>

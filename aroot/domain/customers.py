@@ -5,6 +5,7 @@ from typing import Optional
 import requests
 from werkzeug.security import check_password_hash, generate_password_hash
 from domain.errors import CustomerAuthError, CustomerValidationError
+from util.const import DashboardStatus, EXPIRED, NOT_CONNECTED
 
 
 class Customer:
@@ -76,42 +77,43 @@ class Customer:
 
     def a_root_status(self) -> int:
         # インスタグラムと疎通できるか
-        if self.instagram_business_account_id is not None:
+        if self.instagram_token_status == NOT_CONNECTED:
             return 1
-
-        # ワードプレス側と疎通ができるか
-        try:
-            resp = requests.get(
-                f"https://{self.wordpress_url}/?rest_route=/rodut/v1/versions"
-            )
-            resp.raise_for_status()
-        except Exception:
+        if self.instagram_token_status == EXPIRED:
             return 2
 
-        # ストライプにて決済が完了しているか
-        payment_status = "paid"
-        if self.payment_type == "stripe":
-            try:
-                req = {
-                    "email": self.email,
-                    "product_id": os.getenv("PRODUCT_ID"),
-                }
-                resp = requests.post(os.getenv("CAREO_URL") + "/users", json=req)
-                resp.raise_for_status()
-                j = resp.json()
-                if j["status"]:
-                    payment_status = j["status"]
-            except Exception:
-                return -1
-        if payment_status != "paid":
+        # ワードプレス側と疎通ができるか
+        if is_wordpress_reachable(self.wordpress_url) is False:
             return 3
+
+        # ストライプにて決済が完了しているか
+        if is_payment_completed(self.payment_type, self.email) is False:
+            return 4
+
         return 0
 
 
-def stripe_status(customer: Customer):
+def is_wordpress_reachable(url: str) -> bool:
     try:
-        response = requests.get()
-    except Exception:
+        response = requests.get(f"https://{url}/?rest_route=/rodut/v1/title", timeout=5)
+        return response.status_code == 200
+    except requests.RequestException:
+        return False
+
+
+def is_payment_completed(payment_type: str, email: str) -> bool:
+    if payment_type == "none":
+        return True
+    try:
+        req = {
+            "email": email,
+            "product_id": os.getenv("PRODUCT_ID"),
+        }
+        resp = requests.post(os.getenv("CAREO_URL") + "/users", json=req)
+        resp.raise_for_status()
+        status = resp.json().get("status")
+        return status == "paid"
+    except requests.RequestException:
         return False
 
 

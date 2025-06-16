@@ -26,16 +26,16 @@
                     </div>
                     <div class="ps-3">
                       <h5>
-                          {% if dashboard_status == "0" %}
-                            <span class="badge bg-healthy rounded-pill">正常に動作中</span>
-                          {% elif dashboard_status == "101" %}
-                            <span class="text-black badge bg-healthy rounded-pill">正常に動作中</span>
+                          {% if a_root_status == 1 %}
                             <span class="text-black badge bg-pending-auth rounded-pill">インスタグラム認証待ち</span>
+                          {% elif a_root_status == 2 %}
                             <span class="text-black badge bg-pending-auth rounded-pill">認証期限切れ</span>
+                          {% elif a_root_status == 3 %}
                             <span class="text-black badge bg-pending-auth rounded-pill">ワードプレスplugin設定待ち</span>
+                          {% elif a_root_status == 4 %}
                             <span class="text-black badge bg-fail-payment rounded-pill">決済失敗</span>
-                          {% elif dashboard_status == "201" %}
-                            <span class="badge bg-danger rounded-pill">認証期限切れ</span>
+                          {% else %}
+                            <span class="text-black badge bg-healthy rounded-pill">正常に動作中</span>
                           {% endif %}
                       </h5>
                     </div>
@@ -87,12 +87,13 @@
                             {{ customer.instagram_business_account_name }} <span class="small pt-2">({{ customer.instagram_business_account_id }})</span>
                       </a></h5>
                         {% else %}
-{#                            <button id="facebook_btn" class="btn btn-outline-primary"><i class="bi bi-facebook me-2"></i>認証#}
                             <button type="button" class="btn btn-outline-primary position-relative">
                                 <i class="bi bi-facebook me-2"></i>認証
+                                {% if a_root_status == 1 or a_root_status == 2 %}
                                 <span class="position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-light rounded-circle smooth-blinking-badge">
                                     <span class="visually-hidden">New alerts</span>
                                 </span>
+                                {% endif %}
                             </button>
                         {% endif %}
                       <span class="text-muted small pt-2"></span>

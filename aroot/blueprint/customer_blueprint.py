@@ -197,11 +197,13 @@ def index():
             dashboard_status = DashboardStatus.AUTH_PENDING.value
         else:
             dashboard_status = DashboardStatus.HEALTHY.value
+    a_root_status = customer.a_root_status()
     return render_template(
         "customer/index.html",
         customer=customer,
         posts=posts,
         dashboard_status=dashboard_status,
+        a_root_status=a_root_status,
     )
 
 
@@ -212,9 +214,11 @@ def account():
         customer_repo = CustomersRepository(unit_of_work.session)
         customers_service = CustomersService(customer_repo)
         customer = customers_service.get_customer_by_id(customer_id)
+        a_root_status = customer.a_root_status()
     return render_template(
         "customer/account.html",
         customer=customer,
+        a_root_status=a_root_status,
     )
 
 
@@ -228,10 +232,11 @@ def faq():
 @bp.route("/start_date", methods=("POST",))
 @login_required
 def start_date():
+    print("start_date")
     customer_id = session.get("customer_id")
     new_start_date = request.form.get("start_date")
     if new_start_date:
-        utc_time = datetime.strptime(new_start_date, "%Y-%m-%dT%H:%M:%S") - timedelta(
+        utc_time = datetime.strptime(new_start_date, "%Y-%m-%dT%H:%M") - timedelta(
             hours=9
         )
         with UnitOfWork() as unit_of_work:
@@ -240,7 +245,7 @@ def start_date():
             unit_of_work.commit()
             flash(message="日時を更新しました", category="success")
             set_dashboard_status(session, DashboardStatus.MOD_START_DATE.value)
-    return redirect(url_for("customer.index"))
+    return redirect(url_for("customer.account"))
 
 
 @bp.route("/facebook/auth", methods=("POST",))
