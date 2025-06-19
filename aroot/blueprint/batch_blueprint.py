@@ -9,6 +9,7 @@ from service.meta_service import MetaService, MetaApiError
 from service.posts_service import PostsService
 from service.slack_service import SlackService, send_support_team
 from service.wordpress_service import WordpressService
+from service.wordpress_service_factory import WordpressServiceFactory
 from domain.customers import Customer
 from util.const import EXPIRED
 
@@ -44,9 +45,7 @@ def handle_customer(customer: Customer):
         try:
             print(f"<Start> customer_id: {customer.id}, customer_name: {customer.name}")
 
-            wordpress_service = WordpressService(
-                customer.wordpress_url, customer.delete_hash, customer.name
-            )
+            wordpress_service = WordpressServiceFactory.create_service(customer)
             instagram_media_list = meta_service.get_media_list(
                 customer.facebook_token, customer.instagram_business_account_id
             )

@@ -37,6 +37,11 @@ from service.meta_service import MetaService, MetaApiError, MetaAccountNotFoundE
 from service.redis_client import get_redis
 from service.slack_service import SlackService
 from service.wordpress_service import WordpressService, WordpressAuthError
+from service.wordpress_service_stripe import (
+    WordpressServiceStripe,
+    WordpressStripeAuthError,
+)
+from service.wordpress_service_factory import WordpressServiceFactory
 from domain.instagram_media import convert_to_json
 from domain.customers import Customer, CustomerValidator, get_payment_info
 from domain.errors import CustomerValidationError
@@ -228,7 +233,7 @@ def account():
 def faq():
     customer_id = session.get("customer_id")
     customer = None
-    
+
     if customer_id:
         try:
             with UnitOfWork() as unit_of_work:
@@ -237,7 +242,7 @@ def faq():
                 customer = customers_service.get_customer_by_id(customer_id)
         except:
             customer = None
-    
+
     return render_template(
         "customer/faq.html",
         customer=customer,
@@ -272,17 +277,12 @@ def facebook_auth():
         with UnitOfWork() as unit_of_work:
             customers_repo = CustomersRepository(unit_of_work.session)
             customer_service = CustomersService(customers_repo)
-            customer = customer_service.get_customer_by_id(customer_id)
             meta_service = MetaService()
             long_token = meta_service.get_long_term_token(access_token)
             instagram = meta_service.get_instagram_account(access_token)
             customer_service.update_customer_after_login(
                 customer_id, long_token, instagram["id"], instagram["username"]
             )
-            wordpress_service = WordpressService(
-                customer.wordpress_url, customer.delete_hash, customer.name
-            )
-            wordpress_service.ping()
             unit_of_work.commit()
             flash(
                 message=f"インスタグラムアカウントとの連携に成功しました",
@@ -296,7 +296,7 @@ def facebook_auth():
             category="alert",
         )
         set_dashboard_status(session, DashboardStatus.AUTH_ERROR_INSTAGRAM.value)
-    except WordpressAuthError as e:
+    except (WordpressAuthError, WordpressStripeAuthError) as e:
         send_alert(e)
         flash(
             message=f"Wordpressとの疎通に失敗しました。管理者にご連絡ください: {str(e)}",
@@ -392,9 +392,7 @@ def post_wordpress():
             posts_service = PostsService(posts_repo)
             customer_id = session.get("customer_id")
             customer = customer_service.get_customer_by_id(customer_id)
-            wordpress_service = WordpressService(
-                customer.wordpress_url, customer.delete_hash, customer.name
-            )
+            wordpress_service = WordpressServiceFactory.create_service(customer)
             meta_service = MetaService()
             media_id_list = meta_service.get_media_list(
                 customer.facebook_token, customer.instagram_business_account_id
@@ -440,44 +438,44 @@ def get_invoices():
             customer_repo = CustomersRepository(unit_of_work.session)
             customers_service = CustomersService(customer_repo)
             customer = customers_service.get_customer_by_id(customer_id)
-            
+
             if customer.payment_type != PAYMENT_TYPE_STRIPE:
                 return jsonify({"error": "Stripe請求書は利用できません"})
-            
+
             # Stripe APIキーを設定（環境変数から取得）
             import os
+
             stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
-            
+
             # CAREO APIからstripe_customer_idを毎回取得
             payment_info = get_payment_info(customer.payment_type, customer.email)
             stripe_customer_id = payment_info.get("stripe_customer_id")
-            
+
             if not stripe_customer_id:
                 return jsonify({"error": "Stripe顧客IDが取得できませんでした"})
-            
+
             # Stripeから請求書を取得
-            invoices = stripe.Invoice.list(
-                customer=stripe_customer_id,
-                limit=10
-            )
-            
+            invoices = stripe.Invoice.list(customer=stripe_customer_id, limit=10)
+
             invoice_data = []
             for invoice in invoices.data:
-                invoice_data.append({
-                    "id": invoice.id,
-                    "number": invoice.number,
-                    "amount_paid": invoice.amount_paid / 100,  # centから円に変換
-                    "amount_due": invoice.amount_due / 100,
-                    "currency": invoice.currency,
-                    "status": invoice.status,
-                    "created": invoice.created,
-                    "due_date": invoice.due_date,
-                    "hosted_invoice_url": invoice.hosted_invoice_url,
-                    "invoice_pdf": invoice.invoice_pdf
-                })
-            
+                invoice_data.append(
+                    {
+                        "id": invoice.id,
+                        "number": invoice.number,
+                        "amount_paid": invoice.amount_paid / 100,  # centから円に変換
+                        "amount_due": invoice.amount_due / 100,
+                        "currency": invoice.currency,
+                        "status": invoice.status,
+                        "created": invoice.created,
+                        "due_date": invoice.due_date,
+                        "hosted_invoice_url": invoice.hosted_invoice_url,
+                        "invoice_pdf": invoice.invoice_pdf,
+                    }
+                )
+
             return jsonify({"invoices": invoice_data})
-            
+
     except stripe.error.StripeError as e:
         return jsonify({"error": f"Stripeエラー: {str(e)}"})
     except Exception as e:
