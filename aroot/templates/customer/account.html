@@ -74,6 +74,17 @@
                     <hr class="my-5">
                     {% endif %}
 
+                    {% if customer.payment_type == "stripe" %}
+                    <div class="row mb-3">
+                       <label class="col-md-4 col-lg-3 col-form-label">退会</label>
+                          <div class="col-md-8 col-lg-9">
+                        <button type="button" class="btn btn-danger" onclick="confirmWithdraw()">
+                          <i class="bi bi-box-arrow-right me-2"></i>退会する
+                        </button>
+                      </div>
+                    </div>
+                    {% endif %}
+
                 </div>
 
                 {% if customer.payment_type == "stripe" %}
@@ -271,6 +282,17 @@
             } else {
                 alert('コピーに失敗しました');
             }
+        }
+    }
+
+    function confirmWithdraw() {
+        if (confirm('本当に退会しますか？\n\n退会すると、以下のデータが削除されます：\n・アカウント情報\n・投稿履歴\n・設定情報\n\nこの操作は取り消すことができません。')) {
+            // フォームを作成してPOSTリクエストを送信
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/withdraw';
+            document.body.appendChild(form);
+            form.submit();
         }
     }
 

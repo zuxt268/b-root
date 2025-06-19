@@ -429,6 +429,69 @@ def relink():
     return render_template("customer/relink.html")
 
 
+@bp.route("/withdraw", methods=("POST",))
+@login_required
+def withdraw():
+    try:
+        customer_id = session.get("customer_id")
+        with UnitOfWork() as unit_of_work:
+            customer_repo = CustomersRepository(unit_of_work.session)
+            customers_service = CustomersService(customer_repo)
+            customer = customers_service.get_customer_by_id(customer_id)
+            
+            # stripe顧客のみ退会可能
+            if customer.payment_type != PAYMENT_TYPE_STRIPE:
+                flash("退会処理はStripe顧客のみ利用できます", "warning")
+                return redirect(url_for("customer.account"))
+            
+            # Stripeサブスクリプションをキャンセル
+            try:
+                import os
+                stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
+                product_id = os.getenv("PRODUCT_ID")
+                
+                # CAREO APIからstripe_customer_idを取得
+                payment_info = get_payment_info(customer.payment_type, customer.email)
+                stripe_customer_id = payment_info.get("stripe_customer_id")
+                
+                if stripe_customer_id and product_id:
+                    # 顧客のアクティブなサブスクリプションを取得
+                    subscriptions = stripe.Subscription.list(
+                        customer=stripe_customer_id,
+                        status='active'
+                    )
+                    
+                    # 該当のPRODUCT_IDのサブスクリプションのみキャンセル
+                    for subscription in subscriptions.data:
+                        for item in subscription.items.data:
+                            if item.price.product == product_id:
+                                stripe.Subscription.modify(
+                                    subscription.id,
+                                    cancel_at_period_end=True
+                                )
+                        
+            except stripe.error.StripeError as e:
+                # Stripeエラーが発生してもアカウント削除は継続
+                SlackService().send_alert(f"退会時のStripeキャンセルでエラー: {customer.email} - {str(e)}")
+            except Exception as e:
+                # その他のエラーも同様
+                SlackService().send_alert(f"退会時のStripeキャンセルでエラー: {customer.email} - {str(e)}")
+            
+            # 顧客データを削除
+            customer_repo.delete(customer_id)
+            unit_of_work.commit()
+            
+            # セッションをクリア
+            session.clear()
+            
+            flash("退会処理が完了しました。サブスクリプションもキャンセルされました。", "success")
+            return redirect(url_for("customer.login"))
+            
+    except Exception as e:
+        flash(f"退会処理中にエラーが発生しました: {str(e)}", "warning")
+        return redirect(url_for("customer.account"))
+
+
 @bp.route("/invoices", methods=("GET",))
 @login_required
 def get_invoices():
