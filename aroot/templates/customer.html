@@ -4,7 +4,7 @@
     <header id="header" class="header fixed-top d-flex align-items-center">
 
     <div class="d-flex align-items-center justify-content-between">
-      <a href="#" class="logo d-flex align-items-center">
+      <a href="{{ url_for('customer.index') if customer else url_for('customer.faq') }}" class="logo d-flex align-items-center">
         <img src="{{ url_for('static', filename='image/sd.png') }}" alt="">
         <span class="d-none d-lg-block">A-Root</span>
       </a>
@@ -30,6 +30,13 @@
 
           </ul><!-- End Profile Dropdown Items -->
         </li><!-- End Profile Nav -->
+        {% else %}
+        <li class="nav-item pe-3">
+          <a class="nav-link d-flex align-items-center" href="{{ url_for('customer.login') }}">
+            <i class="bi bi-box-arrow-in-right me-2"></i>
+            <span>ログイン</span>
+          </a>
+        </li><!-- End Login Nav -->
         {% endif %}
       </ul>
     </nav><!-- End Icons Navigation -->
@@ -43,6 +50,7 @@
 
     <ul class="sidebar-nav" id="sidebar-nav">
 
+      {% if customer %}
       <li class="nav-item">
         <a class="nav-link {{ 'collapsed' if request.path != '/' else '' }}" href="/">
           <i class="bi bi-grid"></i>
@@ -56,6 +64,7 @@
           <span>アカウント</span>
         </a>
       </li><!-- End Profile Page Nav -->
+      {% endif %}
 
       <li class="nav-item">
         <a class="nav-link {{ 'collapsed' if request.path != '/faq' else '' }}" href="/faq">

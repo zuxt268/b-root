@@ -21,10 +21,16 @@
                   <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#wordpress-overview">設定</button>
                 </li>
 
+                {% if customer.payment_type == "stripe" %}
+                <li class="nav-item">
+                  <button class="nav-link" data-bs-toggle="tab" data-bs-target="#invoices-overview">請求書</button>
+                </li>
+                {% endif %}
+
               </ul>
               <div class="tab-content pt-2">
 
-                <div class="tab-pane fade show active instagram-overview pt-3" id="instagram-overview">
+                <div class="tab-pane fade show active instagram-overview pt-3" id="wordpress-overview">
 
                     <div class="row mb-3">
                       <label for="Address" class="col-md-4 col-lg-3 col-form-label">Meta認証</label>
@@ -54,10 +60,13 @@
 
                     <div class="row mb-3">
                       <label for="secretInput" class="col-md-4 col-lg-3 col-form-label">シークレットフレーズ</label>
-                      <div class="col-md-8 col-lg-9 w-25 d-flex align-items-center">
-                        <input type="password" id="secretInput" class="form-control me-2" value="シークレットキー" readonly>
-                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="togglePassword()" style="line-height:1;">
+                      <div class="col-md-8 col-lg-9 d-flex align-items-center">
+                        <input type="password" id="secretInput" class="form-control me-2" value="{{ customer.get_secret_phrase() }}" readonly style="min-width: 350px;">
+                        <button type="button" class="btn btn-sm btn-outline-secondary me-2" onclick="togglePassword()" style="line-height:1;">
                           <i id="eye-icon" class="bi bi-eye"></i>
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="copySecretPhrase()" style="line-height:1;">
+                          <i class="bi bi-clipboard"></i>
                         </button>
                       </div>
                     </div>
@@ -65,17 +74,45 @@
                     <hr class="my-5">
                     {% endif %}
 
-               <div class="row mb-3">
-                   <label for="Address" class="col-md-4 col-lg-3 col-form-label">ON/OFF</label>
-                      <div class="col-md-8 col-lg-9 w-25">
-                    <div class="form-check form-switch">
-                      <input class="form-check-input" type="checkbox" id="flexSwitchCheckChecked" checked>
-                      <label class="form-check-label" for="flexSwitchCheckChecked">Checked switch checkbox input</label>
+                </div>
+
+                {% if customer.payment_type == "stripe" %}
+                <div class="tab-pane fade pt-3" id="invoices-overview">
+                  <div class="row mb-3">
+                    <div class="col-12">
+                      <button id="load-invoices-btn" class="btn btn-primary mb-3">
+                        <i class="bi bi-receipt me-2"></i>請求書を読み込む
+                      </button>
+                      <div id="loading-invoices" class="d-none">
+                        <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+                        読み込み中...
+                      </div>
+                      <div id="invoices-error" class="alert alert-danger d-none" role="alert"></div>
+                      <div id="invoices-container" class="d-none">
+                        <div class="table-responsive">
+                          <table class="table table-striped">
+                            <thead>
+                              <tr>
+                                <th>請求書番号</th>
+                                <th>金額</th>
+                                <th>ステータス</th>
+                                <th>作成日</th>
+                                <th>期限日</th>
+                                <th>アクション</th>
+                              </tr>
+                            </thead>
+                            <tbody id="invoices-tbody">
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                      <div id="no-invoices" class="alert alert-info d-none" role="alert">
+                        請求書がありません。
+                      </div>
                     </div>
                   </div>
                 </div>
-
-                </div>
+                {% endif %}
 
               </div><!-- End Bordered Tabs -->
 
@@ -125,6 +162,116 @@
             post("/start_date", {start_date});
         }
       });
+    }
+
+    // 請求書読み込み機能
+    const loadInvoicesBtn = document.getElementById("load-invoices-btn");
+    if (loadInvoicesBtn) {
+        loadInvoicesBtn.addEventListener("click", async () => {
+            const loadingElement = document.getElementById("loading-invoices");
+            const errorElement = document.getElementById("invoices-error");
+            const containerElement = document.getElementById("invoices-container");
+            const noInvoicesElement = document.getElementById("no-invoices");
+            const tbodyElement = document.getElementById("invoices-tbody");
+
+            // リセット
+            loadingElement.classList.remove("d-none");
+            errorElement.classList.add("d-none");
+            containerElement.classList.add("d-none");
+            noInvoicesElement.classList.add("d-none");
+            loadInvoicesBtn.disabled = true;
+
+            try {
+                const response = await fetch("/invoices");
+                const data = await response.json();
+
+                if (data.error) {
+                    errorElement.textContent = data.error;
+                    errorElement.classList.remove("d-none");
+                } else if (data.invoices && data.invoices.length > 0) {
+                    tbodyElement.innerHTML = "";
+                    data.invoices.forEach(invoice => {
+                        const row = document.createElement("tr");
+                        const statusBadge = getStatusBadge(invoice.status);
+                        const createdDate = new Date(invoice.created * 1000).toLocaleDateString("ja-JP");
+                        const dueDate = invoice.due_date ? new Date(invoice.due_date * 1000).toLocaleDateString("ja-JP") : "-";
+                        
+                        row.innerHTML = `
+                            <td>${invoice.number || invoice.id}</td>
+                            <td>¥${invoice.amount_paid.toLocaleString()} / ¥${(invoice.amount_paid + invoice.amount_due).toLocaleString()}</td>
+                            <td>${statusBadge}</td>
+                            <td>${createdDate}</td>
+                            <td>${dueDate}</td>
+                            <td>
+                                ${invoice.hosted_invoice_url ? `<a href="${invoice.hosted_invoice_url}" target="_blank" class="btn btn-sm btn-outline-primary me-1">表示</a>` : ''}
+                                ${invoice.invoice_pdf ? `<a href="${invoice.invoice_pdf}" target="_blank" class="btn btn-sm btn-outline-secondary">PDF</a>` : ''}
+                            </td>
+                        `;
+                        tbodyElement.appendChild(row);
+                    });
+                    containerElement.classList.remove("d-none");
+                } else {
+                    noInvoicesElement.classList.remove("d-none");
+                }
+            } catch (error) {
+                errorElement.textContent = "請求書の取得中にエラーが発生しました: " + error.message;
+                errorElement.classList.remove("d-none");
+            } finally {
+                loadingElement.classList.add("d-none");
+                loadInvoicesBtn.disabled = false;
+            }
+        });
+    }
+
+    function getStatusBadge(status) {
+        switch (status) {
+            case 'draft':
+                return '<span class="badge bg-secondary">下書き</span>';
+            case 'open':
+                return '<span class="badge bg-warning">未払い</span>';
+            case 'paid':
+                return '<span class="badge bg-success">支払い済み</span>';
+            case 'void':
+                return '<span class="badge bg-danger">無効</span>';
+            case 'uncollectible':
+                return '<span class="badge bg-dark">回収不能</span>';
+            default:
+                return '<span class="badge bg-light text-dark">' + status + '</span>';
+        }
+    }
+
+    function copySecretPhrase() {
+        const input = document.getElementById("secretInput");
+        
+        // フォールバック方法: selectとexecCommandを使用
+        try {
+            input.select();
+            input.setSelectionRange(0, 99999); // モバイル対応
+            document.execCommand('copy');
+            
+            const button = event.target.closest('button');
+            const originalContent = button.innerHTML;
+            button.innerHTML = '<i class="bi bi-check"></i>';
+            setTimeout(() => {
+                button.innerHTML = originalContent;
+            }, 2000);
+        } catch (err) {
+            // navigator.clipboardが使える場合の処理
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(input.value).then(() => {
+                    const button = event.target.closest('button');
+                    const originalContent = button.innerHTML;
+                    button.innerHTML = '<i class="bi bi-check"></i>';
+                    setTimeout(() => {
+                        button.innerHTML = originalContent;
+                    }, 2000);
+                }).catch(() => {
+                    alert('コピーに失敗しました');
+                });
+            } else {
+                alert('コピーに失敗しました');
+            }
+        }
     }
 
 </script>

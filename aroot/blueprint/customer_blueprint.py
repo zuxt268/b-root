@@ -16,6 +16,7 @@ from flask import (
 )
 from werkzeug.security import check_password_hash, generate_password_hash
 from datetime import timedelta, datetime
+import stripe
 
 from flask.sessions import SessionMixin
 from typing_extensions import Optional
@@ -37,7 +38,7 @@ from service.redis_client import get_redis
 from service.slack_service import SlackService
 from service.wordpress_service import WordpressService, WordpressAuthError
 from domain.instagram_media import convert_to_json
-from domain.customers import Customer, CustomerValidator
+from domain.customers import Customer, CustomerValidator, get_payment_info
 from domain.errors import CustomerValidationError
 from service.account_service import AccountService
 from service.sendgrid_service import SendGridService
@@ -169,7 +170,7 @@ def login():
             except CustomerAuthError:
                 error = "メールアドレスかパスワードが間違っています"
         flash(message=error, category="warning")
-    return render_template("customer/login.html")
+    return render_template("customer/login.html", customer=None)
 
 
 @bp.route("/logout")
@@ -208,6 +209,7 @@ def index():
 
 
 @bp.route("/account")
+@login_required
 def account():
     customer_id = session.get("customer_id")
     with UnitOfWork() as unit_of_work:
@@ -224,8 +226,21 @@ def account():
 
 @bp.route("/faq")
 def faq():
+    customer_id = session.get("customer_id")
+    customer = None
+    
+    if customer_id:
+        try:
+            with UnitOfWork() as unit_of_work:
+                customer_repo = CustomersRepository(unit_of_work.session)
+                customers_service = CustomersService(customer_repo)
+                customer = customers_service.get_customer_by_id(customer_id)
+        except:
+            customer = None
+    
     return render_template(
         "customer/faq.html",
+        customer=customer,
     )
 
 
@@ -414,6 +429,59 @@ def maika_dashboard():
 @login_required
 def relink():
     return render_template("customer/relink.html")
+
+
+@bp.route("/invoices", methods=("GET",))
+@login_required
+def get_invoices():
+    try:
+        customer_id = session.get("customer_id")
+        with UnitOfWork() as unit_of_work:
+            customer_repo = CustomersRepository(unit_of_work.session)
+            customers_service = CustomersService(customer_repo)
+            customer = customers_service.get_customer_by_id(customer_id)
+            
+            if customer.payment_type != PAYMENT_TYPE_STRIPE:
+                return jsonify({"error": "Stripe請求書は利用できません"})
+            
+            # Stripe APIキーを設定（環境変数から取得）
+            import os
+            stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
+            
+            # CAREO APIからstripe_customer_idを毎回取得
+            payment_info = get_payment_info(customer.payment_type, customer.email)
+            stripe_customer_id = payment_info.get("stripe_customer_id")
+            
+            if not stripe_customer_id:
+                return jsonify({"error": "Stripe顧客IDが取得できませんでした"})
+            
+            # Stripeから請求書を取得
+            invoices = stripe.Invoice.list(
+                customer=stripe_customer_id,
+                limit=10
+            )
+            
+            invoice_data = []
+            for invoice in invoices.data:
+                invoice_data.append({
+                    "id": invoice.id,
+                    "number": invoice.number,
+                    "amount_paid": invoice.amount_paid / 100,  # centから円に変換
+                    "amount_due": invoice.amount_due / 100,
+                    "currency": invoice.currency,
+                    "status": invoice.status,
+                    "created": invoice.created,
+                    "due_date": invoice.due_date,
+                    "hosted_invoice_url": invoice.hosted_invoice_url,
+                    "invoice_pdf": invoice.invoice_pdf
+                })
+            
+            return jsonify({"invoices": invoice_data})
+            
+    except stripe.error.StripeError as e:
+        return jsonify({"error": f"Stripeエラー: {str(e)}"})
+    except Exception as e:
+        return jsonify({"error": f"エラーが発生しました: {str(e)}"})
 
 
 def get_dashboard_status(session_mixin: SessionMixin) -> Optional[DashboardStatus]:

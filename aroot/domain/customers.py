@@ -1,4 +1,5 @@
 import os
+import hashlib
 from datetime import timedelta
 from typing import Optional
 
@@ -83,14 +84,26 @@ class Customer:
             return 2
 
         # ワードプレス側と疎通ができるか
-        if is_wordpress_reachable(self.wordpress_url) is False:
+        if not is_wordpress_reachable(self.wordpress_url):
             return 3
 
         # ストライプにて決済が完了しているか
-        if is_payment_completed(self.payment_type, self.email) is False:
+        if not is_payment_completed(self.payment_type, self.email):
             return 4
 
         return 0
+
+    def get_secret_phrase(self) -> str:
+        """WordPress URLから規則的にシークレットフレーズを生成"""
+        if not self.wordpress_url:
+            return "シークレットキーが生成できません"
+        
+        # wordpress_urlとemailを組み合わせてハッシュ化
+        combined = f"{self.wordpress_url}:{self.email}"
+        hash_value = hashlib.sha256(combined.encode()).hexdigest()
+        
+        # ハッシュ値の最初の36文字を8-4-4-4-12の形式でハイフンで連結
+        return f"{hash_value[:8]}-{hash_value[8:12]}-{hash_value[12:16]}-{hash_value[16:20]}-{hash_value[20:32]}"
 
 
 def is_wordpress_reachable(url: str) -> bool:
@@ -111,10 +124,31 @@ def is_payment_completed(payment_type: str, email: str) -> bool:
         }
         resp = requests.post(os.getenv("CAREO_URL") + "/users", json=req)
         resp.raise_for_status()
-        status = resp.json().get("status")
+        response_data = resp.json()
+        status = response_data.get("status")
         return status == "paid"
     except requests.RequestException:
         return False
+
+
+def get_payment_info(payment_type: str, email: str) -> dict:
+    """支払い情報とstripe_customer_idを取得"""
+    if payment_type == "none":
+        return {"status": "paid", "stripe_customer_id": None}
+    try:
+        req = {
+            "email": email,
+            "product_id": os.getenv("PRODUCT_ID"),
+        }
+        resp = requests.post(os.getenv("CAREO_URL") + "/users", json=req)
+        resp.raise_for_status()
+        response_data = resp.json()
+        return {
+            "status": response_data.get("status"),
+            "stripe_customer_id": response_data.get("stripe_customer_id"),
+        }
+    except requests.RequestException:
+        return {"status": "error", "stripe_customer_id": None}
 
 
 class CustomerValidator:

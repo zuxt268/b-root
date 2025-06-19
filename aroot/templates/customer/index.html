@@ -112,8 +112,8 @@
                   <h5 class="card-title">Data</h5>
 
                   <!-- Table with stripped rows -->
-                  <table class="table">
-                    <thead>
+                  <table class="table table-hover">
+                    <thead class="table-light">
                       <tr>
                         <th class="col">連携日時</th>
                         <th class="col">インスタグラムURL</th>
@@ -122,19 +122,42 @@
                     </thead>
 
                     <tbody>
+                          {% set has_posts = false %}
                           {% for post in posts %}
                               {% if post["wordpress_link"] %}
+                                {% set has_posts = true %}
                                 <tr>
-                                  <td>{{ post["created_at"] }}</td>
-                                  <td>
-                                      <a href="{{ post['permalink'] }}" target="_blank">{{ post.get_permalink() }}</a>
+                                  <td class="align-middle">
+                                    <span class="badge bg-light text-dark">{{ post["created_at"] }}</span>
                                   </td>
-                                  <td>
-                                      <a href="{{ post['wordpress_link'] }}" target="_blank">{{ post.get_wordpress_title() }}</a>
+                                  <td class="align-middle">
+                                    <a href="{{ post['permalink'] }}" target="_blank" class="btn btn-outline-warning btn-sm d-flex align-items-center justify-content-start" style="max-width: 250px; border-color: #e67e00; color: #e67e00;">
+                                      <i class="bi bi-instagram me-2"></i>
+                                      <span class="text-truncate flex-grow-1">{{ post.get_permalink() }}</span>
+                                      <i class="bi bi-box-arrow-up-right ms-2"></i>
+                                    </a>
+                                  </td>
+                                  <td class="align-middle">
+                                    <a href="{{ post['wordpress_link'] }}" target="_blank" class="btn btn-outline-primary btn-sm d-flex align-items-center justify-content-start" style="max-width: 250px;">
+                                      <i class="bi bi-wordpress me-2"></i>
+                                      <span class="text-truncate flex-grow-1">{{ post.get_wordpress_title() }}</span>
+                                      <i class="bi bi-box-arrow-up-right ms-2"></i>
+                                    </a>
                                   </td>
                                 </tr>
                               {% endif %}
                           {% endfor %}
+                          {% if not has_posts %}
+                          <tr>
+                            <td colspan="3" class="text-center py-5">
+                              <div class="text-muted">
+                                <i class="bi bi-inbox fs-1 mb-3 d-block"></i>
+                                <h6>連携データがありません</h6>
+                                <p class="small">InstagramとWordPressの連携を開始すると、ここに連携履歴が表示されます。</p>
+                              </div>
+                            </td>
+                          </tr>
+                          {% endif %}
                     </tbody>
                   </table>
                   <!-- End Table with stripped rows -->
@@ -150,8 +173,214 @@
     </section>
 </main>
 
+<!-- Chat Widget -->
+{#<div id="chat-widget" class="chat-widget">#}
+{#    <div id="chat-button" class="chat-button">#}
+{#        <i class="bi bi-chat-dots"></i>#}
+{#    </div>#}
+{#    #}
+{#    <div id="chat-window" class="chat-window" style="display: none;">#}
+{#        <div class="chat-header">#}
+{#            <h6 class="mb-0">サポートチャット</h6>#}
+{#            <button id="chat-close" class="btn-close btn-sm"></button>#}
+{#        </div>#}
+{#        #}
+{#        <div id="chat-messages" class="chat-messages">#}
+{#            <div class="message bot-message">#}
+{#                <div class="message-content">#}
+{#                    こんにちは！A-Rootのサポートです。<br>#}
+{#                    何かお困りのことがございましたら、お気軽にお聞かせください。#}
+{#                </div>#}
+{#                <div class="message-time">今すぐ</div>#}
+{#            </div>#}
+{#        </div>#}
+{#        #}
+{#        <div class="chat-input-area">#}
+{#            <div class="input-group">#}
+{#                <input type="text" id="chat-input" class="form-control" placeholder="メッセージを入力してください...">#}
+{#                <button id="chat-send" class="btn btn-primary">#}
+{#                    <i class="bi bi-send"></i>#}
+{#                </button>#}
+{#            </div>#}
+{#        </div>#}
+{#    </div>#}
+{#</div>#}
+
 <input id="customer_id" type="hidden" value="{{ customer.id }}">
 <input id="dashboard_status" type="hidden" value="{{ dashboard_status }}">
+
+<style>
+.chat-widget {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+
+.chat-button {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+}
+
+.chat-button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+.chat-window {
+    position: absolute;
+    bottom: 80px;
+    right: 0;
+    width: 350px;
+    height: 450px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.chat-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.chat-header .btn-close {
+    filter: invert(1);
+    opacity: 0.8;
+}
+
+.chat-messages {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background: #f8f9fa;
+    max-height: 300px;
+    min-height: 200px;
+}
+
+.chat-messages::-webkit-scrollbar {
+    width: 6px;
+}
+
+.chat-messages::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.chat-messages::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 10px;
+}
+
+.chat-messages::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+.message {
+    margin-bottom: 15px;
+}
+
+.message-content {
+    padding: 12px 16px;
+    border-radius: 18px;
+    max-width: 80%;
+    word-wrap: break-word;
+}
+
+.bot-message .message-content {
+    background: white;
+    border: 1px solid #e9ecef;
+    margin-right: auto;
+}
+
+.user-message .message-content {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    margin-left: auto;
+}
+
+.message-time {
+    font-size: 11px;
+    color: #6c757d;
+    margin-top: 5px;
+    text-align: right;
+}
+
+.bot-message .message-time {
+    text-align: left;
+}
+
+.chat-input-area {
+    padding: 15px 20px;
+    background: white;
+    border-top: 1px solid #e9ecef;
+}
+
+.chat-input-area .input-group {
+    border-radius: 25px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.chat-input-area input {
+    border: none;
+    padding: 12px 16px;
+    border-radius: 25px;
+}
+
+.chat-input-area input:focus {
+    box-shadow: none;
+    outline: none;
+}
+
+.chat-input-area button {
+    border: none;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 25px;
+    padding: 12px 16px;
+}
+
+@media (max-width: 768px) {
+    .chat-window {
+        width: 300px;
+        height: 400px;
+    }
+    
+    .chat-widget {
+        bottom: 15px;
+        right: 15px;
+    }
+}
+</style>
 
 <script>
     const fb_btn = document.getElementById("facebook_btn");
@@ -169,6 +398,95 @@
             }, {scope: 'public_profile, pages_show_list, business_management, instagram_basic'});
         })
     }
+
+    // Chat functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const chatButton = document.getElementById('chat-button');
+        const chatWindow = document.getElementById('chat-window');
+        const chatClose = document.getElementById('chat-close');
+        const chatSend = document.getElementById('chat-send');
+        const chatInput = document.getElementById('chat-input');
+        const chatMessages = document.getElementById('chat-messages');
+
+        // Toggle chat window
+        chatButton.addEventListener('click', function() {
+            const isVisible = chatWindow.style.display !== 'none';
+            chatWindow.style.display = isVisible ? 'none' : 'block';
+            if (!isVisible) {
+                chatInput.focus();
+            }
+        });
+
+        // Close chat window
+        chatClose.addEventListener('click', function() {
+            chatWindow.style.display = 'none';
+        });
+
+        // Send message
+        function sendMessage() {
+            const message = chatInput.value.trim();
+            if (message) {
+                // Add user message
+                addMessage(message, 'user');
+                chatInput.value = '';
+                
+                // Simulate bot response
+                setTimeout(() => {
+                    addBotResponse(message);
+                }, 1000);
+            }
+        }
+
+        chatSend.addEventListener('click', sendMessage);
+
+        chatInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // Add message to chat
+        function addMessage(content, type) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}-message`;
+            
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('ja-JP', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            
+            messageDiv.innerHTML = `
+                <div class="message-content">${content}</div>
+                <div class="message-time">${timeString}</div>
+            `;
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Simulate bot responses
+        function addBotResponse(userMessage) {
+            let response = '';
+            const lowerMessage = userMessage.toLowerCase();
+            
+            if (lowerMessage.includes('こんにちは') || lowerMessage.includes('はじめまして')) {
+                response = 'こんにちは！A-Rootをご利用いただき、ありがとうございます。何かお手伝いできることがございますか？';
+            } else if (lowerMessage.includes('instagram') || lowerMessage.includes('インスタ')) {
+                response = 'Instagramの連携について何かお困りですか？認証がうまくいかない場合は、ブラウザのキャッシュをクリアしてからもう一度お試しください。';
+            } else if (lowerMessage.includes('wordpress') || lowerMessage.includes('ワードプレス')) {
+                response = 'WordPressの設定についてですね。プラグインのインストールやAPI設定でご不明な点がございましたら、詳しくご説明いたします。';
+            } else if (lowerMessage.includes('エラー') || lowerMessage.includes('問題') || lowerMessage.includes('トラブル')) {
+                response = 'お困りのことがおありですね。具体的にどのような問題が発生していますか？エラーメッセージがございましたら、詳細をお教えください。';
+            } else if (lowerMessage.includes('ありがとう') || lowerMessage.includes('助かった')) {
+                response = 'お役に立てて嬉しいです！他にもご質問がございましたら、いつでもお気軽にお声がけください。';
+            } else {
+                response = 'ご質問ありがとうございます。より詳しいサポートが必要でしたら、サポートチーム（support@a-root.com）までお気軽にお問い合わせください。';
+            }
+            
+            addMessage(response, 'bot');
+        }
+    });
 
 </script>
 
