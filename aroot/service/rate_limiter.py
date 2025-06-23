@@ -27,8 +27,12 @@ class RateLimiterService:
         self.api_rate_limit = int(os.getenv("API_RATE_LIMIT", "100"))  # 100 requests
         self.api_window = int(os.getenv("API_RATE_WINDOW", "3600"))  # 1 hour
 
-        self.registration_rate_limit = int(os.getenv("REGISTRATION_RATE_LIMIT", "3"))  # 3 attempts
-        self.registration_window = int(os.getenv("REGISTRATION_RATE_WINDOW", "3600"))  # 1 hour
+        self.registration_rate_limit = int(
+            os.getenv("REGISTRATION_RATE_LIMIT", "3")  # 3 attempts
+        )
+        self.registration_window = int(
+            os.getenv("REGISTRATION_RATE_WINDOW", "3600")  # 1 hour
+        )
 
         # Create rate limiters
         self._create_limiters()
@@ -52,7 +56,10 @@ class RateLimiterService:
 
             # Registration rate limiter (per IP)
             self.registration_limiter = Limiter(
-                Rate(self.registration_rate_limit, Duration.SECOND * self.registration_window),
+                Rate(
+                    self.registration_rate_limit,
+                    Duration.SECOND * self.registration_window
+                ),
                 bucket_class=RedisBucket,
                 bucket_kwargs={"redis_pool": self.redis_client.connection_pool}
             )
@@ -77,7 +84,10 @@ class RateLimiterService:
         )
 
         self.registration_limiter = Limiter(
-            Rate(self.registration_rate_limit, Duration.SECOND * self.registration_window),
+            Rate(
+                self.registration_rate_limit,
+                Duration.SECOND * self.registration_window
+            ),
             bucket_class=InMemoryBucket
         )
 
@@ -87,7 +97,10 @@ class RateLimiterService:
         client_ip = self._get_client_ip()
 
         # For authenticated requests, also consider user ID if available
-        user_id = getattr(request, 'user_id', None) or request.headers.get('X-User-ID', '')
+        user_id = (
+            getattr(request, 'user_id', None) or
+            request.headers.get('X-User-ID', '')
+        )
 
         # Create unique identifier
         identifier = f"{client_ip}:{user_id}" if user_id else client_ip
@@ -166,8 +179,16 @@ class RateLimiterService:
             return 0
 
 
-# Global rate limiter instance
-rate_limiter = RateLimiterService()
+# Global rate limiter instance - initialized lazily
+rate_limiter = None
+
+
+def get_rate_limiter():
+    """Get or create the global rate limiter instance."""
+    global rate_limiter
+    if rate_limiter is None:
+        rate_limiter = RateLimiterService()
+    return rate_limiter
 
 
 def rate_limit(limiter_type: str = 'api'):
@@ -180,21 +201,26 @@ def rate_limit(limiter_type: str = 'api'):
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
-            is_limited, retry_after = rate_limiter.is_rate_limited(limiter_type)
+            limiter = get_rate_limiter()
+            is_limited, retry_after = limiter.is_rate_limited(limiter_type)
 
             if is_limited:
                 # Log rate limit violation
-                client_id = rate_limiter.get_client_identifier()
+                client_id = limiter.get_client_identifier()
                 current_app.logger.warning(
                     f"Rate limit exceeded for {limiter_type}: {client_id}, "
                     f"retry after {retry_after}s"
                 )
 
                 # Return appropriate response
-                if request.is_json or 'application/json' in request.headers.get('Accept', ''):
+                accept_header = request.headers.get('Accept', '')
+                if request.is_json or 'application/json' in accept_header:
                     response = jsonify({
                         'error': 'Rate limit exceeded',
-                        'message': f'Too many {limiter_type} requests. Please try again later.',
+                        'message': (
+                            f'Too many {limiter_type} requests. '
+                            'Please try again later.'
+                        ),
                         'retry_after': retry_after
                     })
                     response.status_code = 429
@@ -221,5 +247,6 @@ def check_brute_force_protection(identifier: str, max_attempts: int = 10) -> boo
     Returns:
         True if client should be blocked
     """
-    failed_count = rate_limiter.get_failed_attempts(identifier, 'login')
+    limiter = get_rate_limiter()
+    failed_count = limiter.get_failed_attempts(identifier, 'login')
     return failed_count >= max_attempts

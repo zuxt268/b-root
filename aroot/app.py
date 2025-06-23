@@ -41,8 +41,10 @@ def handle_404(error):
 
 @app.errorhandler(429)
 def handle_rate_limit(error):
-    return render_template("errors.html",
-                         errors="リクエスト数が上限に達しました。しばらく時間をおいてから再試行してください。"), 429
+    return render_template(
+        "errors.html",
+        errors="リクエスト数が上限に達しました。しばらく時間をおいてから再試行してください。"
+    ), 429
 
 
 @app.errorhandler(Exception)
@@ -77,3 +79,7 @@ def releases():
 @app.route("/flask-health-check")
 def flask_health_check():
     return "success"
+
+
+if __name__ == "__main__":
+    app.run(debug=True, host="0.0.0.0", port=5000)
