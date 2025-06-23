@@ -39,6 +39,12 @@ def handle_404(error):
     return render_template("404.html"), 404
 
 
+@app.errorhandler(429)
+def handle_rate_limit(error):
+    return render_template("errors.html",
+                         errors="リクエスト数が上限に達しました。しばらく時間をおいてから再試行してください。"), 429
+
+
 @app.errorhandler(Exception)
 def handle_exception(error):
     client_ip = request.headers.get("X-Forwarded-For", request.remote_addr)
@@ -47,7 +53,7 @@ def handle_exception(error):
     ● method: {request.method}
     ● url: {request.url}
     ● client IP: {client_ip}
-    
+
     {stack_trace}```"""
     SlackService().send_alert(msg)
     return render_template("errors.html", errors=error)

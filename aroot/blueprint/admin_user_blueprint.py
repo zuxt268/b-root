@@ -1,5 +1,5 @@
 import functools
-from datetime import datetime, timedelta
+from datetime import timedelta
 from dateutil import parser
 from flask import (
     Blueprint,
@@ -25,6 +25,7 @@ from repository.unit_of_work import UnitOfWork
 from domain.customers import Customer, CustomerValidator
 from service.customers_service import CustomersService, CustomerValidationError
 from service.posts_service import PostsService
+from service.rate_limiter import rate_limit, rate_limiter, check_brute_force_protection
 
 bp = Blueprint("admin_user", __name__)
 
@@ -41,6 +42,7 @@ def admin_login_required(view):
 
 
 @bp.route("/admin/login", methods=("GET", "POST"))
+@rate_limit('login')
 def login():
     if request.method == "POST":
         email = request.form["email"]
@@ -48,6 +50,13 @@ def login():
         if not email or not password:
             error = "Email、またはPasswordが間違っています。"
         else:
+            # Check for brute force protection
+            client_id = rate_limiter.get_client_identifier()
+            if check_brute_force_protection(client_id):
+                error = "アカウントが一時的にロックされています。しばらく時間をおいてから再試行してください。"
+                flash(error, category="warning")
+                return render_template("admin_user/login.html")
+
             try:
                 with UnitOfWork() as unit_of_work:
                     admin_user_repo = AdminUserRepository(unit_of_work.session)
@@ -60,8 +69,10 @@ def login():
                     return redirect(url_for("admin_user.index"))
             except AdminUserNotFountError:
                 error = "Email、またはPasswordが間違っています。"
+                rate_limiter.record_failed_attempt(client_id, 'login')
             except AdminUserAuthError:
                 error = "Email、またはPasswordが間違っています。"
+                rate_limiter.record_failed_attempt(client_id, 'login')
         flash(error, category="warning")
     return render_template("admin_user/login.html")
 

@@ -1,4 +1,5 @@
 import functools
+import os
 import traceback
 import uuid
 from urllib.parse import urlparse
@@ -14,7 +15,7 @@ from flask import (
     url_for,
     jsonify,
 )
-from werkzeug.security import check_password_hash, generate_password_hash
+from werkzeug.security import generate_password_hash
 from datetime import timedelta, datetime
 import stripe
 
@@ -36,21 +37,18 @@ from service.posts_service import PostsService
 from service.meta_service import MetaService, MetaApiError, MetaAccountNotFoundError
 from service.redis_client import get_redis
 from service.slack_service import SlackService
-from service.wordpress_service import WordpressService, WordpressAuthError
+from service.wordpress_service import WordpressAuthError
 from service.wordpress_service_stripe import (
-    WordpressServiceStripe,
     WordpressStripeAuthError,
 )
 from service.wordpress_service_factory import WordpressServiceFactory
 from domain.instagram_media import convert_to_json
-from domain.customers import Customer, CustomerValidator, get_payment_info
+from domain.customers import Customer, get_payment_info
 from domain.errors import CustomerValidationError
 from service.account_service import AccountService
 from service.sendgrid_service import SendGridService
+from service.rate_limiter import rate_limit, rate_limiter, check_brute_force_protection
 from util.const import (
-    DashboardStatus,
-    EXPIRED,
-    NOT_CONNECTED,
     PAYMENT_TYPE_STRIPE,
 )
 
@@ -69,25 +67,58 @@ def login_required(view):
     return wrapped_view
 
 
-# 許可するIPアドレス
-ALLOWED_IPS = ["127.0.0.1", "126.15.84.51"]
+# 環境変数から許可するIPアドレスを取得（フォールバック設定）
+ALLOWED_IPS = os.getenv("ALLOWED_IPS", "127.0.0.1").split(",")
+# 信頼できるプロキシのIPアドレス（環境変数で設定）
+TRUSTED_PROXIES = (
+    os.getenv("TRUSTED_PROXIES", "").split(",")
+    if os.getenv("TRUSTED_PROXIES") else []
+)
 
 
 def get_client_ip():
-    """信頼できるプロキシ環境を前提に、実際のクライアントIPを取得"""
+    """信頼できるプロキシ環境でのみX-Forwarded-Forを使用してクライアントIPを取得"""
+    # 直接接続の場合
+    if not TRUSTED_PROXIES:
+        return request.remote_addr
+
+    # 信頼できるプロキシからの接続かチェック
+    if request.remote_addr not in TRUSTED_PROXIES:
+        return request.remote_addr
+
+    # X-Forwarded-Forヘッダーが存在し、信頼できるプロキシからの場合のみ使用
     if "X-Forwarded-For" in request.headers:
-        # 複数IPがカンマ区切りで並ぶ場合、先頭が実クライアントIP
-        return request.headers["X-Forwarded-For"].split(",")[0].strip()
+        forwarded_ips = [
+            ip.strip() for ip in request.headers["X-Forwarded-For"].split(",")
+        ]
+        # 最初のIPアドレス（実クライアント）を返す
+        return forwarded_ips[0] if forwarded_ips else request.remote_addr
+
     return request.remote_addr
 
 
 def protected(view):
+    """IPベース認証 - セキュリティ上の理由により推奨されません。
+    本来は適切な認証メカニズム（JWT、セッション等）に置き換えるべきです。"""
     @functools.wraps(view)
     def wrapped_view(**kwargs):
         client_ip = get_client_ip()
-        print(client_ip)
+
+        # ログ出力（本番環境では削除推奨）
+        print(f"Access attempt from IP: {client_ip}")
+
+        # IPアドレスの基本的な検証
+        try:
+            import ipaddress
+            ipaddress.ip_address(client_ip)
+        except ValueError:
+            print(f"Invalid IP address format: {client_ip}")
+            abort(403)
+
         if client_ip not in ALLOWED_IPS:
-            abort(403)  # 403 Forbidden
+            print(f"IP {client_ip} not in allowed list: {ALLOWED_IPS}")
+            abort(403)
+
         return view(**kwargs)
 
     return wrapped_view
@@ -95,6 +126,7 @@ def protected(view):
 
 @bp.route("/send_verification_email", methods=("POST",))
 @protected
+@rate_limit('registration')
 def send_verification_email():
     email = request.form["email"]
     print(email)
@@ -153,6 +185,7 @@ def payment():
 
 
 @bp.route("/login", methods=("GET", "POST"))
+@rate_limit('login')
 def login():
     if request.method == "POST":
         email = request.form.get("email")
@@ -160,6 +193,13 @@ def login():
         if not email or not password:
             error = "メールアドレスかパスワードが間違っています"
         else:
+            # Check for brute force protection
+            client_id = rate_limiter.get_client_identifier()
+            if check_brute_force_protection(client_id):
+                error = "アカウントが一時的にロックされています。しばらく時間をおいてから再試行してください。"
+                flash(message=error, category="warning")
+                return render_template("customer/login.html", customer=None)
+
             try:
                 with UnitOfWork() as unit_of_work:
                     customer_repo = CustomersRepository(unit_of_work.session)
@@ -172,8 +212,10 @@ def login():
                     return redirect(url_for("customer.index"))
             except CustomerNotFoundError:
                 error = "メールアドレスかパスワードが間違っています"
+                rate_limiter.record_failed_attempt(client_id, 'login')
             except CustomerAuthError:
                 error = "メールアドレスかパスワードが間違っています"
+                rate_limiter.record_failed_attempt(client_id, 'login')
         flash(message=error, category="warning")
     return render_template("customer/login.html", customer=None)
 
@@ -240,7 +282,7 @@ def faq():
                 customer_repo = CustomersRepository(unit_of_work.session)
                 customers_service = CustomersService(customer_repo)
                 customer = customers_service.get_customer_by_id(customer_id)
-        except:
+        except (CustomerNotFoundError, Exception):
             customer = None
 
     return render_template(
@@ -285,7 +327,7 @@ def facebook_auth():
             )
             unit_of_work.commit()
             flash(
-                message=f"インスタグラムアカウントとの連携に成功しました",
+                message="インスタグラムアカウントとの連携に成功しました",
                 category="success",
             )
             set_dashboard_status(session, DashboardStatus.AUTH_SUCCESS.value)
@@ -321,6 +363,7 @@ def send_alert(e: Exception):
 
 
 @bp.route("/register", methods=("POST", "GET"))
+@rate_limit('registration')
 def register():
     register_email = session.get("register_email")
     print("register_email", register_email)
@@ -438,29 +481,29 @@ def withdraw():
             customer_repo = CustomersRepository(unit_of_work.session)
             customers_service = CustomersService(customer_repo)
             customer = customers_service.get_customer_by_id(customer_id)
-            
+
             # stripe顧客のみ退会可能
             if customer.payment_type != PAYMENT_TYPE_STRIPE:
                 flash("退会処理はStripe顧客のみ利用できます", "warning")
                 return redirect(url_for("customer.account"))
-            
+
             # Stripeサブスクリプションをキャンセル
             try:
                 import os
                 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
                 product_id = os.getenv("PRODUCT_ID")
-                
+
                 # CAREO APIからstripe_customer_idを取得
                 payment_info = get_payment_info(customer.payment_type, customer.email)
                 stripe_customer_id = payment_info.get("stripe_customer_id")
-                
+
                 if stripe_customer_id and product_id:
                     # 顧客のアクティブなサブスクリプションを取得
                     subscriptions = stripe.Subscription.list(
                         customer=stripe_customer_id,
                         status='active'
                     )
-                    
+
                     # 該当のPRODUCT_IDのサブスクリプションのみキャンセル
                     for subscription in subscriptions.data:
                         for item in subscription.items.data:
@@ -469,24 +512,24 @@ def withdraw():
                                     subscription.id,
                                     cancel_at_period_end=True
                                 )
-                        
+
             except stripe.error.StripeError as e:
                 # Stripeエラーが発生してもアカウント削除は継続
                 SlackService().send_alert(f"退会時のStripeキャンセルでエラー: {customer.email} - {str(e)}")
             except Exception as e:
                 # その他のエラーも同様
                 SlackService().send_alert(f"退会時のStripeキャンセルでエラー: {customer.email} - {str(e)}")
-            
+
             # 顧客データを削除
             customer_repo.delete(customer_id)
             unit_of_work.commit()
-            
+
             # セッションをクリア
             session.clear()
-            
+
             flash("退会処理が完了しました。サブスクリプションもキャンセルされました。", "success")
             return redirect(url_for("customer.login"))
-            
+
     except Exception as e:
         flash(f"退会処理中にエラーが発生しました: {str(e)}", "warning")
         return redirect(url_for("customer.account"))

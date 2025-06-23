@@ -48,7 +48,7 @@ class PostsRepository:
         results = []
         records = self.session.execute(
             text(
-                """SELECT 
+                """SELECT
 posts.id as id,
 posts.customer_id as customer_id,
 posts.media_id as media_id,

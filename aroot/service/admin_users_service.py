@@ -1,7 +1,6 @@
 from domain.errors import (
     AdminUserNotFountError,
     AdminUserValidationError,
-    AdminUserAuthError,
 )
 
 

@@ -97,11 +97,11 @@ class Customer:
         """WordPress URLから規則的にシークレットフレーズを生成"""
         if not self.wordpress_url:
             return "シークレットキーが生成できません"
-        
+
         # wordpress_urlとemailを組み合わせてハッシュ化
         combined = f"{self.wordpress_url}:{self.email}"
         hash_value = hashlib.sha256(combined.encode()).hexdigest()
-        
+
         # ハッシュ値の最初の36文字を8-4-4-4-12の形式でハイフンで連結
         return f"{hash_value[:8]}-{hash_value[8:12]}-{hash_value[12:16]}-{hash_value[16:20]}-{hash_value[20:32]}"
 

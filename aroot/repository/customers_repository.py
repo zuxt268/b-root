@@ -36,7 +36,7 @@ class CustomersRepository:
         query = self.session.query(CustomersModel)
         records = query.filter(
             and_(
-                CustomersModel.facebook_token != None,
+                CustomersModel.facebook_token is not None,
                 CustomersModel.instagram_token_status == const.CONNECTED,
             )
         )

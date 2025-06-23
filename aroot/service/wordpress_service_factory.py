@@ -9,14 +9,14 @@ class WordpressServiceFactory:
         """顧客のpayment_typeに応じて適切なWordpressServiceを生成"""
         if customer.payment_type == "stripe":
             return WordpressServiceStripe(
-                customer.wordpress_url, 
-                customer.delete_hash, 
+                customer.wordpress_url,
+                customer.delete_hash,
                 customer.name,
                 customer.get_secret_phrase()
             )
         else:  # none or other types
             return WordpressService(
-                customer.wordpress_url, 
-                customer.delete_hash, 
+                customer.wordpress_url,
+                customer.delete_hash,
                 customer.name
             )
