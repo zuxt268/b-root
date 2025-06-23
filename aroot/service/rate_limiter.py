@@ -9,7 +9,7 @@ from typing import Optional, Tuple
 from functools import wraps
 
 from flask import request, jsonify, abort, current_app
-from pyrate_limiter import Duration, Rate, Limiter, RedisBucket
+from pyrate_limiter import Duration, Rate, Limiter
 
 from service.redis_client import get_redis
 
@@ -38,57 +38,31 @@ class RateLimiterService:
         self._create_limiters()
 
     def _create_limiters(self):
-        """Create rate limiters with Redis backend."""
+        """Create rate limiters."""
         try:
-            # Login rate limiter (per IP)
-            self.login_limiter = Limiter(
-                Rate(self.login_rate_limit, Duration.SECOND * self.login_window),
-                bucket_class=RedisBucket,
-                bucket_kwargs={"redis_pool": self.redis_client.connection_pool}
-            )
-
-            # API rate limiter (per IP)
-            self.api_limiter = Limiter(
-                Rate(self.api_rate_limit, Duration.SECOND * self.api_window),
-                bucket_class=RedisBucket,
-                bucket_kwargs={"redis_pool": self.redis_client.connection_pool}
-            )
-
-            # Registration rate limiter (per IP)
-            self.registration_limiter = Limiter(
-                Rate(
-                    self.registration_rate_limit,
-                    Duration.SECOND * self.registration_window
-                ),
-                bucket_class=RedisBucket,
-                bucket_kwargs={"redis_pool": self.redis_client.connection_pool}
-            )
-
+            self._setup_limiters()
         except Exception as e:
             current_app.logger.error(f"Failed to initialize rate limiters: {e}")
-            # Fallback to in-memory limiter
-            self._create_memory_limiters()
+            self._setup_limiters()
 
-    def _create_memory_limiters(self):
-        """Fallback to in-memory rate limiters if Redis is unavailable."""
-        from pyrate_limiter import InMemoryBucket
-
+    def _setup_limiters(self):
+        """Setup rate limiters with basic configuration."""
+        # Login rate limiter (per IP)
         self.login_limiter = Limiter(
-            Rate(self.login_rate_limit, Duration.SECOND * self.login_window),
-            bucket_class=InMemoryBucket
+            Rate(self.login_rate_limit, Duration.SECOND * self.login_window)
         )
 
+        # API rate limiter (per IP)
         self.api_limiter = Limiter(
-            Rate(self.api_rate_limit, Duration.SECOND * self.api_window),
-            bucket_class=InMemoryBucket
+            Rate(self.api_rate_limit, Duration.SECOND * self.api_window)
         )
 
+        # Registration rate limiter (per IP)
         self.registration_limiter = Limiter(
             Rate(
                 self.registration_rate_limit,
                 Duration.SECOND * self.registration_window
-            ),
-            bucket_class=InMemoryBucket
+            )
         )
 
     def get_client_identifier(self) -> str:
@@ -108,7 +82,8 @@ class RateLimiterService:
         # Hash to ensure consistent length and privacy
         return hashlib.sha256(identifier.encode()).hexdigest()[:16]
 
-    def _get_client_ip(self) -> str:
+    @staticmethod
+    def _get_client_ip() -> str:
         """Get client IP address, considering proxy headers."""
         # Check for forwarded headers (only if in trusted proxy environment)
         trusted_proxies = os.getenv("TRUSTED_PROXIES", "").split(",")
@@ -147,10 +122,15 @@ class RateLimiterService:
             item = limiter.try_acquire(identifier)
 
             if item is None:
-                # Rate limited - calculate retry after
-                bucket = limiter.bucket_factory(identifier)
-                retry_after = bucket.leak()
-                return True, int(retry_after) if retry_after else self.login_window
+                # Rate limited - return appropriate window time
+                if limiter_type == 'login':
+                    retry_after = self.login_window
+                elif limiter_type == 'api':
+                    retry_after = self.api_window
+                else:
+                    retry_after = self.registration_window
+
+                return True, retry_after
 
             return False, None
 

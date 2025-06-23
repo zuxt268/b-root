@@ -27,11 +27,8 @@ from util.const import DashboardStatus, EXPIRED, NOT_CONNECTED
 from repository.posts_repository import PostsRepository
 from repository.unit_of_work import UnitOfWork
 from repository.customers_repository import CustomersRepository
-from service.customers_service import (
-    CustomersService,
-    CustomerNotFoundError,
-    CustomerAuthError,
-)
+from service.customers_service import CustomersService
+from domain.errors import CustomerNotFoundError, CustomerAuthError
 from service.openai_service import OpenAIService
 from service.posts_service import PostsService
 from service.meta_service import MetaService, MetaApiError, MetaAccountNotFoundError
@@ -47,7 +44,7 @@ from domain.customers import Customer, get_payment_info
 from domain.errors import CustomerValidationError
 from service.account_service import AccountService
 from service.sendgrid_service import SendGridService
-from service.rate_limiter import rate_limit, rate_limiter, check_brute_force_protection
+from service.rate_limiter import rate_limit, get_rate_limiter, check_brute_force_protection
 from util.const import (
     PAYMENT_TYPE_STRIPE,
 )
@@ -154,7 +151,7 @@ def verify_email_token():
     account_service = AccountService(redis_cli)
     user = account_service.get_temp_register(token)
     if user is None:
-        flash("セッションがタイムアウトしました", category="warning")
+        flash("メール認証URLの有効期限が切れています。新しくメールアドレスを入力してください。", category="warning")
         return render_template("customer/mail_input.html")
     session["register_email"] = user.get("email")
     session.permanent = True
@@ -187,6 +184,7 @@ def payment():
 @bp.route("/login", methods=("GET", "POST"))
 @rate_limit('login')
 def login():
+    error = None
     if request.method == "POST":
         email = request.form.get("email")
         password = request.form.get("password")
@@ -194,7 +192,8 @@ def login():
             error = "メールアドレスかパスワードが間違っています"
         else:
             # Check for brute force protection
-            client_id = rate_limiter.get_client_identifier()
+            rate_limiter_service = get_rate_limiter()
+            client_id = rate_limiter_service.get_client_identifier()
             if check_brute_force_protection(client_id):
                 error = "アカウントが一時的にロックされています。しばらく時間をおいてから再試行してください。"
                 flash(message=error, category="warning")
@@ -212,11 +211,12 @@ def login():
                     return redirect(url_for("customer.index"))
             except CustomerNotFoundError:
                 error = "メールアドレスかパスワードが間違っています"
-                rate_limiter.record_failed_attempt(client_id, 'login')
+                rate_limiter_service.record_failed_attempt(client_id, 'login')
             except CustomerAuthError:
                 error = "メールアドレスかパスワードが間違っています"
-                rate_limiter.record_failed_attempt(client_id, 'login')
-        flash(message=error, category="warning")
+                rate_limiter_service.record_failed_attempt(client_id, 'login')
+        if error:
+            flash(message=error, category="warning")
     return render_template("customer/login.html", customer=None)
 
 

@@ -1,14 +1,14 @@
 import traceback
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from flask import Blueprint, jsonify
-from repository.unit_of_work import UnitOfWork
-from repository.customers_repository import CustomersRepository
-from service.customers_service import CustomersService
+
+from common.imports import (
+    Blueprint, jsonify,
+    UnitOfWork, CustomersRepository, CustomersService
+)
 from repository.posts_repository import PostsRepository
 from service.meta_service import MetaService, MetaApiError
 from service.posts_service import PostsService
 from service.slack_service import SlackService, send_support_team
-from service.wordpress_service import WordpressService
 from service.wordpress_service_factory import WordpressServiceFactory
 from domain.customers import Customer
 from util.const import EXPIRED

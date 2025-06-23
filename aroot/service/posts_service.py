@@ -1,4 +1,5 @@
 import datetime
+from typing import Any, Dict, List, Union
 from domain.instagram_media import InstagramMedia
 from domain.posts import Post
 
@@ -6,13 +7,13 @@ from domain.posts import Post
 class PostsService:
     limit = 30
 
-    def __init__(self, posts_repository):
+    def __init__(self, posts_repository: Any) -> None:
         self.posts_repository = posts_repository
 
-    def save_post(self, post):
+    def save_post(self, post: Dict[str, Any]) -> Any:
         return self.posts_repository.add(post)
 
-    def save_posts(self, posts, customer_id: int):
+    def save_posts(self, posts: List[Dict[str, Any]], customer_id: int) -> None:
         linked_ids = []
         for post in posts:
             post["customer_id"] = customer_id
@@ -31,10 +32,10 @@ class PostsService:
             customer_id, limit=self.limit, offset=offset
         )
 
-    def block_count(self):
+    def block_count(self) -> int:
         return self.posts_repository.count() // PostsService.limit + 1
 
-    def find_all(self, page=1):
+    def find_all(self, page: int = 1) -> List[Post]:
         offset = (page - 1) * PostsService.limit
         return self.posts_repository.find_all(limit=PostsService.limit, offset=offset)
 
@@ -65,7 +66,7 @@ class PostsService:
         return targets
 
     @staticmethod
-    def exclude_linked_media(linked_post, media_ids) -> list[int]:
+    def exclude_linked_media(linked_post: List[Post], media_ids: List[int]) -> List[int]:
         targets: list[int] = []
         linked_post_id_list = [int(post.media_id) for post in linked_post]
         for media_id in media_ids:

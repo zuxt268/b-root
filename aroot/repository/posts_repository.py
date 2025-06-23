@@ -22,6 +22,7 @@ class PostsRepository:
         post = self._get(post_id)
         if post is not None:
             return Post(**post.dict())
+        return None
 
     def find_by_customer_id(
         self, customer_id, limit=None, offset=None
