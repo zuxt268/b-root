@@ -44,7 +44,7 @@ from domain.customers import Customer, get_payment_info
 from domain.errors import CustomerValidationError
 from service.account_service import AccountService
 from service.sendgrid_service import SendGridService
-from service.rate_limiter import rate_limit, get_rate_limiter, check_brute_force_protection
+# from service.rate_limiter import rate_limit, get_rate_limiter, check_brute_force_protection
 from util.const import (
     PAYMENT_TYPE_STRIPE,
 )
@@ -123,7 +123,7 @@ def protected(view):
 
 @bp.route("/send_verification_email", methods=("POST",))
 @protected
-@rate_limit('registration')
+# @rate_limit('registration')
 def send_verification_email():
     email = request.form["email"]
     print(email)
@@ -182,7 +182,7 @@ def payment():
 
 
 @bp.route("/login", methods=("GET", "POST"))
-@rate_limit('login')
+# @rate_limit('login')
 def login():
     error = None
     if request.method == "POST":
@@ -192,12 +192,12 @@ def login():
             error = "メールアドレスかパスワードが間違っています"
         else:
             # Check for brute force protection
-            rate_limiter_service = get_rate_limiter()
-            client_id = rate_limiter_service.get_client_identifier()
-            if check_brute_force_protection(client_id):
-                error = "アカウントが一時的にロックされています。しばらく時間をおいてから再試行してください。"
-                flash(message=error, category="warning")
-                return render_template("customer/login.html", customer=None)
+            # rate_limiter_service = get_rate_limiter()
+            # client_id = rate_limiter_service.get_client_identifier()
+            # if check_brute_force_protection(client_id):
+            #     error = "アカウントが一時的にロックされています。しばらく時間をおいてから再試行してください。"
+            #     flash(message=error, category="warning")
+            #     return render_template("customer/login.html", customer=None)
 
             try:
                 with UnitOfWork() as unit_of_work:
@@ -211,10 +211,10 @@ def login():
                     return redirect(url_for("customer.index"))
             except CustomerNotFoundError:
                 error = "メールアドレスかパスワードが間違っています"
-                rate_limiter_service.record_failed_attempt(client_id, 'login')
+                # rate_limiter_service.record_failed_attempt(client_id, 'login')
             except CustomerAuthError:
                 error = "メールアドレスかパスワードが間違っています"
-                rate_limiter_service.record_failed_attempt(client_id, 'login')
+                # rate_limiter_service.record_failed_attempt(client_id, 'login')
         if error:
             flash(message=error, category="warning")
     return render_template("customer/login.html", customer=None)
@@ -363,7 +363,7 @@ def send_alert(e: Exception):
 
 
 @bp.route("/register", methods=("POST", "GET"))
-@rate_limit('registration')
+# @rate_limit('registration')
 def register():
     register_email = session.get("register_email")
     print("register_email", register_email)

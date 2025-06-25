@@ -109,4 +109,4 @@ class MetaApiError(Exception):
         )
 
     def is_token_expired(self) -> bool:
-        return str(self.error_subcode) == "463"
+        return str(self.error_subcode) == "463" or str(self.error_subcode) == "460"

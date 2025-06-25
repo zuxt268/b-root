@@ -1,17 +1,20 @@
 import traceback
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-from common.imports import (
-    Blueprint, jsonify,
-    UnitOfWork, CustomersRepository, CustomersService
-)
+from repository.customers_repository import CustomersRepository
 from repository.posts_repository import PostsRepository
+from repository.unit_of_work import UnitOfWork
+from service.customers_service import CustomersService
 from service.meta_service import MetaService, MetaApiError
 from service.posts_service import PostsService
 from service.slack_service import SlackService, send_support_team
 from service.wordpress_service_factory import WordpressServiceFactory
 from domain.customers import Customer
-from util.const import EXPIRED
+from util.const import EXPIRED, NOT_CONNECTED
+from flask import (
+    Blueprint,
+    jsonify,
+)
 
 bp = Blueprint("batch", __name__)
 
@@ -58,13 +61,20 @@ def handle_customer(customer: Customer):
             unit_of_work.commit()
 
         except MetaApiError as e:
-            if str(e.error_subcode) == "463":
+            if str(e.error_subcode) == "463" or str(e.error_subcode) == "460":
                 customer_repository.update(customer.id, instagram_token_status=EXPIRED)
                 SlackService().send_alert(
                     f"トークンの期限が切れました: {customer.name}"
                 )
                 send_support_team(customer)
                 unit_of_work.commit()
+            elif str(e.error_subcode) == "33":
+                customer_repository.update(
+                    customer.id, instagram_token_status=NOT_CONNECTED
+                )
+                SlackService().send_alert(
+                    f"インスタグラムアカウントがみつかりません: {customer.name}, {customer.instagram_business_account_id}"
+                )
             else:
                 send_alert(e, customer)
                 unit_of_work.rollback()
