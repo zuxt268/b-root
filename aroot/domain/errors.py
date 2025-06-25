@@ -10,7 +10,7 @@ class CustomerValidationError(Exception):
     pass
 
 
-class AdminUserNotFountError(Exception):
+class AdminUserNotFoundError(Exception):
     pass
 
 

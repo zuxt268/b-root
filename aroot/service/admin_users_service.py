@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Union
 from domain.errors import (
-    AdminUserNotFountError,
+    AdminUserNotFoundError,
     AdminUserValidationError,
 )
 from domain.admin_users import AdminUser
@@ -16,13 +16,13 @@ class AdminUsersService:
         admin_user = self.admin_users_repository.find_by_email(email)
         if admin_user is not None:
             return admin_user
-        raise AdminUserNotFountError("Admin User with email {} not found".format(email))
+        raise AdminUserNotFoundError("Admin User with email {} not found".format(email))
 
     def find_by_id(self, _id: Union[str, int]) -> AdminUser:
         admin_user = self.admin_users_repository.find_by_id(_id)
         if admin_user is not None:
             return admin_user
-        raise AdminUserNotFountError("Admin User with id {} not found".format(_id))
+        raise AdminUserNotFoundError("Admin User with id {} not found".format(_id))
 
     def block_count(self) -> int:
         return self.admin_users_repository.count() // AdminUsersService.limit + 1

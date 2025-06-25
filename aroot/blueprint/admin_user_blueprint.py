@@ -18,16 +18,56 @@ from domain.admin_users import AdminUserValidator, AdminUser
 from domain.errors import AdminUserAuthError
 from service.admin_users_service import (
     AdminUsersService,
-    AdminUserNotFountError,
+    AdminUserNotFoundError,
     AdminUserValidationError,
 )
 from repository.unit_of_work import UnitOfWork
 from domain.customers import Customer, CustomerValidator
 from service.customers_service import CustomersService, CustomerValidationError
 from service.posts_service import PostsService
-from service.rate_limiter import rate_limit, rate_limiter, check_brute_force_protection
+from service.redis_client import get_redis
+
+# from service.rate_limiter import rate_limit, get_rate_limiter, check_brute_force_protection
 
 bp = Blueprint("admin_user", __name__)
+
+
+def get_client_ip():
+    """Get client IP address"""
+    return request.headers.get("X-Forwarded-For", request.remote_addr)
+
+
+def check_login_lock(ip_address):
+    """Check if IP is locked due to too many failed attempts"""
+    redis_client = get_redis()
+    key = f"{ip_address}_login_fail"
+    try:
+        fail_count = redis_client.get(key)
+        if fail_count and int(fail_count) >= 10:
+            return True
+    except Exception:
+        # Redis接続エラー時は安全のためロックしない
+        return False
+    return False
+
+
+def record_login_failure(ip_address):
+    """Record a login failure"""
+    redis_client = get_redis()
+    key = f"{ip_address}_login_fail"
+    try:
+        current_count = redis_client.get(key)
+        if current_count:
+            # Increment existing value
+            new_count = redis_client.incr(key)
+        else:
+            # Set initial value to 1 with 30 minutes expiry
+            redis_client.setex(key, 1800, 1)  # 1800 seconds = 30 minutes
+            new_count = 1
+        return new_count
+    except Exception:
+        # Redis接続エラー時は記録できない
+        return 0
 
 
 def admin_login_required(view):
@@ -42,21 +82,22 @@ def admin_login_required(view):
 
 
 @bp.route("/admin/login", methods=("GET", "POST"))
-@rate_limit('login')
 def login():
     if request.method == "POST":
+        # Get client IP address
+        ip_address = get_client_ip()
+
+        # Check if this IP is locked due to too many failed attempts
+        if check_login_lock(ip_address):
+            error = "一時的にアカウントをロックしています"
+            flash(error, category="warning")
+            return render_template("admin_user/login.html")
+
         email = request.form["email"]
         password = request.form["password"]
         if not email or not password:
             error = "Email、またはPasswordが間違っています。"
         else:
-            # Check for brute force protection
-            client_id = rate_limiter.get_client_identifier()
-            if check_brute_force_protection(client_id):
-                error = "アカウントが一時的にロックされています。しばらく時間をおいてから再試行してください。"
-                flash(error, category="warning")
-                return render_template("admin_user/login.html")
-
             try:
                 with UnitOfWork() as unit_of_work:
                     admin_user_repo = AdminUserRepository(unit_of_work.session)
@@ -67,12 +108,12 @@ def login():
                     session["admin_user_id"] = admin_user.id
                     unit_of_work.commit()
                     return redirect(url_for("admin_user.index"))
-            except AdminUserNotFountError:
+            except AdminUserNotFoundError:
                 error = "Email、またはPasswordが間違っています。"
-                rate_limiter.record_failed_attempt(client_id, 'login')
+                record_login_failure(ip_address)
             except AdminUserAuthError:
                 error = "Email、またはPasswordが間違っています。"
-                rate_limiter.record_failed_attempt(client_id, 'login')
+                record_login_failure(ip_address)
         flash(error, category="warning")
     return render_template("admin_user/login.html")
 
@@ -285,7 +326,7 @@ def admin_start_date():
     try:
         utc_time = parser.parse(start_date) - timedelta(hours=9)
     except (ValueError, TypeError):
-        flash(message="日付のパースに失敗", category="warning")
+        flash(message="Invalid date format", category="warning")
         return redirect(f"/admin/customers/{customer_id}")
     with UnitOfWork() as unit_of_work:
         customer_repo = CustomersRepository(unit_of_work.session)
