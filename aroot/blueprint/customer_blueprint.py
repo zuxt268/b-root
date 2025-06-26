@@ -344,14 +344,14 @@ def facebook_auth():
         send_alert(e)
         flash(
             message=f"Instagramアカウントの取得に失敗しました。設定を確認してください: {str(e)}",
-            category="alert",
+            category="danger",
         )
         set_dashboard_status(session, DashboardStatus.AUTH_ERROR_INSTAGRAM.value)
     except (WordpressAuthError, WordpressStripeAuthError) as e:
         send_alert(e)
         flash(
             message=f"Wordpressとの疎通に失敗しました。管理者にご連絡ください: {str(e)}",
-            category="alert",
+            category="danger",
         )
         set_dashboard_status(session, DashboardStatus.AUTH_ERROR_WORDPRESS.value)
     except MetaApiError as e:
