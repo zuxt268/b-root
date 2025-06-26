@@ -441,6 +441,18 @@ def register():
         return render_template("customer/register.html", customer=customer)
 
 
+@bp.route("/instagram/posts")
+@login_required
+def instagram_posts():
+    """Instagram posts list page"""
+    customer_id = session.get("customer_id")
+    with UnitOfWork() as unit_of_work:
+        customer_repo = CustomersRepository(unit_of_work.session)
+        customers_service = CustomersService(customer_repo)
+        customer = customers_service.get_customer_by_id(customer_id)
+    return render_template("customer/instagram_posts.html", customer=customer)
+
+
 @bp.route("/instagram", methods=("POST",))
 @login_required
 def get_instagram():
@@ -450,21 +462,88 @@ def get_instagram():
             customer_service = CustomersService(customers_repo)
             customer_id = session.get("customer_id")
             customer = customer_service.get_customer_by_id(customer_id)
-            posts_repo = PostsRepository(unit_of_work.session)
-            posts_service = PostsService(posts_repo)
             meta_service = MetaService()
             media_id_list = meta_service.get_media_list(
                 customer.facebook_token, customer.instagram_business_account_id
             )
-            linked_post = posts_service.find_by_customer_id(customer.id)
-            targets = posts_service.abstract_targets(
-                media_id_list, linked_post, customer.start_date
-            )
             unit_of_work.commit()
-            json_data = convert_to_json(targets)
+            json_data = convert_to_json(media_id_list)
             return jsonify(json_data)
     except MetaApiError as e:
         return jsonify({"error": str(e)})
+
+
+@bp.route("/instagram/sync-selected", methods=("POST",))
+@login_required
+def sync_selected_posts():
+    try:
+        selected_post_ids = request.form.getlist("selected_posts[]")
+        print(f"Selected post IDs: {selected_post_ids}")
+
+        if not selected_post_ids:
+            return jsonify({"error": "投稿が選択されていません"}), 400
+
+        with UnitOfWork() as unit_of_work:
+            customers_repo = CustomersRepository(unit_of_work.session)
+            customer_service = CustomersService(customers_repo)
+            posts_repo = PostsRepository(unit_of_work.session)
+            posts_service = PostsService(posts_repo)
+            customer_id = session.get("customer_id")
+            customer = customer_service.get_customer_by_id(customer_id)
+
+            print(f"Customer: {customer.name}, WordPress URL: {customer.wordpress_url}")
+
+            # Get Instagram posts data
+            meta_service = MetaService()
+            media_id_list = meta_service.get_media_list(
+                customer.facebook_token, customer.instagram_business_account_id
+            )
+
+            print(f"Total Instagram posts: {len(media_id_list)}")
+
+            # Filter only selected posts
+            selected_posts = [
+                post for post in media_id_list if post.id in selected_post_ids
+            ]
+
+            print(f"Selected posts found: {len(selected_posts)}")
+            for post in selected_posts:
+                print(f"Post ID: {post.id}, Type: {post.media_type}")
+
+            if not selected_posts:
+                return jsonify({"error": "選択された投稿が見つかりません"}), 404
+
+            # Test WordPress connection first
+            wordpress_service = WordpressServiceFactory.create_service(customer)
+
+            # Sync to WordPress
+            result = wordpress_service.posts(selected_posts)
+            posts_service.save_posts(result, customer_id)
+
+            unit_of_work.commit()
+
+            return jsonify(
+                {
+                    "status": "success",
+                    "synced_count": len(selected_posts),
+                    "message": f"{len(selected_posts)}件の投稿をWordPressに連携しました",
+                }
+            )
+
+    except MetaApiError as e:
+        print(f"Meta API Error: {e}")
+        return jsonify({"error": f"Instagram API エラー: {str(e)}"}), 500
+    except (WordpressAuthError, WordpressStripeAuthError) as e:
+        print(f"WordPress Auth Error: {e}")
+        return jsonify({"error": f"WordPress 連携エラー: {str(e)}"}), 500
+    except Exception as e:
+        err_txt = str(e)
+        stack_trace = traceback.format_exc()
+        print(f"Unexpected error: {err_txt}")
+        print(f"Stack trace: {stack_trace}")
+        msg = f"```選択投稿同期エラー\\n\\n{err_txt}\\n\\n{stack_trace}```"
+        SlackService().send_alert(msg)
+        return jsonify({"error": f"予期しないエラーが発生しました: {str(e)}"}), 500
 
 
 @bp.route("/post/wordpress", methods=("POST",))

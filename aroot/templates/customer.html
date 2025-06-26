@@ -64,6 +64,13 @@
           <span>アカウント</span>
         </a>
       </li><!-- End Profile Page Nav -->
+
+      <li class="nav-item">
+        <a class="nav-link {{ 'collapsed' if request.path != '/instagram/posts' else '' }}" href="/instagram/posts">
+          <i class="bi bi-instagram"></i>
+          <span>Instagram投稿</span>
+        </a>
+      </li><!-- End Instagram Posts Nav -->
       {% endif %}
 
       <li class="nav-item">

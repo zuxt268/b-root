@@ -1,0 +1,539 @@
+{% extends 'customer.html' %}
+
+{% block content %}
+<main id="main" class="main">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+            <div class="container">
+                <div class="mt-3 alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            </div>
+        {% endfor %}
+    {% endwith %}
+    
+    <div class="pagetitle">
+        <h1>Instagram投稿一覧</h1>
+        <nav>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('customer.index') }}">ダッシュボード</a></li>
+                <li class="breadcrumb-item active">Instagram投稿</li>
+            </ol>
+        </nav>
+    </div>
+
+    <section class="section">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h5 class="card-title">Instagram投稿一覧</h5>
+                            <div class="d-flex gap-2">
+                                <button id="fetch-posts-btn" class="btn btn-primary" {% if not customer.facebook_token %}disabled{% endif %}>
+                                    <i class="bi bi-arrow-clockwise me-2"></i>
+                                    <span class="btn-text">投稿を取得</span>
+                                </button>
+                                <button id="sync-selected-btn" class="btn btn-success d-none" disabled>
+                                    <i class="bi bi-cloud-upload me-2"></i>
+                                    <span class="sync-btn-text">選択した投稿を連携</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Selection Controls -->
+                        <div id="selection-controls" class="mb-3 d-none">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <button id="select-all-btn" class="btn btn-sm btn-outline-primary me-2">
+                                        <i class="bi bi-check-square me-1"></i>すべて選択
+                                    </button>
+                                    <button id="deselect-all-btn" class="btn btn-sm btn-outline-secondary">
+                                        <i class="bi bi-square me-1"></i>すべて解除
+                                    </button>
+                                </div>
+                                <div>
+                                    <span id="selected-count" class="badge bg-primary">0件選択中</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if not customer.facebook_token %}
+                        <div class="alert alert-warning" role="alert">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            Instagram連携が必要です。<a href="{{ url_for('customer.account') }}" class="alert-link">アカウント設定</a>から認証してください。
+                        </div>
+                        {% endif %}
+
+                        <!-- Loading State -->
+                        <div id="loading-state" class="text-center py-5 d-none">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">読み込み中...</span>
+                            </div>
+                            <p class="mt-3 text-muted">Instagram投稿を取得中...</p>
+                        </div>
+
+                        <!-- Error State -->
+                        <div id="error-state" class="alert alert-danger d-none" role="alert">
+                            <i class="bi bi-exclamation-circle me-2"></i>
+                            <span id="error-message"></span>
+                        </div>
+
+                        <!-- Posts Grid -->
+                        <div id="posts-container" class="d-none">
+                            <div id="posts-grid" class="row g-3">
+                                <!-- Posts will be populated here -->
+                            </div>
+                        </div>
+
+                        <!-- Empty State -->
+                        <div id="empty-state" class="text-center py-5 d-none">
+                            <i class="bi bi-image fs-1 text-muted mb-3 d-block"></i>
+                            <h6 class="text-muted">投稿が見つかりません</h6>
+                            <p class="text-muted small">まだInstagram投稿がないか、取得に失敗しました。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<style>
+.instagram-post-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+    background: #fff;
+    border: 1px solid #e9ecef;
+}
+
+.instagram-post-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.instagram-post-thumbnail {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    background-color: #f8f9fa;
+}
+
+.instagram-post-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.7) 100%);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    display: flex;
+    align-items: flex-end;
+    padding: 15px;
+}
+
+.instagram-post-card:hover .instagram-post-overlay {
+    opacity: 1;
+}
+
+.instagram-post-info {
+    color: white;
+    width: 100%;
+}
+
+.instagram-post-caption {
+    font-size: 0.85rem;
+    line-height: 1.3;
+    max-height: 3.9rem;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+}
+
+.instagram-post-meta {
+    margin-top: 8px;
+    font-size: 0.75rem;
+    opacity: 0.9;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.media-type-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 500;
+}
+
+.btn-text {
+    transition: opacity 0.2s ease;
+}
+
+.btn:disabled .btn-text {
+    opacity: 0.6;
+}
+
+@media (max-width: 768px) {
+    .instagram-post-thumbnail {
+        height: 150px;
+    }
+    
+    .instagram-post-overlay {
+        padding: 10px;
+    }
+}
+
+.post-checkbox-container {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 10;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 4px;
+    padding: 4px;
+    backdrop-filter: blur(4px);
+}
+
+.post-checkbox {
+    width: 18px !important;
+    height: 18px !important;
+    margin: 0 !important;
+    cursor: pointer;
+}
+
+.post-checkbox:checked {
+    background-color: #4154f1;
+    border-color: #4154f1;
+}
+
+.instagram-post-card.selected {
+    border: 2px solid #4154f1;
+    box-shadow: 0 0 0 2px rgba(65, 84, 241, 0.2);
+}
+
+.sync-btn-text {
+    transition: opacity 0.2s ease;
+}
+
+.btn:disabled .sync-btn-text {
+    opacity: 0.6;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const fetchBtn = document.getElementById('fetch-posts-btn');
+    const loadingState = document.getElementById('loading-state');
+    const errorState = document.getElementById('error-state');
+    const postsContainer = document.getElementById('posts-container');
+    const postsGrid = document.getElementById('posts-grid');
+    const emptyState = document.getElementById('empty-state');
+    const errorMessage = document.getElementById('error-message');
+    const btnText = fetchBtn.querySelector('.btn-text');
+
+    let isLoading = false;
+    let isSyncing = false;
+
+    // Hide all states initially
+    function hideAllStates() {
+        loadingState.classList.add('d-none');
+        errorState.classList.add('d-none');
+        postsContainer.classList.add('d-none');
+        emptyState.classList.add('d-none');
+    }
+
+    // Show loading state
+    function showLoading() {
+        hideAllStates();
+        loadingState.classList.remove('d-none');
+        fetchBtn.disabled = true;
+        btnText.textContent = '取得中...';
+        isLoading = true;
+    }
+
+    // Show error state
+    function showError(message) {
+        hideAllStates();
+        errorState.classList.remove('d-none');
+        errorMessage.textContent = message;
+        fetchBtn.disabled = false;
+        btnText.textContent = '投稿を取得';
+        isLoading = false;
+    }
+
+    // Show posts
+    function showPosts(posts) {
+        hideAllStates();
+        if (posts.length === 0) {
+            emptyState.classList.remove('d-none');
+        } else {
+            postsContainer.classList.remove('d-none');
+            renderPosts(posts);
+            showSelectionControls();
+        }
+        fetchBtn.disabled = false;
+        btnText.textContent = '投稿を取得';
+        isLoading = false;
+    }
+
+    // Show selection controls
+    function showSelectionControls() {
+        document.getElementById('selection-controls').classList.remove('d-none');
+        document.getElementById('sync-selected-btn').classList.remove('d-none');
+        updateSelectionUI();
+    }
+
+    // Render posts in grid
+    function renderPosts(posts) {
+        postsGrid.innerHTML = '';
+        
+        posts.forEach(post => {
+            const postElement = createPostElement(post);
+            postsGrid.appendChild(postElement);
+        });
+        
+        // Add event listeners after rendering
+        setupCheckboxEventListeners();
+    }
+
+    // Create individual post element
+    function createPostElement(post) {
+        const col = document.createElement('div');
+        col.className = 'col-lg-3 col-md-4 col-sm-6';
+
+        const mediaTypeBadge = getMediaTypeBadge(post.media_type);
+        const thumbnail = post.media_url || '/static/image/default-thumbnail.jpg';
+        const caption = post.caption ? post.caption.substring(0, 100) + (post.caption.length > 100 ? '...' : '') : 'キャプションなし';
+        const timestamp = new Date(post.timestamp).toLocaleDateString('ja-JP');
+
+        col.innerHTML = `
+            <div class="instagram-post-card" data-post-id="${post.id}" data-permalink="${post.permalink}">
+                <div class="post-checkbox-container">
+                    <input type="checkbox" class="form-check-input post-checkbox" data-post-id="${post.id}" id="post-${post.id}">
+                    <label class="form-check-label" for="post-${post.id}"></label>
+                </div>
+                ${mediaTypeBadge}
+                <img src="${thumbnail}" alt="Instagram Post" class="instagram-post-thumbnail" loading="lazy">
+                <div class="instagram-post-overlay">
+                    <div class="instagram-post-info">
+                        <div class="instagram-post-caption">${caption}</div>
+                        <div class="instagram-post-meta">
+                            <span>${timestamp}</span>
+                            <i class="bi bi-box-arrow-up-right"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Add click event to open Instagram post (avoid checkbox area)
+        const postCard = col.querySelector('.instagram-post-card');
+        postCard.addEventListener('click', function(e) {
+            // Don't open link if clicking on checkbox or its container
+            if (e.target.closest('.post-checkbox-container')) {
+                return;
+            }
+            const permalink = this.getAttribute('data-permalink');
+            if (permalink) {
+                window.open(permalink, '_blank', 'noopener,noreferrer');
+            }
+        });
+
+        return col;
+    }
+
+    // Get media type badge
+    function getMediaTypeBadge(mediaType) {
+        const badges = {
+            'IMAGE': '<span class="media-type-badge"><i class="bi bi-image me-1"></i>画像</span>',
+            'VIDEO': '<span class="media-type-badge"><i class="bi bi-play-fill me-1"></i>動画</span>',
+            'CAROUSEL_ALBUM': '<span class="media-type-badge"><i class="bi bi-images me-1"></i>アルバム</span>'
+        };
+        return badges[mediaType] || '';
+    }
+
+    // Fetch posts from API
+    async function fetchInstagramPosts() {
+        if (isLoading || isSyncing) {
+            console.log('操作中のため処理をスキップしました');
+            return;
+        }
+
+        showLoading();
+
+        try {
+            const formData = new FormData();
+            
+            const response = await fetch('/instagram', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+
+            if (data.error) {
+                throw new Error(data.error);
+            }
+
+            showPosts(data);
+
+        } catch (error) {
+            console.error('Error fetching Instagram posts:', error);
+            showError(`投稿の取得に失敗しました: ${error.message}`);
+        }
+    }
+
+    // Setup checkbox event listeners
+    function setupCheckboxEventListeners() {
+        const checkboxes = document.querySelectorAll('.post-checkbox');
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function(e) {
+                e.stopPropagation(); // Prevent card click
+                const card = this.closest('.instagram-post-card');
+                if (this.checked) {
+                    card.classList.add('selected');
+                } else {
+                    card.classList.remove('selected');
+                }
+                updateSelectionUI();
+            });
+        });
+
+        // Selection control buttons
+        document.getElementById('select-all-btn').addEventListener('click', function() {
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = true;
+                checkbox.closest('.instagram-post-card').classList.add('selected');
+            });
+            updateSelectionUI();
+        });
+
+        document.getElementById('deselect-all-btn').addEventListener('click', function() {
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = false;
+                checkbox.closest('.instagram-post-card').classList.remove('selected');
+            });
+            updateSelectionUI();
+        });
+
+        // Sync button
+        document.getElementById('sync-selected-btn').addEventListener('click', syncSelectedPosts);
+    }
+
+    // Update selection UI
+    function updateSelectionUI() {
+        const checkboxes = document.querySelectorAll('.post-checkbox');
+        const checkedCheckboxes = document.querySelectorAll('.post-checkbox:checked');
+        const selectedCount = checkedCheckboxes.length;
+        
+        document.getElementById('selected-count').textContent = `${selectedCount}件選択中`;
+        
+        const syncBtn = document.getElementById('sync-selected-btn');
+        syncBtn.disabled = selectedCount === 0 || isLoading;
+    }
+
+    // Sync selected posts to WordPress
+    async function syncSelectedPosts() {
+        if (isLoading || isSyncing) {
+            console.log('同期処理中のため処理をスキップしました');
+            return;
+        }
+
+        const checkedCheckboxes = document.querySelectorAll('.post-checkbox:checked');
+        const selectedPostIds = Array.from(checkedCheckboxes).map(cb => cb.getAttribute('data-post-id'));
+        
+        if (selectedPostIds.length === 0) {
+            alert('投稿を選択してください。');
+            return;
+        }
+
+        const syncBtn = document.getElementById('sync-selected-btn');
+        const syncBtnText = syncBtn.querySelector('.sync-btn-text');
+        const originalText = syncBtnText.textContent;
+
+        // Show loading state
+        syncBtn.disabled = true;
+        fetchBtn.disabled = true; // Disable fetch button during sync
+        syncBtnText.textContent = '連携中...';
+        isSyncing = true;
+
+        try {
+            const formData = new FormData();
+            selectedPostIds.forEach(postId => {
+                formData.append('selected_posts[]', postId);
+            });
+
+            const response = await fetch('/instagram/sync-selected', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+
+            if (data.error) {
+                throw new Error(data.error);
+            }
+
+            // Show success message
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-success alert-dismissible fade show mt-3';
+            alertDiv.innerHTML = `
+                ${selectedPostIds.length}件の投稿をWordPressに連携しました。
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            document.querySelector('.card-body').insertBefore(alertDiv, document.querySelector('.card-body').firstChild);
+
+            // Reset selection
+            document.querySelectorAll('.post-checkbox:checked').forEach(checkbox => {
+                checkbox.checked = false;
+                checkbox.closest('.instagram-post-card').classList.remove('selected');
+            });
+            updateSelectionUI();
+
+        } catch (error) {
+            console.error('Error syncing posts:', error);
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-danger alert-dismissible fade show mt-3';
+            alertDiv.innerHTML = `
+                連携に失敗しました: ${error.message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            document.querySelector('.card-body').insertBefore(alertDiv, document.querySelector('.card-body').firstChild);
+        } finally {
+            // Reset button state
+            syncBtn.disabled = false;
+            fetchBtn.disabled = false; // Re-enable fetch button
+            syncBtnText.textContent = originalText;
+            isSyncing = false;
+            updateSelectionUI();
+        }
+    }
+
+    // Add event listener to fetch button
+    if (fetchBtn) {
+        fetchBtn.addEventListener('click', fetchInstagramPosts);
+    }
+});
+</script>
+
+{% endblock %}
