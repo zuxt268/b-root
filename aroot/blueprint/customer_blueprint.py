@@ -318,6 +318,7 @@ def start_date():
 @bp.route("/facebook/auth", methods=("POST",))
 @login_required
 def facebook_auth():
+    SlackService().send_message("facebook auth is invoked")
     print("facebook_auth is invoked")
     customer_id = session.get("customer_id")
     access_token = request.form["access_token"]
@@ -326,11 +327,13 @@ def facebook_auth():
             customers_repo = CustomersRepository(unit_of_work.session)
             customer_service = CustomersService(customers_repo)
             meta_service = MetaService()
+            SlackService().send_message(access_token)
             long_token = meta_service.get_long_term_token(access_token)
             instagram = meta_service.get_instagram_account(access_token)
             customer_service.update_customer_after_login(
                 customer_id, long_token, instagram["id"], instagram["username"]
             )
+            SlackService().send_message("更新")
             unit_of_work.commit()
             flash(
                 message="インスタグラムアカウントとの連携に成功しました",
@@ -358,6 +361,7 @@ def facebook_auth():
             category="warning",
         )
         set_dashboard_status(session, DashboardStatus.AUTH_ERROR_INSTAGRAM.value)
+    SlackService().send_message("リダイレクト")
     return redirect(url_for("customer.index"))
 
 
