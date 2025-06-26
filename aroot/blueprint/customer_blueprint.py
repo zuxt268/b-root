@@ -318,6 +318,7 @@ def start_date():
 @bp.route("/facebook/auth", methods=("POST",))
 @login_required
 def facebook_auth():
+    print("facebook_auth is invoked")
     customer_id = session.get("customer_id")
     access_token = request.form["access_token"]
     try:
