@@ -408,93 +408,93 @@
     }
 
     // Chat functionality
-    document.addEventListener('DOMContentLoaded', function() {
-        const chatButton = document.getElementById('chat-button');
-        const chatWindow = document.getElementById('chat-window');
-        const chatClose = document.getElementById('chat-close');
-        const chatSend = document.getElementById('chat-send');
-        const chatInput = document.getElementById('chat-input');
-        const chatMessages = document.getElementById('chat-messages');
-
-        // Toggle chat window
-        chatButton.addEventListener('click', function() {
-            const isVisible = chatWindow.style.display !== 'none';
-            chatWindow.style.display = isVisible ? 'none' : 'block';
-            if (!isVisible) {
-                chatInput.focus();
-            }
-        });
-
-        // Close chat window
-        chatClose.addEventListener('click', function() {
-            chatWindow.style.display = 'none';
-        });
-
-        // Send message
-        function sendMessage() {
-            const message = chatInput.value.trim();
-            if (message) {
-                // Add user message
-                addMessage(message, 'user');
-                chatInput.value = '';
-                
-                // Simulate bot response
-                setTimeout(() => {
-                    addBotResponse(message);
-                }, 1000);
-            }
-        }
-
-        chatSend.addEventListener('click', sendMessage);
-
-        chatInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                sendMessage();
-            }
-        });
-
-        // Add message to chat
-        function addMessage(content, type) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${type}-message`;
-            
-            const now = new Date();
-            const timeString = now.toLocaleTimeString('ja-JP', { 
-                hour: '2-digit', 
-                minute: '2-digit' 
-            });
-            
-            messageDiv.innerHTML = `
-                <div class="message-content">${content}</div>
-                <div class="message-time">${timeString}</div>
-            `;
-            
-            chatMessages.appendChild(messageDiv);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-
-        // Simulate bot responses
-        function addBotResponse(userMessage) {
-            let response = '';
-            const lowerMessage = userMessage.toLowerCase();
-            
-            if (lowerMessage.includes('こんにちは') || lowerMessage.includes('はじめまして')) {
-                response = 'こんにちは！A-Rootをご利用いただき、ありがとうございます。何かお手伝いできることがございますか？';
-            } else if (lowerMessage.includes('instagram') || lowerMessage.includes('インスタ')) {
-                response = 'Instagramの連携について何かお困りですか？認証がうまくいかない場合は、ブラウザのキャッシュをクリアしてからもう一度お試しください。';
-            } else if (lowerMessage.includes('wordpress') || lowerMessage.includes('ワードプレス')) {
-                response = 'WordPressの設定についてですね。プラグインのインストールやAPI設定でご不明な点がございましたら、詳しくご説明いたします。';
-            } else if (lowerMessage.includes('エラー') || lowerMessage.includes('問題') || lowerMessage.includes('トラブル')) {
-                response = 'お困りのことがおありですね。具体的にどのような問題が発生していますか？エラーメッセージがございましたら、詳細をお教えください。';
-            } else if (lowerMessage.includes('ありがとう') || lowerMessage.includes('助かった')) {
-                response = 'お役に立てて嬉しいです！他にもご質問がございましたら、いつでもお気軽にお声がけください。';
-            } else {
-                response = 'ご質問ありがとうございます。より詳しいサポートが必要でしたら、サポートチーム（support@a-root.com）までお気軽にお問い合わせください。';
-            }
-            
-            addMessage(response, 'bot');
-        }
-    });
+    {#document.addEventListener('DOMContentLoaded', function() {#}
+    {#    const chatButton = document.getElementById('chat-button');#}
+    {#    const chatWindow = document.getElementById('chat-window');#}
+    {#    const chatClose = document.getElementById('chat-close');#}
+    {#    const chatSend = document.getElementById('chat-send');#}
+    {#    const chatInput = document.getElementById('chat-input');#}
+    {#    const chatMessages = document.getElementById('chat-messages');#}
+    {##}
+    {#    // Toggle chat window#}
+    {#    chatButton.addEventListener('click', function() {#}
+    {#        const isVisible = chatWindow.style.display !== 'none';#}
+    {#        chatWindow.style.display = isVisible ? 'none' : 'block';#}
+    {#        if (!isVisible) {#}
+    {#            chatInput.focus();#}
+    {#        }#}
+    {#    });#}
+    {##}
+    {#    // Close chat window#}
+    {#    chatClose.addEventListener('click', function() {#}
+    {#        chatWindow.style.display = 'none';#}
+    {#    });#}
+    {##}
+    {#    // Send message#}
+    {#    function sendMessage() {#}
+    {#        const message = chatInput.value.trim();#}
+    {#        if (message) {#}
+    {#            // Add user message#}
+    {#            addMessage(message, 'user');#}
+    {#            chatInput.value = '';#}
+    {#            #}
+    {#            // Simulate bot response#}
+    {#            setTimeout(() => {#}
+    {#                addBotResponse(message);#}
+    {#            }, 1000);#}
+    {#        }#}
+    {#    }#}
+    {##}
+    {#    chatSend.addEventListener('click', sendMessage);#}
+    {##}
+    {#    chatInput.addEventListener('keypress', function(e) {#}
+    {#        if (e.key === 'Enter') {#}
+    {#            sendMessage();#}
+    {#        }#}
+    {#    });#}
+    {##}
+    {#    // Add message to chat#}
+    {#    function addMessage(content, type) {#}
+    {#        const messageDiv = document.createElement('div');#}
+    {#        messageDiv.className = `message ${type}-message`;#}
+    {#        #}
+    {#        const now = new Date();#}
+    {#        const timeString = now.toLocaleTimeString('ja-JP', { #}
+    {#            hour: '2-digit', #}
+    {#            minute: '2-digit' #}
+    {#        });#}
+    {#        #}
+    {#        messageDiv.innerHTML = `#}
+    {#            <div class="message-content">${content}</div>#}
+    {#            <div class="message-time">${timeString}</div>#}
+    {#        `;#}
+    {#        #}
+    {#        chatMessages.appendChild(messageDiv);#}
+    {#        chatMessages.scrollTop = chatMessages.scrollHeight;#}
+    {#    }#}
+    {##}
+    {#    // Simulate bot responses#}
+    {#    function addBotResponse(userMessage) {#}
+    {#        let response = '';#}
+    {#        const lowerMessage = userMessage.toLowerCase();#}
+    {#        #}
+    {#        if (lowerMessage.includes('こんにちは') || lowerMessage.includes('はじめまして')) {#}
+    {#            response = 'こんにちは！A-Rootをご利用いただき、ありがとうございます。何かお手伝いできることがございますか？';#}
+    {#        } else if (lowerMessage.includes('instagram') || lowerMessage.includes('インスタ')) {#}
+    {#            response = 'Instagramの連携について何かお困りですか？認証がうまくいかない場合は、ブラウザのキャッシュをクリアしてからもう一度お試しください。';#}
+    {#        } else if (lowerMessage.includes('wordpress') || lowerMessage.includes('ワードプレス')) {#}
+    {#            response = 'WordPressの設定についてですね。プラグインのインストールやAPI設定でご不明な点がございましたら、詳しくご説明いたします。';#}
+    {#        } else if (lowerMessage.includes('エラー') || lowerMessage.includes('問題') || lowerMessage.includes('トラブル')) {#}
+    {#            response = 'お困りのことがおありですね。具体的にどのような問題が発生していますか？エラーメッセージがございましたら、詳細をお教えください。';#}
+    {#        } else if (lowerMessage.includes('ありがとう') || lowerMessage.includes('助かった')) {#}
+    {#            response = 'お役に立てて嬉しいです！他にもご質問がございましたら、いつでもお気軽にお声がけください。';#}
+    {#        } else {#}
+    {#            response = 'ご質問ありがとうございます。より詳しいサポートが必要でしたら、サポートチーム（support@a-root.com）までお気軽にお問い合わせください。';#}
+    {#        }#}
+    {#        #}
+    {#        addMessage(response, 'bot');#}
+    {#    }#}
+    {# });#}
 
 </script>
 

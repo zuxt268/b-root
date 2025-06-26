@@ -251,7 +251,6 @@ def index():
         else:
             dashboard_status = DashboardStatus.HEALTHY.value
     a_root_status = customer.a_root_status()
-    print(a_root_status)
     return render_template(
         "customer/index.html",
         customer=customer,
