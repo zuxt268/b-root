@@ -1,8 +1,12 @@
+import os
+import hashlib
 from datetime import timedelta
 from typing import Optional
 
+import requests
 from werkzeug.security import check_password_hash, generate_password_hash
 from domain.errors import CustomerAuthError, CustomerValidationError
+from util.const import DashboardStatus, EXPIRED, NOT_CONNECTED
 
 
 class Customer:
@@ -19,6 +23,7 @@ class Customer:
         instagram_business_account_name=None,
         instagram_token_status=None,
         delete_hash=0,
+        payment_type="none",
     ):
         self.id = id
         self.name = name
@@ -30,6 +35,7 @@ class Customer:
         self.instagram_business_account_id = instagram_business_account_id
         self.instagram_business_account_name = instagram_business_account_name
         self.instagram_token_status = instagram_token_status
+        self.payment_type = payment_type
         self.delete_hash = delete_hash
 
     def set_wordpress_url(self, _wordpress_url):
@@ -61,12 +67,88 @@ class Customer:
             result["password"] = self.password
         if self.wordpress_url is not None:
             result["wordpress_url"] = self.wordpress_url
+        if self.payment_type is not None:
+            result["payment_type"] = self.payment_type
         return result
 
     def formatted_date(self):
         if self.start_date is None:
             return None
         return self.start_date + timedelta(hours=9)
+
+    def a_root_status(self) -> int:
+        # インスタグラムと疎通できるか
+        if self.instagram_token_status == NOT_CONNECTED:
+            return 1
+        if self.instagram_token_status == EXPIRED:
+            return 2
+
+        # ワードプレス側と疎通ができるか
+        if not is_wordpress_reachable(self.wordpress_url):
+            return 3
+
+        # ストライプにて決済が完了しているか
+        if not is_payment_completed(self.payment_type, self.email):
+            return 4
+
+        return 0
+
+    def get_secret_phrase(self) -> str:
+        """WordPress URLから規則的にシークレットフレーズを生成"""
+        if not self.wordpress_url:
+            return "シークレットキーが生成できません"
+
+        # wordpress_urlとemailを組み合わせてハッシュ化
+        combined = f"{self.wordpress_url}:{self.email}"
+        hash_value = hashlib.sha256(combined.encode()).hexdigest()
+
+        # ハッシュ値の最初の36文字を8-4-4-4-12の形式でハイフンで連結
+        return f"{hash_value[:8]}-{hash_value[8:12]}-{hash_value[12:16]}-{hash_value[16:20]}-{hash_value[20:32]}"
+
+
+def is_wordpress_reachable(url: str) -> bool:
+    try:
+        response = requests.get(f"https://{url}/?rest_route=/rodut/v1/title", timeout=5)
+        return response.status_code == 200
+    except requests.RequestException:
+        return False
+
+
+def is_payment_completed(payment_type: str, email: str) -> bool:
+    if payment_type == "none":
+        return True
+    try:
+        req = {
+            "email": email,
+            "product_id": os.getenv("PRODUCT_ID"),
+        }
+        resp = requests.post(os.getenv("CAREO_URL") + "/users", json=req)
+        resp.raise_for_status()
+        response_data = resp.json()
+        status = response_data.get("status")
+        return status == "paid"
+    except requests.RequestException:
+        return False
+
+
+def get_payment_info(payment_type: str, email: str) -> dict:
+    """支払い情報とstripe_customer_idを取得"""
+    if payment_type == "none":
+        return {"status": "paid", "stripe_customer_id": None}
+    try:
+        req = {
+            "email": email,
+            "product_id": os.getenv("PRODUCT_ID"),
+        }
+        resp = requests.post(os.getenv("CAREO_URL") + "/users", json=req)
+        resp.raise_for_status()
+        response_data = resp.json()
+        return {
+            "status": response_data.get("status"),
+            "stripe_customer_id": response_data.get("stripe_customer_id"),
+        }
+    except requests.RequestException:
+        return {"status": "error", "stripe_customer_id": None}
 
 
 class CustomerValidator:

@@ -32,6 +32,7 @@ class AdminUserRepository:
         record = query.filter(AdminUsersModel.email == email).first()
         if record is not None:
             return AdminUser(**record.dict())
+        return None
 
     def find_all(self, limit=None, offset=None):
         query = self.session.query(AdminUsersModel)

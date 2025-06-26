@@ -22,6 +22,7 @@ class PostsRepository:
         post = self._get(post_id)
         if post is not None:
             return Post(**post.dict())
+        return None
 
     def find_by_customer_id(
         self, customer_id, limit=None, offset=None
@@ -48,7 +49,7 @@ class PostsRepository:
         results = []
         records = self.session.execute(
             text(
-                """SELECT 
+                """SELECT
 posts.id as id,
 posts.customer_id as customer_id,
 posts.media_id as media_id,

@@ -17,12 +17,14 @@ from service.admin_users_service import (
 )
 from repository.unit_of_work import UnitOfWork
 from service.customers_service import CustomersService
+# from service.rate_limiter import rate_limit
 
 
 bp = Blueprint("api", __name__)
 
 
 @bp.before_request
+# @rate_limit('api')
 def verification():
     data = request.json
     if not data or "message" not in data or "hmac" not in data:

@@ -112,7 +112,6 @@ class WordpressService:
 
     def upload_image(self, image_path) -> WordPressSource:
         data = {"api_key": self.api_key, "email": self.admin_email}
-        print(f"https://{self.wordpress_url}?rest_route=/rodut/v1/upload-media")
         with open(image_path, "rb") as img:
             files = {"file": (image_path, img, "image/jpeg")}
             response = requests.post(
@@ -120,7 +119,6 @@ class WordpressService:
                 data=data,
                 files=files,
             )
-            print(response)
             if 200 <= response.status_code < 300:
                 return WordPressSource(
                     response.json()["id"], "IMAGE", response.json()["source_url"]
@@ -139,7 +137,6 @@ class WordpressService:
                 data=data,
                 files=files,
             )
-            print(response)
             if 200 <= response.status_code < 300:
                 return WordPressSource(
                     response.json()["id"], "VIDEO", response.json()["source_url"]
@@ -151,7 +148,6 @@ class WordpressService:
             try:
                 # URLからファイルをダウンロード
                 urlretrieve(media_url, temp_file.name)
-                print(f"Downloaded image to: {temp_file.name}")
             finally:
                 # temp_fileが閉じられているか確認して、明示的に削除する
                 temp_file.close()
@@ -170,7 +166,6 @@ class WordpressService:
             try:
                 # URLからファイルをダウンロード
                 urlretrieve(media_url, temp_file.name)
-                print(f"Downloaded image to: {temp_file.name}")
             finally:
                 # temp_fileが閉じられているか確認して、明示的に削除する
                 temp_file.close()
@@ -185,7 +180,6 @@ class WordpressService:
 
     def create_post(self, title: str, content: str, media_id: int):
         title = self.get_title(title)
-        print("create_post is invoked")
         headers = {"Content-Type": "application/json"}
         data = {
             "api_key": self.api_key,
@@ -199,7 +193,6 @@ class WordpressService:
             headers=headers,
             json=data,
         )
-        print(f"response: {response.json()}, status: {response.status_code}")
         if 200 <= response.status_code < 300:
             return response.json()
         raise WordpressApiError(response.json())

@@ -1,25 +1,35 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="">
-    <meta name="author" content="">
-    <title>A Root</title>
-    <link
-        href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
-        rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='image/sd.ico') }}">
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+
+  <title>A-Root</title>
+  <meta content="" name="description">
+  <meta content="" name="keywords">
+
+  <!-- Favicons -->
+  <link href="{{ url_for('static', filename='image/sd.ico') }}" rel="icon">
+  <link href="{{ url_for('static', filename='image/sd.ico') }}" rel="apple-touch-icon">
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.gstatic.com" rel="preconnect">
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Nunito:300,300i,400,400i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
+
+  <!-- Vendor CSS Files -->
+  <link href="{{ url_for('static', filename='vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
+  <link href="{{ url_for('static', filename='vendor/bootstrap-icons/bootstrap-icons.min.css') }}" rel="stylesheet">
+  <!-- Template Main CSS File -->
+　<link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+
 </head>
+
 <body>
 
-    <header>
-      {% block header %}{% endblock %}
-    </header>
-
+    {% block header %}{% endblock %}
+    {% block slider %}{% endblock %}
+    {% block content %}{% endblock %}
 
     <div id="loading-overlay" class="position-fixed top-0 start-0 w-100 h-100 d-none justify-content-center align-items-center" style="background-color: rgba(0, 0, 0, 0.5); z-index: 1050; display: none;">
       <div class="spinner-border text-light" role="status">
@@ -27,37 +37,35 @@
       </div>
     </div>
 
-
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% for category, message in messages %}
-            <div class="container">
-                <div class="mt-3 alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            </div>
-        {% endfor %}
-    {% endwith %}
-
-
-    {% block content %}{% endblock %}
-
-    <footer class="sticky-footer bg-white mb-3">
-        <div class="container my-auto">
-            <div class="copyright text-center my-auto">
-                <span class="me-2"><a target="_blank" rel="noopener" href="https://strategy-drive.jp/">運営会社</a></span>
-                <span class="me-2"><a href="/terms">利用規約</a></span>
-                <span class="me-2"><a href="/privacy">プライバシーポリシー</a></span>
-                <span>Copyright &copy; A-Root 2024</span>
-            </div>
+    <!-- ======= Footer ======= -->
+    <footer id="footer" class="footer">
+        <div class="copyright">
+            <span class="me-2"><a target="_blank" rel="noopener" href="https://strategy-drive.jp/">運営会社</a></span>
+            <span class="me-2"><a href="/terms">利用規約</a></span>
+            <span class="me-2"><a href="/privacy">プライバシーポリシー</a></span>
+            &copy; Copyright <strong><span>StrategyDrive</span></strong>. All Rights Reserved
         </div>
-    </footer>
+    </footer><!-- End Footer -->
 
-    {% block logoutmodal %}{% endblock %}
+    <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
 
     <div id="fb-root"></div>
     <script async defer crossorigin="anonymous" src="https://connect.facebook.net/ja_JP/sdk.js#xfbml=1&version=v18.0&appId=1499558264220625" nonce="f2Xbvzub"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     <script src="{{ url_for('static', filename='javascript/common.js') }}"></script>
+
+    <!-- JS -->
+    <script src="{{ url_for('static', filename='vendor/apexcharts/apexcharts.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='vendor/chart.js/chart.umd.js') }}"></script>
+    <script src="{{ url_for('static', filename='vendor/echarts/echarts.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='vendor/quill/quill.js') }}"></script>
+    <script src="{{ url_for('static', filename='vendor/simple-datatables/simple-datatables.js') }}"></script>
+    <script src="{{ url_for('static', filename='vendor/tinymce/tinymce.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='vendor/php-email-form/validate.js') }}"></script>
+
+    <!-- Template Main JS File -->
+    <script src="{{ url_for('static', filename='javascript/main.js') }}"></script>
+
 </body>
+
 </html>

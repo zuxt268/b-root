@@ -1,9 +1,71 @@
 {% extends 'customer.html' %}
 
-{% block header %}
+{% block slider %}
+  <!-- ======= Sidebar ======= -->
+  <aside id="sidebar" class="sidebar">
+
+    <ul class="sidebar-nav" id="sidebar-nav">
+
+      <li class="nav-item">
+        <a class="nav-link {{ 'collapsed' if request.path != '/faq' else '' }}" href="/faq">
+          <i class="bi bi-question-circle"></i>
+          <span>F.A.Q</span>
+        </a>
+      </li><!-- End F.A.Q Page Nav -->
+
+    </ul>
+
+  </aside><!-- End Sidebar-->
 {% endblock %}
 
-
 {% block content %}
-メールを確認してください
+
+  <main id="main" class="main">
+    <div class="container">
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+            <div class="container">
+                <div class="mt-3 alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            </div>
+        {% endfor %}
+    {% endwith %}
+
+      <section class="section register d-flex flex-column align-items-center justify-content-center py-4">
+        <div class="container">
+          <div class="row justify-content-center">
+            <div class="col-lg-6 col-md-6 d-flex flex-column align-items-center justify-content-center">
+
+              <div class="d-flex justify-content-center py-4">
+                <a href="index.html" class="logo d-flex align-items-center w-auto">
+                  <img src="{{ url_for('static', filename='image/sd.png') }}" alt="">
+                  <span class="d-none d-lg-block">A-Root</span>
+                </a>
+              </div><!-- End Logo -->
+
+              <div class="card mb-3">
+
+                <div class="card-body">
+
+                  <div class="pt-4 pb-2">
+                    <h5 class="card-title text-center pb-0 fs-4">メールアドレス認証</h5>
+                  </div>
+                    <p class="text-color">入力されたメールアドレス宛てに、「A-Rootへようこそ」を送信いたしました。 メール本文に記載されているURLにアクセスいただき、登録手続きをお願いいたします。</p>
+                    <p class="text-color">※メールに記載されたURLの有効期限は24時間です。24時間以内にアクセスいただけなかった場合は、再度メール送信からお手続きください。</p>
+                    <p class="text-color">※メールの送信には時間がかかる場合がございます。</p>
+                    <p class="text-color">※メールが届かない場合は入力された内容に誤りがないか認、または迷惑フォルダに入っていないかのご確認をお願いいたします。</p>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+    </div>
+  </main><!-- End #main -->
 {% endblock %}

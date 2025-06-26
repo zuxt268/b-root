@@ -87,6 +87,10 @@ def patch_1() -> list[str]:
                         customer.id, const.EXPIRED
                     )
                     logs.append(f"{customer.name}: expired")
+                elif str(e.error_subcode) == "33":
+                    customer_service.update_instagram_token_status(
+                        customer.id, const.NOT_CONNECTED
+                    )
                 else:
                     logs.append(f"{customer.name}: {str(e)}")
             except Exception as ex:

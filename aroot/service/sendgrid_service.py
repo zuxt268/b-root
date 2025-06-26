@@ -3,7 +3,7 @@ import traceback
 import json
 
 from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail
+from sendgrid.helpers.mail import Mail, Email
 
 
 class SendGridService:
@@ -47,28 +47,34 @@ class SendGridService:
         <p>以下のURLをクリックし、顧客情報登録に進んでください。</p>
         <p>{u}</p>
         """
+        from_email = Email(email=os.getenv("FROM_EMAIL"), name="ホムスタサポートチーム")
         msg = Mail(
             subject="A-Rootへようこそ",
             to_emails=email,
-            from_email="",
+            from_email=from_email,
             html_content=content,
         )
-        resp = self.client.send(msg)
-        print(resp.body)
-        print(resp.status_code)
+        try:
+            response = self.client.send(msg)
+            print(response.body)
+            print(response.status_code)
+        except Exception as e:
+            print(f"SendGrid error: {e}")
+            if hasattr(e, "body"):
+                print(e.body)  # ここに理由が記載されていることが多い
 
-    def send_token_expiry(self, to_email: str):
-        content = f"""
-        <p>A-Rootをご利用いただきありがとうございます！</p>
-        <p>以下のURLをクリックし、顧客情報登録に進んでください。</p>
-        <p>{u}</p>
-        """
-        msg = Mail(
-            subject="A-Rootへようこそ",
-            to_emails=to_email,
-            from_email="",
-            html_content=content,
-        )
-        resp = self.client.send(msg)
-        print(resp.body)
-        print(resp.status_code)
+    # def send_token_expiry(self, to_email: str):
+    #     content = f"""
+    #     <p>A-Rootをご利用いただきありがとうございます！</p>
+    #     <p>以下のURLをクリックし、顧客情報登録に進んでください。</p>
+    #     <p>{u}</p>
+    #     """
+    #     msg = Mail(
+    #         subject="A-Rootへようこそ",
+    #         to_emails=to_email,
+    #         from_email="",
+    #         html_content=content,
+    #     )
+    #     resp = self.client.send(msg)
+    #     print(resp.body)
+    #     print(resp.status_code)

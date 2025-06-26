@@ -6,11 +6,15 @@ from sqlalchemy.orm import sessionmaker
 
 class UnitOfWork:
     def __init__(self):
-        connection_string = (
-            f"mysql+pymysql://{os.getenv('DATABASE_USER')}:"
-            f"{os.getenv('DATABASE_PASSWORD')}@{os.getenv('DATABASE_HOST')}"
-            f"/{os.getenv('DATABASE_SCHEME')}"
-        )
+        db_user = os.getenv('DATABASE_USER')
+        db_password = os.getenv('DATABASE_PASSWORD')
+        db_host = os.getenv('DATABASE_HOST')
+        db_scheme = os.getenv('DATABASE_SCHEME')
+        
+        if not all([db_user, db_password, db_host, db_scheme]):
+            raise ValueError("Database connection parameters are not properly configured")
+        
+        connection_string = f"mysql+pymysql://{db_user}:{db_password}@{db_host}/{db_scheme}"
         self.session_maker = sessionmaker(
             bind=create_engine(
                 connection_string, pool_size=5, max_overflow=10, pool_recycle=3600

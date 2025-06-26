@@ -1,252 +1,388 @@
 {% extends 'customer.html' %}
 
-
 {% block content %}
-<div class="container">
-    <!-- Page Heading -->
-    <h1 class="h3 mb-4 text-gray-800">{{ customer.name }}</h1>
-    <div class="row">
-        <div class="col-lg-12">
-            <!-- Circle Buttons -->
-            <div class="card shadow mb-4">
-                <div class="card-header bg-white py-2">
-                    <h6 class="m-3 font-weight-bold">
-                        <svg class="me-1" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M2.597 7.81l4.911 13.454c-3.434-1.668-5.802-5.19-5.802-9.264 0-1.493.32-2.91.891-4.19zm16.352 3.67c0-1.272-.457-2.153-.849-2.839-.521-.849-1.011-1.566-1.011-2.415 0-.978.747-1.88 1.862-1.819-1.831-1.677-4.271-2.701-6.951-2.701-3.596 0-6.76 1.845-8.601 4.64.625.02 1.489.032 3.406-.118.555-.034.62.782.066.847 0 0-.558.065-1.178.098l3.749 11.15 2.253-6.756-1.604-4.394c-.555-.033-1.08-.098-1.08-.098-.555-.033-.49-.881.065-.848 2.212.17 3.271.171 5.455 0 .555-.033.621.783.066.848 0 0-.559.065-1.178.098l3.72 11.065 1.027-3.431c.444-1.423.783-2.446.783-3.327zm-6.768 1.42l-3.089 8.975c.922.271 1.898.419 2.908.419 1.199 0 2.349-.207 3.418-.583-.086-.139-3.181-8.657-3.237-8.811zm8.852-5.839c.224 1.651-.099 3.208-.713 4.746l-3.145 9.091c3.061-1.784 5.119-5.1 5.119-8.898 0-1.79-.457-3.473-1.261-4.939zm2.967 4.939c0 6.617-5.384 12-12 12s-12-5.383-12-12 5.383-12 12-12 12 5.383 12 12zm-.55 0c0-6.313-5.137-11.45-11.45-11.45s-11.45 5.137-11.45 11.45 5.137 11.45 11.45 11.45 11.45-5.137 11.45-11.45z"/></svg>
-                        WordPress:
-                        <span class="text-primary">
-                            <a target="_blank" href="https://{{ customer.wordpress_url }}" class="text-decoration-none">
-                                {{ customer.wordpress_url }}
-                            </a>
-                        </span>
-                    </h6>
-                    {% if customer.instagram_business_account_name %}
-                        <h6 class="m-3 font-weight-bold">
-                            <svg class="me-1" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
-                            Instagram:
-                            <span class="text-primary">
-                                <a target="_blank" href="https://www.instagram.com/{{ customer.instagram_business_account_name }}" class="text-decoration-none">
-                                    {{ customer.instagram_business_account_name }} ({{ customer.instagram_business_account_id }})
-                                </a>
-                            </span>
-                        </h6>
-                    {% endif %}
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-4 mb-3">
-                            {% if not customer.facebook_token or customer.instagram_token_status == 2 %}
-                                <button id="facebook_btn" class="btn btn-primary btn-lg w-100 h-100 d-flex align-items-center justify-content-center" style="font-size: 1.5rem;">
-                                <svg class="me-1" xmlns="http://www.w3.org/2000/svg" fill="#ffffff" width="28" height="28" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
-                                    Instagramとつなぐ
-                                </button>
-                            {% else %}
-                                <button id="facebook_btn" class="btn btn-success btn-lg w-100 h-100 d-flex align-items-center justify-content-center" style="font-size: 1.5rem;">
-                                <svg class="me-1" xmlns="http://www.w3.org/2000/svg" fill="#ffffff" width="28" height="28" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
-                                    <span class="col">
-                                        連携中
-                                    </span>
-                                </button>
-                            {% endif %}
-                        </div>
+<main id="main" class="main">
+    <div class="pagetitle">
+      <h1>ダッシュボード</h1>
+    </div><!-- End Page Title -->
+    <section class="section dashboard">
+      <div class="row">
 
-                        <div class="col-md-4">
-                            {% if customer.formatted_date() %}
-                            <div class="mb-3">
-                                <label for="start_date" class="fw-bold form-label">連携対象日時（日本時間）</label>
-                                <input title="start_date" id="start_date" value="{{ customer.formatted_date() }}" type="datetime-local" class="form-control" name="start_date">
-                            </div>
-                            {% endif %}
-                        </div>
+        <!-- Left side columns -->
+        <div class="col-lg-12">
+          <div class="row">
+
+              <!-- Sales Card -->
+            <div class="col-xxl-4 col-md-6">
+              <div class="card info-card revenue-card">
+
+                <div class="card-body">
+                  <h5 class="card-title">A-Root</h5>
+
+                  <div class="d-flex align-items-center">
+                    <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+{#                      <i class="bi bi-wordpress"></i>#}
+                      <img class="w-50" src="{{ url_for('static', filename='image/sd.ico') }}" alt="">
                     </div>
+                    <div class="ps-3">
+                      <h5>
+                          {% if a_root_status == 1 %}
+                            <span class="text-black badge bg-pending-auth rounded-pill">インスタグラム認証待ち</span>
+                          {% elif a_root_status == 2 %}
+                            <span class="text-black badge bg-pending-auth rounded-pill">認証期限切れ</span>
+                          {% elif a_root_status == 3 %}
+                            <span class="text-black badge bg-pending-auth rounded-pill">ワードプレスplugin設定待ち</span>
+                          {% elif a_root_status == 4 %}
+                            <span class="text-black badge bg-fail-payment rounded-pill">決済失敗</span>
+                          {% else %}
+                            <span class="text-black badge bg-healthy rounded-pill">正常に動作中</span>
+                          {% endif %}
+                      </h5>
+                    </div>
+                  </div>
                 </div>
-            </div>
-        </div>
 
-        <div class="col-lg-12">
-            <div class="card shadow mb-4">
-                <div class="card-header pt-3">
-                <h6 class="m-0 font-weight-bold text-primary">instagram-wordpress{% if customer.facebook_token %}<button id="facebook_execute" class="mx-2 btn btn-sm btn-danger"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="mr-1 bi bi-cloud-download" viewBox="0 0 16 16">
-  <path d="M4.406 1.342A5.53 5.53 0 0 1 8 0c2.69 0 4.923 2 5.166 4.579C14.758 4.804 16 6.137 16 7.773 16 9.569 14.502 11 12.687 11H10a.5.5 0 0 1 0-1h2.688C13.979 10 15 8.988 15 7.773c0-1.216-1.02-2.228-2.313-2.228h-.5v-.5C12.188 2.825 10.328 1 8 1a4.53 4.53 0 0 0-2.941 1.1c-.757.652-1.153 1.438-1.153 2.055v.448l-.445.049C2.064 4.805 1 5.952 1 7.318 1 8.785 2.23 10 3.781 10H6a.5.5 0 0 1 0 1H3.781C1.708 11 0 9.366 0 7.318c0-1.763 1.266-3.223 2.942-3.593.143-.863.698-1.723 1.464-2.383z"/>
-  <path d="M7.646 15.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 14.293V5.5a.5.5 0 0 0-1 0v8.793l-2.146-2.147a.5.5 0 0 0-.708.708l3 3z"/>
-</svg>連携実行</button>{% endif %}</h6>
-            </div>
+              </div>
+            </div><!-- End Sales Card -->
+
+            <!-- Sales Card -->
+            <div class="col-xxl-4 col-md-6">
+              <div class="card info-card sales-card">
+
                 <div class="card-body">
-                <table class="table table-sm">
-                  <thead class="thead-light">
-                    <tr>
-                      <th scope="col">Timestamp</th>
-                      <th scope="col">InstagramURL</th>
-                      <th scope="col"></th>
-                      <th scope="col">WordpressURL</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                  {% for post in posts %}
-                      {% if post["wordpress_link"] %}
-                        <tr>
-                          <th scope="row">{{ post["created_at"] }} UTC</th>
-                          <td>
-                              <a href="{{ post['permalink'] }}" target="_blank">{{ post.get_permalink() }}</a>
-                          </td>
-                            <td>
-                                {% if post['wordpress_link'] %}
-                                <svg width="18" height="18" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                                  <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
-                                </svg>
+                    <div class="filter">
+                      <a class="icon" href="/account"><i class="bi bi-gear"></i></a>
+                    </div>
+                  <h5 class="card-title">WordPress</h5>
+
+                  <div class="d-flex align-items-center">
+                    <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                      <i class="bi bi-wordpress"></i>
+                    </div>
+                    <div class="ps-3">
+                      <h5><a href="https://{{ customer.wordpress_url }}" target="_blank" >{{ customer.wordpress_url }}</a></h5>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div><!-- End Sales Card -->
+
+            <!-- Revenue Card -->
+            <div class="col-xxl-4 col-md-6">
+              <div class="card info-card customers-card">
+                <div class="filter">
+                  <a class="icon" href="/account"><i class="bi bi-gear"></i></a>
+                </div>
+                <div class="card-body">
+                  <h5 class="card-title">Instagram</h5>
+
+                  <div class="d-flex align-items-center">
+                    <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                      <i class="bi bi-instagram"></i>
+                    </div>
+                    <div class="ps-3">
+                        {% if customer.instagram_business_account_name %}
+                      <h5><a target="_blank" href="https://www.instagram.com/{{ customer.instagram_business_account_name }}" class="text-decoration-none">
+                            {{ customer.instagram_business_account_name }} <span class="small pt-2">({{ customer.instagram_business_account_id }})</span>
+                      </a></h5>
+                        {% else %}
+                            <button id="facebook_btn" type="button" class="btn btn-outline-primary position-relative">
+                                <i class="bi bi-facebook me-2"></i>認証
+                                {% if a_root_status == 1 or a_root_status == 2 %}
+                                <span class="position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-light rounded-circle smooth-blinking-badge">
+                                    <span class="visually-hidden">New alerts</span>
+                                </span>
                                 {% endif %}
-                            </td>
-                          <td>
-                              <a href="{{ post['wordpress_link'] }}" target="_blank">{{ post.get_wordpress_title() }}...</a>
-                          </td>
-                        </tr>
-                      {% endif %}
-                  {% endfor %}
-                  </tbody>
-                </table>
-            </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="modal" tabindex="-1" role="dialog" id="dataModal">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Instagram</h5>
-        <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div id="modal-body" class="modal-body">
-        <p>モーダルボディ</p>
-      </div>
-      <div class="modal-footer">
-        <button id="execute_post_wordpress" type="button" class="btn btn-primary" data-bs-dismiss="modal"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="mr-1 bi bi-send" viewBox="0 0 16 16">
-  <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576 6.636 10.07Zm6.787-8.201L1.591 6.602l4.339 2.76 7.494-7.493Z"/>
-</svg>連携</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div id="chatWindow" class="bg-white rounded">
-    <div class="modal-content">
-        <div class="container">
-            <div class="modal-header">
-                <div style="cursor: pointer;" class="row" onclick="toggleChat()">
-                    <div class="ms-1 mt-3 col-2">
-                        <span class="maika-image"></span>
+                            </button>
+                        {% endif %}
+                      <span class="text-muted small pt-2"></span>
                     </div>
-                    <div class="mt-4 col-9">
-                        <h5>Maika AIアシスタント</h5>
-                    </div>
+                  </div>
                 </div>
-            </div>
-            <div class="m-2 modal-body" style="max-height: 300px; overflow-y: auto;">
-                <p id="ai-message">
-                    <div id="chat-spinner" class="ms-2 spinner-border text-primary" role="status">
-                      <span class="visually-hidden">Loading...</span>
-                    </div>
-                </p>
-            </div>
-        </div>
-    </div>
-</div>
+
+              </div>
+            </div><!-- End Revenue Card -->
+
+            <!-- Reports -->
+            <div class="col-12">
+              <div class="card">
+
+                <div class="card-body">
+                  <h5 class="card-title">Data</h5>
+
+                  <!-- Table with stripped rows -->
+                  <table class="table table-hover">
+                    <thead class="table-light">
+                      <tr>
+                        <th class="col">連携日時</th>
+                        <th class="col">インスタグラムURL</th>
+                        <th class="col">WordpressURL</th>
+                      </tr>
+                    </thead>
+
+                    <tbody>
+                          {% set has_posts = false %}
+                          {% for post in posts %}
+                              {% if post["wordpress_link"] %}
+                                {% set has_posts = true %}
+                                <tr>
+                                  <td class="align-middle">
+                                    <span class="badge bg-light text-dark">{{ post["created_at"] }}</span>
+                                  </td>
+                                  <td class="align-middle">
+                                    <a href="{{ post['permalink'] }}" target="_blank" class="btn btn-outline-warning btn-sm d-flex align-items-center justify-content-start" style="max-width: 250px; border-color: #e67e00; color: #e67e00;">
+                                      <i class="bi bi-instagram me-2"></i>
+                                      <span class="text-truncate flex-grow-1">{{ post.get_permalink() }}</span>
+                                      <i class="bi bi-box-arrow-up-right ms-2"></i>
+                                    </a>
+                                  </td>
+                                  <td class="align-middle">
+                                    <a href="{{ post['wordpress_link'] }}" target="_blank" class="btn btn-outline-primary btn-sm d-flex align-items-center justify-content-start" style="max-width: 250px;">
+                                      <i class="bi bi-wordpress me-2"></i>
+                                      <span class="text-truncate flex-grow-1">{{ post.get_wordpress_title() }}</span>
+                                      <i class="bi bi-box-arrow-up-right ms-2"></i>
+                                    </a>
+                                  </td>
+                                </tr>
+                              {% endif %}
+                          {% endfor %}
+                          {% if not has_posts %}
+                          <tr>
+                            <td colspan="3" class="text-center py-5">
+                              <div class="text-muted">
+                                <i class="bi bi-inbox fs-1 mb-3 d-block"></i>
+                                <h6>連携データがありません</h6>
+                                <p class="small">InstagramとWordPressの連携を開始すると、ここに連携履歴が表示されます。</p>
+                              </div>
+                            </td>
+                          </tr>
+                          {% endif %}
+                    </tbody>
+                  </table>
+                  <!-- End Table with stripped rows -->
+
+                </div>
+
+              </div>
+            </div><!-- End Reports -->
+
+          </div>
+        </div><!-- End Left side columns -->
+      </div>
+    </section>
+</main>
+
+<!-- Chat Widget -->
+{#<div id="chat-widget" class="chat-widget">#}
+{#    <div id="chat-button" class="chat-button">#}
+{#        <i class="bi bi-chat-dots"></i>#}
+{#    </div>#}
+{#    #}
+{#    <div id="chat-window" class="chat-window" style="display: none;">#}
+{#        <div class="chat-header">#}
+{#            <h6 class="mb-0">サポートチャット</h6>#}
+{#            <button id="chat-close" class="btn-close btn-sm"></button>#}
+{#        </div>#}
+{#        #}
+{#        <div id="chat-messages" class="chat-messages">#}
+{#            <div class="message bot-message">#}
+{#                <div class="message-content">#}
+{#                    こんにちは！A-Rootのサポートです。<br>#}
+{#                    何かお困りのことがございましたら、お気軽にお聞かせください。#}
+{#                </div>#}
+{#                <div class="message-time">今すぐ</div>#}
+{#            </div>#}
+{#        </div>#}
+{#        #}
+{#        <div class="chat-input-area">#}
+{#            <div class="input-group">#}
+{#                <input type="text" id="chat-input" class="form-control" placeholder="メッセージを入力してください...">#}
+{#                <button id="chat-send" class="btn btn-primary">#}
+{#                    <i class="bi bi-send"></i>#}
+{#                </button>#}
+{#            </div>#}
+{#        </div>#}
+{#    </div>#}
+{#</div>#}
 
 <input id="customer_id" type="hidden" value="{{ customer.id }}">
 <input id="dashboard_status" type="hidden" value="{{ dashboard_status }}">
 
+<style>
+.chat-widget {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+
+.chat-button {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+}
+
+.chat-button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+.chat-window {
+    position: absolute;
+    bottom: 80px;
+    right: 0;
+    width: 350px;
+    height: 450px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.chat-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.chat-header .btn-close {
+    filter: invert(1);
+    opacity: 0.8;
+}
+
+.chat-messages {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background: #f8f9fa;
+    max-height: 300px;
+    min-height: 200px;
+}
+
+.chat-messages::-webkit-scrollbar {
+    width: 6px;
+}
+
+.chat-messages::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.chat-messages::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 10px;
+}
+
+.chat-messages::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+.message {
+    margin-bottom: 15px;
+}
+
+.message-content {
+    padding: 12px 16px;
+    border-radius: 18px;
+    max-width: 80%;
+    word-wrap: break-word;
+}
+
+.bot-message .message-content {
+    background: white;
+    border: 1px solid #e9ecef;
+    margin-right: auto;
+}
+
+.user-message .message-content {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    margin-left: auto;
+}
+
+.message-time {
+    font-size: 11px;
+    color: #6c757d;
+    margin-top: 5px;
+    text-align: right;
+}
+
+.bot-message .message-time {
+    text-align: left;
+}
+
+.chat-input-area {
+    padding: 15px 20px;
+    background: white;
+    border-top: 1px solid #e9ecef;
+}
+
+.chat-input-area .input-group {
+    border-radius: 25px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.chat-input-area input {
+    border: none;
+    padding: 12px 16px;
+    border-radius: 25px;
+}
+
+.chat-input-area input:focus {
+    box-shadow: none;
+    outline: none;
+}
+
+.chat-input-area button {
+    border: none;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 25px;
+    padding: 12px 16px;
+}
+
+@media (max-width: 768px) {
+    .chat-window {
+        width: 300px;
+        height: 400px;
+    }
+    
+    .chat-widget {
+        bottom: 15px;
+        right: 15px;
+    }
+}
+</style>
+
 <script>
-    function toggleChat() {
-        var chatWindow = document.getElementById('chatWindow');
-        chatWindow.classList.toggle('minimized');
-
-        // Toggle the minimize/maximize button symbol
-        let minimizeBtn = document.getElementById('minimizeBtn');
-        minimizeBtn.textContent = chatWindow.classList.contains('minimized') ? '+' : '-';
-    }
-
-    const customer_id = document.getElementById("customer_id").value;
-    const dashboard_status = document.getElementById("dashboard_status").value;
-
-    const data = {
-        customer_id, // 送信するcustomer_id
-        dashboard_status // 送信するdashboard_status（例として文字列）
-    };
-
-    fetch('/maika/dashboard', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-    })
-    .then(response => response.json())
-    .then(result => {
-        if (result.status === 'success') {
-            console.log('AI Message:', result.message);
-            const msg = result.message;
-            typeWriter(msg);
-        } else {
-            console.error('Failed to get AI message');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-    }).finally(() => {
-        document.getElementById('chat-spinner').style.display = 'none';
-    });
-
-    // Function to display text one character at a time
-    function typeWriter(text, index=0) {
-        const messageElement = document.getElementById('ai-message');
-        if (index < String(text).length) {
-            messageElement.innerHTML += text[index];
-            index++;
-            setTimeout(() => typeWriter(text, index), 100); // Adjust speed here (100ms)
-        } else {
-            // 3秒後に処理を実行
-            setTimeout(() => {
-                toggleChat();
-            }, 3000); // 3000ミリ秒 = 3秒
-        }
-    }
-
-</script>
-
-<script>
-    function formatString(input) {
-        // inputがundefinedの場合、空白文字列を返す
-        if (typeof input === 'undefined') {
-            return " ";
-        }
-
-        // inputが文字列の場合、改行を<br>に置き換える
-        if (typeof input === 'string') {
-            return input.replaceAll("\n", "<br>");
-        }
-
-        // inputが文字列でもundefinedでもない場合、inputをそのまま返す
-        return input;
-    }
-    function getCardGrop(data) {
-        let html = "";
-        let ary = Array.from(data);
-        if (ary.length > 0) {
-            document.getElementById("execute_post_wordpress").disabled = false;
-            html += "<p>以下の投稿をWordpressに連携します。問題なければ下部の「連携」ボタンを押してください。</p>"
-            ary.forEach((m) => {
-                html += `<div class="card m-3">
-                    <img class="bd-placeholder-img card-img-top" src="${m['media_url']}" class="img-fluid" alt="Responsive image">
-                    <div class="card-body"><p class="card-text">${formatString(m['caption'])}</p></div>
-                  </div>`;
-            });
-        } else {
-            document.getElementById("execute_post_wordpress").disabled = true;
-            html += "<p>対象データはありません。</p>";
-        }
-        return html;
-    }
-    let instagramPost = null;
     const fb_btn = document.getElementById("facebook_btn");
     if (fb_btn) {
         fb_btn.addEventListener("click", (event) => {
@@ -262,72 +398,93 @@
             }, {scope: 'public_profile, pages_show_list, business_management, instagram_basic'});
         })
     }
-    let facebook_btn = document.getElementById("facebook_execute");
-    if (facebook_btn) {
-        facebook_btn.addEventListener("click", (event) => {
-            if (!window.confirm("Instagramの投稿を取得しますか？")) {
-                return;
+
+    // Chat functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const chatButton = document.getElementById('chat-button');
+        const chatWindow = document.getElementById('chat-window');
+        const chatClose = document.getElementById('chat-close');
+        const chatSend = document.getElementById('chat-send');
+        const chatInput = document.getElementById('chat-input');
+        const chatMessages = document.getElementById('chat-messages');
+
+        // Toggle chat window
+        chatButton.addEventListener('click', function() {
+            const isVisible = chatWindow.style.display !== 'none';
+            chatWindow.style.display = isVisible ? 'none' : 'block';
+            if (!isVisible) {
+                chatInput.focus();
             }
-            showLoadingOverlay();
-            fetch("/instagram", {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json'
-                },
-                body: null
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log(data);
-                instagramPost = data;
-                let modalElement = document.getElementById('dataModal');
-                let modalInstance = new bootstrap.Modal(modalElement);
-                document.getElementById("modal-body").innerHTML = getCardGrop(data);
-                modalInstance.show();
-            })
-            .catch((error) => {
-                console.error('エラー発生:', error);
-            })
-            .finally(() => {
-                hideLoadingOverlay();
-            });
-        })
-    }
-    let execute_btn = document.getElementById("execute_post_wordpress");
-    if (execute_btn) {
-        execute_btn.addEventListener("click", (event) => {
-            postToWordpress();
         });
-    }
-    function postToWordpress() {
-        showLoadingOverlay();
-        if (instagramPost) {
-            fetch("/post/wordpress", {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(instagramPost)
-            })
-            .then(response => response.json())
-            .then(data => {
-                window.alert("連携が完了しました。");
-                window.location.reload();
-            })
-            .catch((error) => {
-                console.error('エラー発生:', error);
-            })
-            .finally(() => {
-                hideLoadingOverlay();
-            });
+
+        // Close chat window
+        chatClose.addEventListener('click', function() {
+            chatWindow.style.display = 'none';
+        });
+
+        // Send message
+        function sendMessage() {
+            const message = chatInput.value.trim();
+            if (message) {
+                // Add user message
+                addMessage(message, 'user');
+                chatInput.value = '';
+                
+                // Simulate bot response
+                setTimeout(() => {
+                    addBotResponse(message);
+                }, 1000);
+            }
         }
-    }
-    document.getElementById("start_date").addEventListener("blur", (event) => {
-        const start_date = event.target.value;
-        if (confirm(`連携対象の開始日時を変更します \n日本時間: ${start_date}`)) {
-            showLoadingOverlay();
-            console.log(event.target.value);
-            post("/start_date", {start_date});
+
+        chatSend.addEventListener('click', sendMessage);
+
+        chatInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // Add message to chat
+        function addMessage(content, type) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}-message`;
+            
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('ja-JP', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            
+            messageDiv.innerHTML = `
+                <div class="message-content">${content}</div>
+                <div class="message-time">${timeString}</div>
+            `;
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Simulate bot responses
+        function addBotResponse(userMessage) {
+            let response = '';
+            const lowerMessage = userMessage.toLowerCase();
+            
+            if (lowerMessage.includes('こんにちは') || lowerMessage.includes('はじめまして')) {
+                response = 'こんにちは！A-Rootをご利用いただき、ありがとうございます。何かお手伝いできることがございますか？';
+            } else if (lowerMessage.includes('instagram') || lowerMessage.includes('インスタ')) {
+                response = 'Instagramの連携について何かお困りですか？認証がうまくいかない場合は、ブラウザのキャッシュをクリアしてからもう一度お試しください。';
+            } else if (lowerMessage.includes('wordpress') || lowerMessage.includes('ワードプレス')) {
+                response = 'WordPressの設定についてですね。プラグインのインストールやAPI設定でご不明な点がございましたら、詳しくご説明いたします。';
+            } else if (lowerMessage.includes('エラー') || lowerMessage.includes('問題') || lowerMessage.includes('トラブル')) {
+                response = 'お困りのことがおありですね。具体的にどのような問題が発生していますか？エラーメッセージがございましたら、詳細をお教えください。';
+            } else if (lowerMessage.includes('ありがとう') || lowerMessage.includes('助かった')) {
+                response = 'お役に立てて嬉しいです！他にもご質問がございましたら、いつでもお気軽にお声がけください。';
+            } else {
+                response = 'ご質問ありがとうございます。より詳しいサポートが必要でしたら、サポートチーム（support@a-root.com）までお気軽にお問い合わせください。';
+            }
+            
+            addMessage(response, 'bot');
         }
     });
 
