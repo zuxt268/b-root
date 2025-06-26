@@ -44,6 +44,7 @@ from domain.customers import Customer, get_payment_info
 from domain.errors import CustomerValidationError
 from service.account_service import AccountService
 from service.sendgrid_service import SendGridService
+
 # from service.rate_limiter import rate_limit, get_rate_limiter, check_brute_force_protection
 from util.const import (
     PAYMENT_TYPE_STRIPE,
@@ -68,8 +69,7 @@ def login_required(view):
 ALLOWED_IPS = os.getenv("ALLOWED_IPS", "127.0.0.1").split(",")
 # 信頼できるプロキシのIPアドレス（環境変数で設定）
 TRUSTED_PROXIES = (
-    os.getenv("TRUSTED_PROXIES", "").split(",")
-    if os.getenv("TRUSTED_PROXIES") else []
+    os.getenv("TRUSTED_PROXIES", "").split(",") if os.getenv("TRUSTED_PROXIES") else []
 )
 
 
@@ -97,6 +97,7 @@ def get_client_ip():
 def protected(view):
     """IPベース認証 - セキュリティ上の理由により推奨されません。
     本来は適切な認証メカニズム（JWT、セッション等）に置き換えるべきです。"""
+
     @functools.wraps(view)
     def wrapped_view(**kwargs):
         client_ip = get_client_ip()
@@ -107,6 +108,7 @@ def protected(view):
         # IPアドレスの基本的な検証
         try:
             import ipaddress
+
             ipaddress.ip_address(client_ip)
         except ValueError:
             print(f"Invalid IP address format: {client_ip}")
@@ -151,7 +153,10 @@ def verify_email_token():
     account_service = AccountService(redis_cli)
     user = account_service.get_temp_register(token)
     if user is None:
-        flash("メール認証URLの有効期限が切れています。新しくメールアドレスを入力してください。", category="warning")
+        flash(
+            "メール認証URLの有効期限が切れています。新しくメールアドレスを入力してください。",
+            category="warning",
+        )
         return render_template("customer/mail_input.html")
     session["register_email"] = user.get("email")
     session.permanent = True
@@ -246,6 +251,7 @@ def index():
         else:
             dashboard_status = DashboardStatus.HEALTHY.value
     a_root_status = customer.a_root_status()
+    print(a_root_status)
     return render_template(
         "customer/index.html",
         customer=customer,
@@ -490,6 +496,7 @@ def withdraw():
             # Stripeサブスクリプションをキャンセル
             try:
                 import os
+
                 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
                 product_id = os.getenv("PRODUCT_ID")
 
@@ -500,8 +507,7 @@ def withdraw():
                 if stripe_customer_id and product_id:
                     # 顧客のアクティブなサブスクリプションを取得
                     subscriptions = stripe.Subscription.list(
-                        customer=stripe_customer_id,
-                        status='active'
+                        customer=stripe_customer_id, status="active"
                     )
 
                     # 該当のPRODUCT_IDのサブスクリプションのみキャンセル
@@ -509,16 +515,19 @@ def withdraw():
                         for item in subscription.items.data:
                             if item.price.product == product_id:
                                 stripe.Subscription.modify(
-                                    subscription.id,
-                                    cancel_at_period_end=True
+                                    subscription.id, cancel_at_period_end=True
                                 )
 
             except stripe.error.StripeError as e:
                 # Stripeエラーが発生してもアカウント削除は継続
-                SlackService().send_alert(f"退会時のStripeキャンセルでエラー: {customer.email} - {str(e)}")
+                SlackService().send_alert(
+                    f"退会時のStripeキャンセルでエラー: {customer.email} - {str(e)}"
+                )
             except Exception as e:
                 # その他のエラーも同様
-                SlackService().send_alert(f"退会時のStripeキャンセルでエラー: {customer.email} - {str(e)}")
+                SlackService().send_alert(
+                    f"退会時のStripeキャンセルでエラー: {customer.email} - {str(e)}"
+                )
 
             # 顧客データを削除
             customer_repo.delete(customer_id)
@@ -527,7 +536,10 @@ def withdraw():
             # セッションをクリア
             session.clear()
 
-            flash("退会処理が完了しました。サブスクリプションもキャンセルされました。", "success")
+            flash(
+                "退会処理が完了しました。サブスクリプションもキャンセルされました。",
+                "success",
+            )
             return redirect(url_for("customer.login"))
 
     except Exception as e:

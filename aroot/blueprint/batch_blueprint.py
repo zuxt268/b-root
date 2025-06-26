@@ -75,6 +75,7 @@ def handle_customer(customer: Customer):
                 SlackService().send_alert(
                     f"インスタグラムアカウントがみつかりません: {customer.name}, {customer.instagram_business_account_id}"
                 )
+                unit_of_work.commit()
             else:
                 send_alert(e, customer)
                 unit_of_work.rollback()
