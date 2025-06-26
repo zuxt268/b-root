@@ -9,7 +9,7 @@ from blueprint import (
     patch_blueprint,
 )
 from dotenv import load_dotenv
-from datetime import timedelta
+from datetime import timedelta, datetime
 from service.slack_service import SlackService
 
 
@@ -25,6 +25,28 @@ app.register_blueprint(admin_user_blueprint.bp)
 app.register_blueprint(batch_blueprint.bp)
 app.register_blueprint(api_blueprint.bp)
 app.register_blueprint(patch_blueprint.bp)
+
+
+# Custom Jinja2 filter for converting UTC to JST
+@app.template_filter('jst')
+def utc_to_jst(utc_datetime):
+    """Convert UTC datetime to JST (Japan Standard Time)"""
+    if utc_datetime is None:
+        return ""
+    
+    if isinstance(utc_datetime, str):
+        try:
+            # Try to parse the string as datetime
+            utc_datetime = datetime.fromisoformat(utc_datetime.replace('Z', '+00:00'))
+        except ValueError:
+            return utc_datetime  # Return original string if parsing fails
+    
+    if isinstance(utc_datetime, datetime):
+        # Add 9 hours to convert UTC to JST
+        jst_datetime = utc_datetime + timedelta(hours=9)
+        return jst_datetime.strftime('%Y/%m/%d %H:%M')
+    
+    return str(utc_datetime)
 
 
 @app.teardown_appcontext

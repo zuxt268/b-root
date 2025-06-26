@@ -138,7 +138,7 @@
                                 {% set has_posts = true %}
                                 <tr>
                                   <td class="align-middle">
-                                    <span class="badge bg-light text-dark">{{ post["created_at"] }}</span>
+                                    <span class="badge bg-light text-dark">{{ post["created_at"] | jst }}</span>
                                   </td>
                                   <td class="align-middle">
                                     <a href="{{ post['permalink'] }}" target="_blank" class="btn btn-outline-warning btn-sm d-flex align-items-center justify-content-start" style="max-width: 250px; border-color: #e67e00; color: #e67e00;">
