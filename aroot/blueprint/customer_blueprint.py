@@ -65,6 +65,39 @@ def login_required(view):
     return wrapped_view
 
 
+def check_customer_login_lock(ip_address):
+    """Check if IP is locked due to too many failed customer login attempts"""
+    redis_client = get_redis()
+    key = f"{ip_address}_customer_login_fail"
+    try:
+        fail_count = redis_client.get(key)
+        if fail_count and int(fail_count) >= 10:
+            return True
+    except Exception:
+        # Redis接続エラー時は安全のためロックしない
+        return False
+    return False
+
+
+def record_customer_login_failure(ip_address):
+    """Record a customer login failure"""
+    redis_client = get_redis()
+    key = f"{ip_address}_customer_login_fail"
+    try:
+        current_count = redis_client.get(key)
+        if current_count:
+            # Increment existing value
+            new_count = redis_client.incr(key)
+        else:
+            # Set initial value to 1 with 30 minutes expiry
+            redis_client.setex(key, 1800, 1)  # 1800 seconds = 30 minutes
+            new_count = 1
+        return new_count
+    except Exception:
+        # Redis接続エラー時は記録できない
+        return 0
+
+
 # 環境変数から許可するIPアドレスを取得（フォールバック設定）
 ALLOWED_IPS = os.getenv("ALLOWED_IPS", "127.0.0.1").split(",")
 # 信頼できるプロキシのIPアドレス（環境変数で設定）
@@ -187,23 +220,23 @@ def payment():
 
 
 @bp.route("/login", methods=("GET", "POST"))
-# @rate_limit('login')
 def login():
     error = None
     if request.method == "POST":
+        # Get client IP address
+        ip_address = get_client_ip()
+
+        # Check if this IP is locked due to too many failed attempts
+        if check_customer_login_lock(ip_address):
+            error = "一時的にアカウントをロックしています"
+            flash(error, category="warning")
+            return render_template("customer/login.html", customer=None)
+
         email = request.form.get("email")
         password = request.form.get("password")
         if not email or not password:
             error = "メールアドレスかパスワードが間違っています"
         else:
-            # Check for brute force protection
-            # rate_limiter_service = get_rate_limiter()
-            # client_id = rate_limiter_service.get_client_identifier()
-            # if check_brute_force_protection(client_id):
-            #     error = "アカウントが一時的にロックされています。しばらく時間をおいてから再試行してください。"
-            #     flash(message=error, category="warning")
-            #     return render_template("customer/login.html", customer=None)
-
             try:
                 with UnitOfWork() as unit_of_work:
                     customer_repo = CustomersRepository(unit_of_work.session)
@@ -216,10 +249,10 @@ def login():
                     return redirect(url_for("customer.index"))
             except CustomerNotFoundError:
                 error = "メールアドレスかパスワードが間違っています"
-                # rate_limiter_service.record_failed_attempt(client_id, 'login')
+                record_customer_login_failure(ip_address)
             except CustomerAuthError:
                 error = "メールアドレスかパスワードが間違っています"
-                # rate_limiter_service.record_failed_attempt(client_id, 'login')
+                record_customer_login_failure(ip_address)
         if error:
             flash(message=error, category="warning")
     return render_template("customer/login.html", customer=None)
