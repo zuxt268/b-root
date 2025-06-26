@@ -95,19 +95,10 @@
                     <div class="ps-3">
                         {% if customer.instagram_business_account_name %}
                       <h5><a target="_blank" href="https://www.instagram.com/{{ customer.instagram_business_account_name }}" class="text-decoration-none">
-                            {{ customer.instagram_business_account_name }} <span class="small pt-2">({{ customer.instagram_business_account_id }})</span>
+                            {{ customer.instagram_business_account_name }} <span style="font-size: 0.75rem" class="pt-1">({{ customer.instagram_business_account_id }})</span>
                       </a></h5>
                             <button id="facebook_btn" type="button" class="btn btn-outline-primary position-relative">
-                                <i class="bi bi-facebook me-2"></i>認証
-                                {% if a_root_status == 1 or a_root_status == 2 %}
-                                <span class="position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-light rounded-circle smooth-blinking-badge">
-                                    <span class="visually-hidden">New alerts</span>
-                                </span>
-                                {% endif %}
-                            </button>
-                        {% else %}
-                            <button id="facebook_btn" type="button" class="btn btn-outline-primary position-relative">
-                                <i class="bi bi-facebook me-2"></i>認証
+                                <i class="bi bi-facebook me-2"></i>再認証
                                 {% if a_root_status == 1 or a_root_status == 2 %}
                                 <span class="position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-light rounded-circle smooth-blinking-badge">
                                     <span class="visually-hidden">New alerts</span>
