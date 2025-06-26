@@ -1,0 +1,539 @@
+{% extends 'customer.html' %}
+
+{% block content %}
+<main id="main" class="main">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+            <div class="container">
+                <div class="mt-3 alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            </div>
+        {% endfor %}
+    {% endwith %}
+    
+    <div class="pagetitle">
+        <h1>アナリティクス</h1>
+        <nav>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('customer.index') }}">ダッシュボード</a></li>
+                <li class="breadcrumb-item active">アナリティクス</li>
+            </ol>
+        </nav>
+    </div>
+
+    <section class="section">
+        <div class="row">
+            <!-- Summary Cards -->
+            <div class="col-xl-3 col-md-6">
+                <div class="card info-card sales-card">
+                    <div class="card-body">
+                        <h5 class="card-title">総連携投稿数</h5>
+                        <div class="d-flex align-items-center">
+                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                <i class="bi bi-check-circle"></i>
+                            </div>
+                            <div class="ps-3">
+                                <h6 id="total-synced-posts">-</h6>
+                                <span class="text-muted small pt-2">件</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6">
+                <div class="card info-card revenue-card">
+                    <div class="card-body">
+                        <h5 class="card-title">今月の連携数</h5>
+                        <div class="d-flex align-items-center">
+                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                <i class="bi bi-calendar-month"></i>
+                            </div>
+                            <div class="ps-3">
+                                <h6 id="this-month-posts">-</h6>
+                                <span class="text-muted small pt-2">件</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6">
+                <div class="card info-card customers-card">
+                    <div class="card-body">
+                        <h5 class="card-title">連携率</h5>
+                        <div class="d-flex align-items-center">
+                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                <i class="bi bi-percent"></i>
+                            </div>
+                            <div class="ps-3">
+                                <h6 id="sync-rate">-</h6>
+                                <span class="text-muted small pt-2">%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6">
+                <div class="card info-card sales-card">
+                    <div class="card-body">
+                        <h5 class="card-title">平均連携/日</h5>
+                        <div class="d-flex align-items-center">
+                            <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                <i class="bi bi-graph-up-arrow"></i>
+                            </div>
+                            <div class="ps-3">
+                                <h6 id="avg-daily-posts">-</h6>
+                                <span class="text-muted small pt-2">件/日</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Daily Posts Timeline Chart -->
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">投稿連携の推移（過去30日）</h5>
+                        <div class="d-flex justify-content-center align-items-center" id="timeline-loading">
+{#                            <div class="spinner-border text-primary" role="status">#}
+{#                                <span class="visually-hidden">読み込み中...</span>#}
+{#                            </div>#}
+                        </div>
+                        <canvas id="postsTimelineChart" style="max-height: 400px; display: none;"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Monthly Stats Chart -->
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">月別連携数（過去12ヶ月）</h5>
+                        <div class="d-flex justify-content-center align-items-center" id="monthly-loading">
+                        </div>
+                        <canvas id="monthlyStatsChart" style="max-height: 400px; display: none;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Performance Insights -->
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">パフォーマンス分析</h5>
+                        <div id="performance-insights">
+                            <div class="d-flex justify-content-center align-items-center" style="height: 200px;">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">分析中...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Usage Tips -->
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">最適化のヒント</h5>
+                        <div class="mt-3">
+                            <div class="alert alert-info">
+                                <i class="bi bi-lightbulb me-2"></i>
+                                <strong>効果的な投稿連携のために：</strong>
+                                <ul class="mt-2 mb-0">
+                                    <li>定期的にInstagram投稿をチェックして連携しましょう</li>
+                                    <li>コンテンツの質を保つため、適切な投稿を選択しましょう</li>
+                                    <li>WordPressのSEO効果を高めるため、一貫性のある投稿スケジュールを保ちましょう</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<style>
+.info-card .card-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+}
+
+.sales-card .card-icon {
+    background: linear-gradient(135deg, #4154f1 0%, #2c3cdd 100%);
+    color: white;
+}
+
+.revenue-card .card-icon {
+    background: linear-gradient(135deg, #ff771d 0%, #ff5722 100%);
+    color: white;
+}
+
+.customers-card .card-icon {
+    background: linear-gradient(135deg, #2eca6a 0%, #21b556 100%);
+    color: white;
+}
+
+.performance-metric {
+    border-left: 4px solid #4154f1;
+    padding-left: 15px;
+    margin-bottom: 15px;
+}
+
+.metric-value {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #2c3cdd;
+}
+
+.metric-label {
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.trend-up {
+    color: #2eca6a;
+}
+
+.trend-down {
+    color: #ff5722;
+}
+
+.chart-container {
+    position: relative;
+    height: 400px;
+}
+
+@media (max-width: 768px) {
+    .info-card .card-icon {
+        width: 48px;
+        height: 48px;
+        font-size: 20px;
+    }
+}
+</style>
+
+<script src="{{ url_for('static', filename='vendor/chart.js/chart.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let timelineChart = null;
+    let monthlyChart = null;
+
+    // Check if Chart.js is loaded
+    if (typeof Chart === 'undefined') {
+        console.error('Chart.js is not loaded');
+        hideAllSpinners();
+        showError('Chart.jsライブラリの読み込みに失敗しました。');
+        return;
+    }
+
+    // Load analytics data
+    async function loadAnalyticsData() {
+        try {
+            console.log('Loading analytics data...');
+            
+            // Load timeline data
+            const timelineResponse = await fetch('/api/analytics/posts-timeline');
+            console.log('Timeline response status:', timelineResponse.status);
+            
+            if (!timelineResponse.ok) {
+                throw new Error(`HTTP ${timelineResponse.status}: ${timelineResponse.statusText}`);
+            }
+            
+            const timelineData = await timelineResponse.json();
+            console.log('Timeline data:', timelineData);
+            
+            if (timelineData.error) {
+                throw new Error(timelineData.error);
+            }
+
+            // Load monthly data
+            const monthlyResponse = await fetch('/api/analytics/monthly-stats');
+            console.log('Monthly response status:', monthlyResponse.status);
+            
+            if (!monthlyResponse.ok) {
+                throw new Error(`HTTP ${monthlyResponse.status}: ${monthlyResponse.statusText}`);
+            }
+            
+            const monthlyData = await monthlyResponse.json();
+            console.log('Monthly data:', monthlyData);
+            
+            if (monthlyData.error) {
+                throw new Error(monthlyData.error);
+            }
+
+            // Update summary cards
+            updateSummaryCards(timelineData);
+            
+            // Create charts
+            createTimelineChart(timelineData.timeline);
+            createMonthlyChart(monthlyData);
+            
+            // Generate performance insights
+            generatePerformanceInsights(timelineData, monthlyData);
+
+        } catch (error) {
+            console.error('Error loading analytics data:', error);
+            hideAllSpinners();
+            showError('アナリティクスデータの読み込みに失敗しました: ' + error.message);
+        }
+    }
+
+    function hideAllSpinners() {
+        // Hide all loading spinners
+        const timelineLoading = document.getElementById('timeline-loading');
+        const monthlyLoading = document.getElementById('monthly-loading');
+        const performanceInsights = document.getElementById('performance-insights');
+        
+        if (timelineLoading) timelineLoading.style.display = 'none';
+        if (monthlyLoading) monthlyLoading.style.display = 'none';
+        
+        // Show error message in performance insights
+        if (performanceInsights) {
+            performanceInsights.innerHTML = '<div class="alert alert-warning">データの読み込みに失敗しました。</div>';
+        }
+    }
+
+    function updateSummaryCards(data) {
+        document.getElementById('total-synced-posts').textContent = data.total_posts || 0;
+        
+        // Calculate this month's posts
+        const today = new Date();
+        const thisMonthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+        const thisMonthPosts = data.timeline.data.slice(-30).reduce((sum, count) => sum + count, 0);
+        document.getElementById('this-month-posts').textContent = thisMonthPosts;
+        
+        // Calculate sync rate
+        const syncRate = data.total_instagram_posts > 0 
+            ? Math.round((data.total_posts / data.total_instagram_posts) * 100) 
+            : 0;
+        document.getElementById('sync-rate').textContent = syncRate;
+        
+        // Calculate average daily posts (last 30 days)
+        const avgDaily = data.timeline.data.length > 0 
+            ? (data.timeline.data.reduce((sum, count) => sum + count, 0) / 30).toFixed(1)
+            : 0;
+        document.getElementById('avg-daily-posts').textContent = avgDaily;
+    }
+
+    function createTimelineChart(timelineData) {
+        try {
+            const ctx = document.getElementById('postsTimelineChart').getContext('2d');
+            
+            document.getElementById('timeline-loading').style.display = 'none';
+            document.getElementById('postsTimelineChart').style.display = 'block';
+            
+            timelineChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: timelineData.labels,
+                datasets: [{
+                    label: '連携投稿数',
+                    data: timelineData.data,
+                    borderColor: '#4154f1',
+                    backgroundColor: 'rgba(65, 84, 241, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#4154f1',
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 2,
+                    pointRadius: 5,
+                    pointHoverRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        titleColor: '#ffffff',
+                        bodyColor: '#ffffff',
+                        borderColor: '#4154f1',
+                        borderWidth: 1
+                    }
+                },
+                interaction: {
+                    mode: 'nearest',
+                    axis: 'x',
+                    intersect: false
+                },
+                scales: {
+                    x: {
+                        display: true,
+                        title: {
+                            display: true,
+                            text: '日付'
+                        },
+                        grid: {
+                            display: false
+                        }
+                    },
+                    y: {
+                        display: true,
+                        title: {
+                            display: true,
+                            text: '投稿数'
+                        },
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
+        } catch (error) {
+            console.error('Error creating timeline chart:', error);
+            document.getElementById('timeline-loading').style.display = 'none';
+            document.getElementById('postsTimelineChart').style.display = 'none';
+            const timelineCard = document.getElementById('timeline-loading').parentElement;
+            timelineCard.innerHTML = '<div class="alert alert-warning">グラフの作成に失敗しました。</div>';
+        }
+    }
+
+    function createMonthlyChart(monthlyData) {
+        try {
+            const ctx = document.getElementById('monthlyStatsChart').getContext('2d');
+            
+            document.getElementById('monthly-loading').style.display = 'none';
+            document.getElementById('monthlyStatsChart').style.display = 'block';
+            
+            monthlyChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: monthlyData.labels,
+                datasets: [{
+                    label: '月別投稿数',
+                    data: monthlyData.data,
+                    backgroundColor: 'rgba(65, 84, 241, 0.8)',
+                    borderColor: '#4154f1',
+                    borderWidth: 1,
+                    borderRadius: 4,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        titleColor: '#ffffff',
+                        bodyColor: '#ffffff',
+                        borderColor: '#4154f1',
+                        borderWidth: 1
+                    }
+                },
+                scales: {
+                    x: {
+                        display: true,
+                        title: {
+                            display: true,
+                            text: '月'
+                        },
+                        grid: {
+                            display: false
+                        }
+                    },
+                    y: {
+                        display: true,
+                        title: {
+                            display: true,
+                            text: '投稿数'
+                        },
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
+        } catch (error) {
+            console.error('Error creating monthly chart:', error);
+            document.getElementById('monthly-loading').style.display = 'none';
+            document.getElementById('monthlyStatsChart').style.display = 'none';
+            const monthlyCard = document.getElementById('monthly-loading').parentElement;
+            monthlyCard.innerHTML = '<div class="alert alert-warning">グラフの作成に失敗しました。</div>';
+        }
+    }
+
+    function generatePerformanceInsights(timelineData, monthlyData) {
+        const container = document.getElementById('performance-insights');
+        
+        // Calculate insights
+        const totalPosts = timelineData.total_posts;
+        const recentData = timelineData.timeline.data.slice(-7); // Last 7 days
+        const recentTotal = recentData.reduce((sum, count) => sum + count, 0);
+        const avgDaily = (recentTotal / 7).toFixed(1);
+        
+        // Calculate trend
+        const firstHalf = timelineData.timeline.data.slice(0, 15).reduce((sum, count) => sum + count, 0);
+        const secondHalf = timelineData.timeline.data.slice(-15).reduce((sum, count) => sum + count, 0);
+        const trendDirection = secondHalf > firstHalf ? 'up' : 'down';
+        const trendIcon = trendDirection === 'up' ? 'bi-trending-up trend-up' : 'bi-trending-down trend-down';
+        
+        // Generate insights HTML
+        const insightsHtml = `
+            <div class="performance-metric">
+                <div class="metric-value">${recentTotal}件</div>
+                <div class="metric-label">過去7日間の連携数</div>
+            </div>
+            <div class="performance-metric">
+                <div class="metric-value">${avgDaily}件/日</div>
+                <div class="metric-label">直近の平均連携数</div>
+            </div>
+            <div class="performance-metric">
+                <div class="metric-value">
+                    <i class="bi ${trendIcon}"></i>
+                    ${trendDirection === 'up' ? '上昇傾向' : '下降傾向'}
+                </div>
+                <div class="metric-label">連携トレンド（過去30日）</div>
+            </div>
+        `;
+        
+        container.innerHTML = insightsHtml;
+    }
+
+    function showError(message) {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'alert alert-danger alert-dismissible fade show mt-3';
+        alertDiv.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+        document.querySelector('.main').insertBefore(alertDiv, document.querySelector('.main').firstChild);
+    }
+
+    // Initialize analytics
+    loadAnalyticsData();
+});
+</script>
+
+{% endblock %}

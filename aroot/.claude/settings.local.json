@@ -6,7 +6,8 @@
       "Bash(python:*)",
       "Bash(git add:*)",
       "Bash(flake8:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(git checkout:*)"
     ],
     "deny": []
   }

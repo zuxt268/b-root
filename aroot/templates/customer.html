@@ -71,6 +71,13 @@
           <span>Instagram投稿</span>
         </a>
       </li><!-- End Instagram Posts Nav -->
+
+      <li class="nav-item">
+        <a class="nav-link {{ 'collapsed' if request.path != '/analytics' else '' }}" href="/analytics">
+          <i class="bi bi-graph-up-arrow"></i>
+          <span>アナリティクス</span>
+        </a>
+      </li><!-- End Analytics Nav -->
       {% endif %}
 
       <li class="nav-item">
