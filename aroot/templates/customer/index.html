@@ -132,10 +132,8 @@
                     </thead>
 
                     <tbody>
-                          {% set has_posts = false %}
                           {% for post in posts %}
                               {% if post["wordpress_link"] %}
-                                {% set has_posts = true %}
                                 <tr>
                                   <td class="align-middle">
                                     <span class="badge bg-light text-dark">{{ post["created_at"] | jst }}</span>
@@ -157,7 +155,7 @@
                                 </tr>
                               {% endif %}
                           {% endfor %}
-                          {% if not has_posts %}
+                          {% if posts.length == 0 %}
                           <tr>
                             <td colspan="3" class="text-center py-5">
                               <div class="text-muted">
