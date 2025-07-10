@@ -52,6 +52,9 @@ class Customer:
         if check_password_hash(self.password, password) is False:
             raise CustomerAuthError("パスワードかEmailが間違っています")
 
+    def check_password(self, password):
+        return check_password_hash(self.password, password)
+
     def generate_hash_password(self):
         self.password = generate_password_hash(self.password)
 
@@ -125,8 +128,8 @@ def is_payment_completed(payment_type: str, email: str) -> bool:
         resp = requests.post(os.getenv("CAREO_URL") + "/users", json=req)
         resp.raise_for_status()
         response_data = resp.json()
-        status = response_data.get("status")
-        return status == "paid"
+        status = response_data.get("subscription_status")
+        return status == "active"
     except requests.RequestException:
         return False
 

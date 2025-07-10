@@ -42,6 +42,12 @@ class CustomersService(BaseService[Customer]):
             return customer
         raise CustomerNotFoundError("Customer with email {} not found".format(email))
 
+    def find_by_email(self, email: str) -> Any | None:
+        customer = self.customers_repository.find_by_email(email)
+        if customer is not None:
+            return customer
+        return None
+
     def update_facebook_token(self, id_: Union[str, int], access_token: str) -> None:
         self.customers_repository.update(id_, facebook_token=access_token)
 
@@ -56,7 +62,7 @@ class CustomersService(BaseService[Customer]):
         id_: Union[str, int],
         access_token: str,
         instagram_business_account_id: str,
-        instagram_user_name: str
+        instagram_user_name: str,
     ) -> None:
         customer = self.customers_repository.find_by_id(id_)
         start_date = datetime.datetime.now()

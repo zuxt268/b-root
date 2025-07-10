@@ -22,6 +22,7 @@ import stripe
 from flask.sessions import SessionMixin
 from typing_extensions import Optional
 
+import domain.customers
 from util.const import DashboardStatus, EXPIRED, NOT_CONNECTED
 
 from repository.posts_repository import PostsRepository
@@ -216,6 +217,9 @@ def payment():
         customer_repo = CustomersRepository(unit_of_work.session)
         customers_service = CustomersService(customer_repo)
         customer = customers_service.get_customer_by_id(customer_id)
+        if domain.customers.is_payment_completed(customer.payment_type, customer.email):
+            return redirect(url_for("customer.completed"))
+
     return render_template("customer/payment.html", customer=customer)
 
 
@@ -409,7 +413,6 @@ def send_alert(e: Exception):
 # @rate_limit('registration')
 def register():
     register_email = session.get("register_email")
-    print("register_email", register_email)
     customer = Customer()
     customer.email = register_email
     if request.method == "POST":
@@ -422,8 +425,9 @@ def register():
             if wordpress_url.startswith("http")
             else "http://" + wordpress_url
         )
-        domain = parsed_url.hostname  # これで「ドメイン部分」だけ抽出される
-        customer.wordpress_url = domain
+        customer.wordpress_url = (
+            parsed_url.hostname
+        )  # これで「ドメイン部分」だけ抽出される
         hash_password = generate_password_hash(password)
         customer.password = hash_password
         customer.name = name
@@ -431,11 +435,22 @@ def register():
         with UnitOfWork() as unit_of_work:
             customers_repo = CustomersRepository(unit_of_work.session)
             customer_service = CustomersService(customers_repo)
+
+            exist = customer_service.find_by_email(customer.email)
+            if exist:
+                if exist.check_password(password):
+                    return redirect(url_for("customer.payment"))
+                else:
+                    customer_service.remove_customer_by_id(exist.id)
+                    unit_of_work.session.flush()
+
             customer_service.register_customer(customer.dict())
+            unit_of_work.commit()
+
             new_customer = customer_service.get_customer_by_email(customer.email)
             session["customer_id"] = new_customer.id
             session.permanent = True
-            unit_of_work.commit()
+
         return redirect(url_for("customer.payment"))
     else:
         return render_template("customer/register.html", customer=customer)
@@ -475,44 +490,46 @@ def get_posts_timeline():
             posts_repo = PostsRepository(unit_of_work.session)
             posts_service = PostsService(posts_repo)
             posts = posts_service.find_by_customer_id(customer_id)
-            
+
             # Group posts by date for timeline chart
             from collections import defaultdict
             from datetime import datetime, timedelta
-            
+
             daily_counts = defaultdict(int)
             media_type_counts = defaultdict(int)
-            
+
             # Initialize last 30 days with 0 counts
             today = datetime.now()
             for i in range(30):
-                date = (today - timedelta(days=i)).strftime('%Y-%m-%d')
+                date = (today - timedelta(days=i)).strftime("%Y-%m-%d")
                 daily_counts[date] = 0
-            
+
             for post in posts:
                 if post.created_at and post.wordpress_link:  # Only synced posts
-                    date_str = post.created_at.strftime('%Y-%m-%d')
+                    date_str = post.created_at.strftime("%Y-%m-%d")
                     daily_counts[date_str] += 1
-                    
+
                     # Count media types (from Instagram data if available)
                     # For now, we'll assume all are images since we don't store media_type
-                    media_type_counts['IMAGE'] += 1
-            
+                    media_type_counts["IMAGE"] += 1
+
             # Sort dates and prepare data for Chart.js
             sorted_dates = sorted(daily_counts.keys())
-            labels = [datetime.strptime(date, '%Y-%m-%d').strftime('%m/%d') for date in sorted_dates]
+            labels = [
+                datetime.strptime(date, "%Y-%m-%d").strftime("%m/%d")
+                for date in sorted_dates
+            ]
             data = [daily_counts[date] for date in sorted_dates]
-            
-            return jsonify({
-                "timeline": {
-                    "labels": labels,
-                    "data": data
-                },
-                "media_types": dict(media_type_counts),
-                "total_posts": len([p for p in posts if p.wordpress_link]),
-                "total_instagram_posts": len(posts)
-            })
-            
+
+            return jsonify(
+                {
+                    "timeline": {"labels": labels, "data": data},
+                    "media_types": dict(media_type_counts),
+                    "total_posts": len([p for p in posts if p.wordpress_link]),
+                    "total_instagram_posts": len(posts),
+                }
+            )
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -527,34 +544,34 @@ def get_monthly_stats():
             posts_repo = PostsRepository(unit_of_work.session)
             posts_service = PostsService(posts_repo)
             posts = posts_service.find_by_customer_id(customer_id)
-            
+
             from collections import defaultdict
             from datetime import datetime, timedelta
-            
+
             monthly_counts = defaultdict(int)
-            
+
             # Initialize last 12 months
             today = datetime.now()
             for i in range(12):
-                date = today.replace(day=1) - timedelta(days=i*30)
-                month_key = date.strftime('%Y-%m')
+                date = today.replace(day=1) - timedelta(days=i * 30)
+                month_key = date.strftime("%Y-%m")
                 monthly_counts[month_key] = 0
-            
+
             for post in posts:
                 if post.created_at and post.wordpress_link:  # Only synced posts
-                    month_key = post.created_at.strftime('%Y-%m')
+                    month_key = post.created_at.strftime("%Y-%m")
                     monthly_counts[month_key] += 1
-            
+
             # Sort months and prepare data
             sorted_months = sorted(monthly_counts.keys())
-            labels = [datetime.strptime(month, '%Y-%m').strftime('%Y年%m月') for month in sorted_months]
+            labels = [
+                datetime.strptime(month, "%Y-%m").strftime("%Y年%m月")
+                for month in sorted_months
+            ]
             data = [monthly_counts[month] for month in sorted_months]
-            
-            return jsonify({
-                "labels": labels,
-                "data": data
-            })
-            
+
+            return jsonify({"labels": labels, "data": data})
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

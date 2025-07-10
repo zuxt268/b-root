@@ -93,20 +93,24 @@
                       <i class="bi bi-instagram"></i>
                     </div>
                     <div class="ps-3">
-                        {% if customer.instagram_business_account_name %}
-                      <h5><a target="_blank" href="https://www.instagram.com/{{ customer.instagram_business_account_name }}" class="text-decoration-none">
-                            {{ customer.instagram_business_account_name }} <span style="font-size: 0.75rem" class="pt-1">({{ customer.instagram_business_account_id }})</span>
-                      </a></h5>
-                            {% if a_root_status == 1 or a_root_status == 2 %}
-                                <button id="facebook_btn" type="button" class="btn btn-outline-primary position-relative">
-                                    <i class="bi bi-facebook me-2"></i>再認証
-                                    <span class="position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-light rounded-circle smooth-blinking-badge">
-                                        <span class="visually-hidden">New alerts</span>
-                                    </span>
-                                </button>
+                        {% if a_root_status == 1 or a_root_status == 2 %}
+                            {% if customer.instagram_business_account_id %}
+                              <h5>
+                                  <a target="_blank" href="https://www.instagram.com/{{ customer.instagram_business_account_name }}" class="text-decoration-none">
+                                    {{ customer.instagram_business_account_name }} <span style="font-size: 0.75rem" class="pt-1">({{ customer.instagram_business_account_id }})</span>
+                                  </a>
+                              </h5>
                             {% endif %}
+
+                            <button id="facebook_btn" type="button" class="btn btn-outline-primary position-relative">
+                                <i class="bi bi-facebook me-2"></i>再認証
+                                <span class="position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-light rounded-circle smooth-blinking-badge">
+                                    <span class="visually-hidden">New alerts</span>
+                                </span>
+                            </button>
+
+                          <span class="text-muted small pt-2"></span>
                         {% endif %}
-                      <span class="text-muted small pt-2"></span>
                     </div>
                   </div>
                 </div>

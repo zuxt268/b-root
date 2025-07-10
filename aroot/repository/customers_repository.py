@@ -44,7 +44,9 @@ class CustomersRepository:
         )
         return [Customer(**record.dict()) for record in records]
 
-    def find_all(self, limit: Optional[int] = None, offset: Optional[int] = None) -> List[Customer]:
+    def find_all(
+        self, limit: Optional[int] = None, offset: Optional[int] = None
+    ) -> List[Customer]:
         query = self.session.query(CustomersModel)
         records = query.limit(limit).offset(offset).all()
         return [Customer(**record.dict()) for record in records]
