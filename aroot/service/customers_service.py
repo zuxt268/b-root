@@ -109,6 +109,15 @@ class CustomersService(BaseService[Customer]):
         if customer is not None:
             raise CustomerValidationError("Emailはすでに使われています。")
 
+    def search_by_name(self, name: str, page: int = 1) -> List[Customer]:
+        return self.customers_repository.search_by_name(name, page, self.limit)
+
+    def search_block_count(self, name: str) -> int:
+        return self.customers_repository.search_count(name, self.limit)
+
+    def update_customer_type(self, customer_id: Union[str, int], customer_type: int) -> None:
+        self.customers_repository.update(customer_id, type=customer_type)
+
     def _not_found_error(self, message: str) -> Exception:
         """Return CustomerNotFoundError for this service."""
         return CustomerNotFoundError(message)

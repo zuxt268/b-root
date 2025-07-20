@@ -36,13 +36,26 @@ class SlackService(object):
 def send_support_team(customer: Customer):
     msg = "トークンの期限が切れましたので、ご連絡、再認証お願いします。"
     msg += f"\n- {customer.name}"
-    response = requests.post(
-        os.getenv("SLACK_WEBHOOK_URL_AROOT"),
-        data=json.dumps(
-            {
-                "username": "池澤勇輝",
-                "text": f"<@U08JVHM4KV3>\n{msg}",
-            }
-        ),
-        headers={"Content-Type": "application/json"},
-    )
+    if customer.type == 1:
+        response = requests.post(
+            os.getenv("SLACK_WEBHOOK_URL_PARTNER"),
+            data=json.dumps(
+                {
+                    "username": "池澤勇輝",
+                    "text": f"<@U04NMFJSL80>\n{msg}",
+                }
+            ),
+            headers={"Content-Type": "application/json"},
+        )
+    else:
+        response = requests.post(
+            os.getenv("SLACK_WEBHOOK_URL_AROOT"),
+            data=json.dumps(
+                {
+                    "username": "池澤勇輝",
+                    "text": f"<@U08JVHM4KV3>\n{msg}",
+                }
+            ),
+            headers={"Content-Type": "application/json"},
+        )
+    response.raise_for_status()

@@ -1,56 +1,85 @@
 {% extends 'admin.html' %}
 
-
 {% block content %}
-<div class="container">
-    <div class="card o-hidden border-0 shadow-lg my-5">
-        <div class="card-body p-0">
-            <div class="row">
-                <div class="col-lg-12">
-                    <div class="p-5">
-                        <div class="">
-                            <h1 class="h4 text-gray-900 mb-4">顧客登録</h1>
-                        </div>
-                        <form method="post" class="user">
-                            <div class="mb-3 form-group">
-                                <input value="{{ customer.name }}" name="name" type="text" class="form-control form-control-user" id="name"
-                                    placeholder="名前">
-                            </div>
-                            <div class="mb-3 form-group">
-                                <input value="{{ customer.email }}" name="email" type="email" class="form-control form-control-user" id="email"
-                                    placeholder="Eメールアドレス">
-                            </div>
-                            <div class="mb-3 form-group">
-                                <input value="{{ customer.wordpress_url }}" name="wordpress_url" type="text" class="form-control form-control-user" id="wordpress_url"
-                                    placeholder="Wordpress URL">
-                            </div>
-                            <div class="mb-3 form-group">
-                                <input name="password" type="text" class="form-control form-control-user"
-                                        id="password" placeholder="パスワード">
-                            </div>
-                            <div class="mb-3 form-group">
-                                <select id="delete_hash" class="form-control form-control-user" aria-label="Default select example">
-                                  <option value="0"
-                                          {% if customer.delete_hash == "0" %}
-                                            selected
-                                          {% endif %}
-                                  >ー</option>
-                                  <option value="1"
-                                          {% if customer.delete_hash == "1" %}
-                                            selected
-                                          {% endif %}
-                                  >ハッシュタグの除去</option>
-                                </select>
-                            </div>
-                            <input id="save" type="submit" value="登録" class="form-control form-control-user btn btn-primary" />
-                        </form>
-                        <hr>
-                    </div>
+<main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>新規顧客登録</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="/admin">Home</a></li>
+          <li class="breadcrumb-item">顧客管理</li>
+          <li class="breadcrumb-item active">新規登録</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+      <div class="row">
+        <div class="col-lg-8">
+
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">顧客情報入力</h5>
+
+              <!-- Customer Registration Form -->
+              <form method="post" class="row g-3">
+                
+                <div class="col-md-6">
+                  <label for="name" class="form-label">名前 *</label>
+                  <input value="{{ customer.name }}" name="name" type="text" class="form-control" id="name" required>
                 </div>
+
+                <div class="col-md-6">
+                  <label for="email" class="form-label">メールアドレス *</label>
+                  <input value="{{ customer.email }}" name="email" type="email" class="form-control" id="email" required>
+                </div>
+
+                <div class="col-12">
+                  <label for="wordpress_url" class="form-label">WordPress URL *</label>
+                  <input value="{{ customer.wordpress_url }}" name="wordpress_url" type="text" class="form-control" id="wordpress_url" required>
+                </div>
+
+                <div class="col-md-6">
+                  <label for="password" class="form-label">パスワード *</label>
+                  <input name="password" type="password" class="form-control" id="password" required>
+                </div>
+
+                <div class="col-md-6">
+                  <label for="type" class="form-label">顧客種別 *</label>
+                  <select id="type" name="type" class="form-select" required>
+                    <option value="0" {% if customer.type == 0 %}selected{% endif %}>普通</option>
+                    <option value="1" {% if customer.type == 1 %}selected{% endif %}>アウトソーシング</option>
+                  </select>
+                </div>
+
+                <div class="col-12">
+                  <label for="delete_hash" class="form-label">ハッシュタグ設定</label>
+                  <select id="delete_hash" name="delete_hash" class="form-select">
+                    <option value="0" {% if customer.delete_hash == "0" %}selected{% endif %}>通常</option>
+                    <option value="1" {% if customer.delete_hash == "1" %}selected{% endif %}>ハッシュタグの除去</option>
+                  </select>
+                </div>
+
+                <div class="text-center">
+                  <button type="submit" id="save" class="btn btn-primary">
+                    <i class="bi bi-check-circle me-1"></i>登録
+                  </button>
+                  <a href="/admin" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left me-1"></i>戻る
+                  </a>
+                </div>
+
+              </form><!-- End Customer Registration Form -->
+
             </div>
+          </div>
+
         </div>
-    </div>
-</div>
+      </div>
+    </section>
+
+</main><!-- End #main -->
 
 <script>
     document.getElementById("save").addEventListener("click", (event) => {
@@ -60,8 +89,9 @@
         const wordpress_url = document.getElementById("wordpress_url").value;
         const password = document.getElementById("password").value;
         const delete_hash = document.getElementById("delete_hash").value;
+        const type = document.getElementById("type").value;
         console.log(delete_hash)
-        post("/admin/register_customer", { name, email, wordpress_url, password, delete_hash })
+        post("/admin/register_customer", { name, email, wordpress_url, password, delete_hash, type })
     });
 </script>
 

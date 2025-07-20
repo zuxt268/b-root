@@ -1,22 +1,15 @@
-{% extends 'old.html' %}
-
-{% block header %}
-{% endblock %}
+{% extends 'base.html' %}
 
 {% block content %}
-
-<nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
-  <ul class="navbar">
-      <a href="/" style="font-weight: bolder; text-decoration: none; font-family: 'BIZ UDPゴシック'; font-size: 2rem; cursor: pointer" class="mt-3">
-          <img class="mr-1" style="vertical-align: sub;height: 2.3rem;" src="{{ url_for('static', filename='image/sd.png') }}" />
-          A-Root</a>
-  </ul>
-</nav>
-
-<main>
-    <article class="wrapKOPIPE-OK">
-  <section class="wrapHINAGATA">
-    <h1>利用規約</h1>
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="card shadow-sm">
+        <div class="card-body p-5">
+          <div class="text-center mb-4">
+            <img src="{{ url_for('static', filename='image/sd.png') }}" alt="A-Root" style="height: 3rem;" class="mb-3">
+            <h1 class="h2">利用規約</h1>
+          </div>
     <p>　この利用規約（以下「本規約」といいます）は、StrategyDrive株式会社(ストラテジードライブ）（以下「当社」といいます）がこのウェブアプリケーション上で提供する「A-Root」（以下「本サービス」といいます。詳細は第7条記載のとおりです）の提供条件及び当社とユーザーとの間の権利関係が定められています。</p>
     <p>　本サービスのご利用に際しては本規約の全文をお読みいただいた上で、本規約にご同意いただく必要があります。なお、ユーザーが本サービスの利用を開始した時点をもって、ユーザーは本規約に同意をしたものとみなされます。</p>
     <h2>第1条（定義）</h2>
@@ -236,10 +229,15 @@
       <li>本規約および本サービス利用契約の準拠法は、日本法とします。</li>
       <li>本規約または本サービス利用契約に起因する、または関連する一切の紛争については、地方裁判所を専属的合意管轄裁判所とします。</li>
     </ol>
-    <br>
-    <p class="text-right tR">2024年2月1日制定</p>
-  </section>
-</article>
-</main>
+            
+            <div class="text-end mt-4">
+              <small class="text-muted">2024年2月1日制定</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 {% endblock %}

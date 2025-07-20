@@ -1,0 +1,152 @@
+{% extends 'admin.html' %}
+
+{% block content %}
+<main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>顧客一覧</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="/admin">Home</a></li>
+          <li class="breadcrumb-item">顧客管理</li>
+          <li class="breadcrumb-item active">顧客一覧</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+      <div class="row">
+        <div class="col-lg-12">
+
+          <div class="card">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="card-title">顧客一覧</h5>
+                <a href="{{ url_for('admin_user.register_customer') }}" class="btn btn-primary">
+                  <i class="bi bi-plus-circle me-1"></i>新規顧客登録
+                </a>
+              </div>
+              
+              <!-- Search Form -->
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <form method="GET" action="/admin/customers" class="d-flex">
+                    <input type="text" name="search" class="form-control me-2" placeholder="顧客名で検索..." value="{{ request.args.get('search', '') }}">
+                    <button type="submit" class="btn btn-outline-primary">
+                      <i class="bi bi-search"></i>
+                    </button>
+                    {% if request.args.get('search') %}
+                      <a href="/admin/customers" class="btn btn-outline-secondary ms-2">
+                        <i class="bi bi-x-circle"></i>
+                      </a>
+                    {% endif %}
+                    <!-- ページ番号を保持 -->
+                    {% if request.args.get('page') and not request.args.get('search') %}
+                      <input type="hidden" name="page" value="{{ request.args.get('page') }}">
+                    {% endif %}
+                  </form>
+                </div>
+                {% if request.args.get('search') %}
+                  <div class="col-md-6">
+                    <small class="text-muted">
+                      <i class="bi bi-info-circle me-1"></i>「{{ request.args.get('search') }}」での検索結果
+                    </small>
+                  </div>
+                {% endif %}
+              </div>
+              
+              <!-- Customers Table -->
+              <div class="table-responsive">
+                <table class="table table-striped">
+                  <thead>
+                    <tr>
+                      <th scope="col">ID</th>
+                      <th scope="col">Name</th>
+                      <th scope="col">Type</th>
+                      <th scope="col">Instagram</th>
+                      <th scope="col">WordPress</th>
+                      <th scope="col">連携状況</th>
+                      <th scope="col">状態</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for customer in customers %}
+                      <tr>
+                        <td>
+                          <a class="btn btn-outline-primary btn-sm" href="/admin/customers/{{ customer["id"] }}">
+                            #{{ customer["id"] }}
+                          </a>
+                        </td>
+                        <td>{{ customer["name"] }}</td>
+                        <td>
+                          {% if customer.type == 1 %}
+                            <span class="badge bg-info">アウトソーシング</span>
+                          {% else %}
+                            <span class="badge bg-secondary">普通</span>
+                          {% endif %}
+                        </td>
+                        <td>
+                          {% if customer["instagram_business_account_name"] == None %}
+                            <span class="text-muted">-</span>
+                          {% else %}
+                            <a target="_blank" href="https://www.instagram.com/{{ customer.instagram_business_account_name }}" class="text-decoration-none">
+                              <i class="bi bi-instagram me-1"></i>{{ customer.instagram_business_account_name }}
+                            </a>
+                          {% endif %}
+                        </td>
+                        <td>
+                          <a target="_blank" href="https://{{ customer["wordpress_url"] }}" class="text-decoration-none">
+                            <i class="bi bi-globe me-1"></i>{{ customer["wordpress_url"] }}
+                          </a>
+                        </td>
+                        <td>
+                          {% if not customer.facebook_token %}
+                            <span class="badge bg-secondary">
+                              <i class="bi bi-x-circle me-1"></i>未連携
+                            </span>
+                          {% else %}
+                            <span class="badge bg-success">
+                              <i class="bi bi-check-circle me-1"></i>連携済
+                            </span>
+                          {% endif %}
+                        </td>
+                        <td>
+                          {% if customer.instagram_token_status == 2 %}
+                            <i class="bi bi-exclamation-triangle-fill text-danger" title="トークン期限切れ"></i>
+                          {% else %}
+                            <i class="bi bi-check-circle-fill text-success" title="正常"></i>
+                          {% endif %}
+                        </td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+              
+              <!-- Pagination -->
+              <nav aria-label="顧客ページネーション">
+                <ul class="pagination justify-content-center">
+                  <li class="page-item {{ 'disabled' if customer_page == 1 }}">
+                    <a class="page-link" href="/admin/customers?page={{ customer_page - 1 }}{% if request.args.get('search') %}&search={{ request.args.get('search') }}{% endif %}">前へ</a>
+                  </li>
+                  {% for i in range(customers_block) %}
+                    <li class="page-item {{ 'active' if i + 1 == customer_page }}">
+                      <a class="page-link" href="/admin/customers?page={{ i + 1 }}{% if request.args.get('search') %}&search={{ request.args.get('search') }}{% endif %}">{{ i + 1 }}</a>
+                    </li>
+                  {% endfor %}
+                  <li class="page-item {{ 'disabled' if customer_page == customers_block }}">
+                    <a class="page-link" href="/admin/customers?page={{ customer_page + 1 }}{% if request.args.get('search') %}&search={{ request.args.get('search') }}{% endif %}">次へ</a>
+                  </li>
+                </ul>
+              </nav>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+</main><!-- End #main -->
+
+{% endblock %}

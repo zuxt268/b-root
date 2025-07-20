@@ -1,188 +1,211 @@
 {% extends 'admin.html' %}
 
-
 {% block content %}
-<div class="container">
+<main id="main" class="main">
 
-    <h1 class="h3 mb-2 text-gray-800">顧客一覧</h1>
+    <div class="pagetitle">
+      <h1>管理ダッシュボード</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="/admin">Home</a></li>
+          <li class="breadcrumb-item active">Dashboard</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
 
-    <div class="card shadow mb-4">
-        <div class="card-header py-3">
-            <div class="row">
-                <h6 class="col m-0 fw-bold text-primary">
-                    Customer Tables
-                </h6>
-                <div class="col d-flex justify-content-end">
-                    <a style="width: 6rem" id="register_customer" href="{{ url_for('admin_user.register_customer') }}" type="button" class="btn btn-sm btn-primary">顧客追加</a>
+    <section class="section dashboard">
+      <div class="row">
+
+        <!-- Left side columns -->
+        <div class="col-lg-12">
+          <div class="row">
+
+            <!-- Customers Card -->
+            <div class="col-xxl-4 col-md-6">
+              <div class="card info-card customers-card">
+
+                <div class="card-body">
+                  <h5 class="card-title">顧客 <span>| 総数</span></h5>
+
+                  <div class="d-flex align-items-center">
+                    <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                      <i class="bi bi-people"></i>
+                    </div>
+                    <div class="ps-3">
+                      <h6>{{ total_customers }}</h6>
+                    </div>
+                  </div>
                 </div>
-            </div>
-        </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table" id="customerTables" width="100%" cellspacing="0">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Name</th>
-                            <th>Instagram</th>
-                            <th>Wordpress</th>
-                            <th>Setting</th>
-                            <th>Expired</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for customer in customers %}
-                            <tr>
-                                <td>
-                                    <a class="btn-outline-secondary btn" href="/admin/customers/{{ customer["id"] }}">
-                                        #{{ customer["id"] }}
-                                    </a>
-                                </td>
-                                <td>{{ customer["name"] }}</td>
-                                <td>
-                                    {% if customer["instagram_business_account_name"] == None %}
-                                        -
-                                    {% else %}
-                                        <a target="_blank" href="https://www.instagram.com/{{ customer.instagram_business_account_name }}">
-                                            {{ customer.instagram_business_account_name }}
-                                        </a>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    <a target="_blank" href="https://{{ customer["wordpress_url"] }}">
-                                        {{ customer["wordpress_url"] }}
-                                    </a>
-                                </td>
-                                <td>
-                                    {% if not customer.facebook_token %}
-                                        <span class="p-2 badge bg-secondary"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-x" viewBox="2 2 16 16">
-                                          <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
-                                        </svg>未連携</span>
-                                    {% else %}
-                                        <span class="p-2 badge bg-primary"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check" viewBox="2 2 16 16">
-                                          <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/>
-                                        </svg>連携済</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    {% if customer.instagram_token_status == 2 %}
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="red" width="25" height="25">
-                                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
-                                    </svg>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            <div class="my-2">
-                <nav aria-label="Page navigation example">
-                  <ul class="pagination">
-                    <li class="page-item {{ 'disabled' if customer_page == 1 }}">
-                      <a class="page-link" href="/admin?customer_page={{ customer_page - 1 }}&admin_page={{ admin_page }}" aria-label="Previous">
-                        <span aria-hidden="true">&laquo;</span>
-                        <span class="sr-only">Previous</span>
-                      </a>
-                    </li>
-                    {% for i in range(customers_block) %}
-                        {% if i + 1 == customer_page %}
-                            <li class="page-item disabled"><a class="page-link" href="/admin?customer_page={{ i + 1 }}&admin_page={{ admin_page }}">{{ i + 1 }}</a></li>
-                        {% else %}
-                            <li class="page-item"><a class="page-link" href="/admin?customer_page={{ i + 1 }}&admin_page={{ admin_page }}">{{ i + 1 }}</a></li>
-                        {% endif %}
-                    {% endfor %}
-                    <li class="page-item {{ 'disabled' if customer_page == customers_block }}">
-                      <a class="page-link" href="/admin?customer_page={{ customer_page + 1 }}&admin_page={{ admin_page }}" aria-label="Next">
-                        <span aria-hidden="true">&raquo;</span>
-                        <span class="sr-only">Next</span>
-                      </a>
-                    </li>
-                  </ul>
-                </nav>
-            </div>
-        </div>
-    </div>
 
-    <h1 class="h3 mt-5 mb-2 text-gray-800">管理ユーザー一覧</h1>
-    <!-- DataTales Example -->
-    <div class="card shadow mb-4">
-        <div class="card-header py-3">
-            <div class="row">
-                <h6 class="col m-0 fw-bold text-primary"> <!-- Changed `font-weight-bold` to `fw-bold` -->
-                    Admin Users Tables
-                </h6>
-                <div class="col d-flex justify-content-end"> <!-- Use `d-flex` and `justify-content-end` directly on this column -->
-                    <a style="width: 6rem" id="register_user" href="{{ url_for('admin_user.register_user') }}" type="button" class="btn btn-sm btn-success me-2">管理者追加</a> <!-- Updated `mr-2` to `me-2` -->
+              </div>
+            </div><!-- End Customers Card -->
+
+            <!-- Admin Users Card -->
+            <div class="col-xxl-4 col-md-6">
+              <div class="card info-card admin-card">
+
+                <div class="card-body">
+                  <h5 class="card-title">管理者 <span>| 総数</span></h5>
+
+                  <div class="d-flex align-items-center">
+                    <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                      <i class="bi bi-shield-check"></i>
+                    </div>
+                    <div class="ps-3">
+                      <h6>{{ total_admin_users }}</h6>
+                    </div>
+                  </div>
                 </div>
-            </div>
-        </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table" id="adminUsersTables" width="100%" cellspacing="0">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for admin_user in admin_users %}
-                            <tr>
-                                <td>{{ admin_user["id"] }}</td>
-                                <td>{{ admin_user["name"] }}</td>
-                                <td>{{ admin_user["email"] }}</td>
-                                <td>
-                                    <button value="{{ admin_user.id }}" type="button" style="width: 6rem;" class="delete_user_btn btn btn-outline-danger btn-sm">削除ボタン</button>
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            <div class="my-2">
-                <nav aria-label="Page navigation example">
-                  <ul class="pagination">
-                    <li class="page-item {{ 'disabled' if admin_page == 1 }}">
-                      <a class="page-link" href="/admin/?customer_page={{ customer_page }}&admin_page={{ admin_page - 1 }}" aria-label="Previous">
-                        <span aria-hidden="true">&laquo;</span>
-                        <span class="sr-only">Previous</span>
-                      </a>
-                    </li>
-                    {% for i in range(admin_users_block) %}
-                        {% if i + 1 == admin_page %}
-                            <li class="page-item disabled"><a class="page-link" href="/admin/?customer_page={{ customer_page }}&admin_page={{ i + 1 }}">{{ i + 1 }}</a></li>
-                        {% else %}
-                            <li class="page-item"><a class="page-link" href="/admin/?customer_page={{ customer_page }}&admin_page={{ i + 1 }}">{{ i + 1 }}</a></li>
-                        {% endif %}
-                    {% endfor %}
-                    <li class="page-item {{ 'disabled' if admin_page == admin_users_block }}">
-                      <a class="page-link" href="/admin/?customer_page={{ customer_page }}&admin_page={{ admin_page + 1 }}" aria-label="Next">
-                        <span aria-hidden="true">&raquo;</span>
-                        <span class="sr-only">Next</span>
-                      </a>
-                    </li>
-                  </ul>
-                </nav>
-            </div>
-        </div>
-    </div>
-</div>
-<script>
-    document.querySelectorAll(".delete_user_btn").forEach((ele) => {
-        ele.addEventListener("click", (event) => {
-            const admin_user_id = event.target.value;
-            if (window.confirm(`ID: ${admin_user_id}の管理者ユーザーを削除します。よろしいですか？`)) {
-                showLoadingOverlay();
-                event.target.disabled = true;
-                post("/admin/delete_user", {admin_user_id});
-            }
-        });
-    });
 
+              </div>
+            </div><!-- End Admin Users Card -->
 
-</script>
+            <!-- Posts Card -->
+            <div class="col-xxl-4 col-md-6">
+              <div class="card info-card posts-card">
+
+                <div class="card-body">
+                  <h5 class="card-title">投稿 <span>| 総数</span></h5>
+
+                  <div class="d-flex align-items-center">
+                    <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                      <i class="bi bi-file-earmark-text"></i>
+                    </div>
+                    <div class="ps-3">
+                      <h6>{{ total_posts }}</h6>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div><!-- End Posts Card -->
+
+          </div>
+        </div><!-- End Left side columns -->
+
+      </div>
+    </section>
+
+    <!-- Quick Actions Section -->
+    <section class="section">
+      <div class="row">
+        <div class="col-lg-12">
+
+          <div class="card shadow-sm">
+            <div class="card-body">
+              <div class="d-flex align-items-center mb-4">
+                <i class="bi bi-lightning-charge text-primary me-2 fs-4"></i>
+                <h5 class="card-title mb-0">クイックアクション</h5>
+              </div>
+              
+              <div class="row g-3">
+                <div class="col-md-6 col-lg-3">
+                  <a href="/admin/customers" class="quick-action-btn btn btn-outline-primary w-100 h-100 d-flex flex-column align-items-center justify-content-center p-4 text-decoration-none">
+                    <div class="quick-action-icon mb-3">
+                      <i class="bi bi-people fs-1 text-primary"></i>
+                    </div>
+                    <div class="quick-action-content text-center">
+                      <h6 class="mb-1 fw-bold">顧客一覧</h6>
+                      <small class="text-muted">顧客を検索・管理</small>
+                    </div>
+                  </a>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                  <a href="/admin/register_customer" class="quick-action-btn btn btn-outline-success w-100 h-100 d-flex flex-column align-items-center justify-content-center p-4 text-decoration-none">
+                    <div class="quick-action-icon mb-3">
+                      <i class="bi bi-person-plus fs-1 text-success"></i>
+                    </div>
+                    <div class="quick-action-content text-center">
+                      <h6 class="mb-1 fw-bold">新規顧客登録</h6>
+                      <small class="text-muted">新しい顧客を追加</small>
+                    </div>
+                  </a>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                  <a href="/admin/admin-users" class="quick-action-btn btn btn-outline-info w-100 h-100 d-flex flex-column align-items-center justify-content-center p-4 text-decoration-none">
+                    <div class="quick-action-icon mb-3">
+                      <i class="bi bi-shield-check fs-1 text-info"></i>
+                    </div>
+                    <div class="quick-action-content text-center">
+                      <h6 class="mb-1 fw-bold">管理者一覧</h6>
+                      <small class="text-muted">管理者を確認</small>
+                    </div>
+                  </a>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                  <a href="/admin/register_user" class="quick-action-btn btn btn-outline-warning w-100 h-100 d-flex flex-column align-items-center justify-content-center p-4 text-decoration-none">
+                    <div class="quick-action-icon mb-3">
+                      <i class="bi bi-person-plus-fill fs-1 text-warning"></i>
+                    </div>
+                    <div class="quick-action-content text-center">
+                      <h6 class="mb-1 fw-bold">新規管理者登録</h6>
+                      <small class="text-muted">新しい管理者を追加</small>
+                    </div>
+                  </a>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <style>
+      .quick-action-btn {
+        min-height: 140px;
+        border-radius: 12px;
+        border: 2px solid;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+      }
+      
+      .quick-action-btn:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+      }
+      
+      .quick-action-btn:hover .quick-action-icon i {
+        transform: scale(1.1);
+      }
+      
+      .quick-action-icon i {
+        transition: transform 0.3s ease;
+      }
+      
+      .quick-action-btn.btn-outline-primary:hover {
+        background: linear-gradient(135deg, #0d6efd, #6610f2);
+        border-color: #0d6efd;
+        color: white;
+      }
+      
+      .quick-action-btn.btn-outline-success:hover {
+        background: linear-gradient(135deg, #198754, #20c997);
+        border-color: #198754;
+        color: white;
+      }
+      
+      .quick-action-btn.btn-outline-info:hover {
+        background: linear-gradient(135deg, #0dcaf0, #6f42c1);
+        border-color: #0dcaf0;
+        color: white;
+      }
+      
+      .quick-action-btn.btn-outline-warning:hover {
+        background: linear-gradient(135deg, #ffc107, #fd7e14);
+        border-color: #ffc107;
+        color: white;
+      }
+      
+      .quick-action-btn:hover .quick-action-icon i,
+      .quick-action-btn:hover .quick-action-content h6,
+      .quick-action-btn:hover .quick-action-content small {
+        color: white !important;
+      }
+    </style>
+
+</main><!-- End #main -->
 
 {% endblock %}

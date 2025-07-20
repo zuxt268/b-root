@@ -1,0 +1,97 @@
+{% extends 'admin.html' %}
+
+{% block content %}
+<main id="main" class="main">
+
+    <div class="pagetitle">
+      <h1>管理者一覧</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="/admin">Home</a></li>
+          <li class="breadcrumb-item">管理者管理</li>
+          <li class="breadcrumb-item active">管理者一覧</li>
+        </ol>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+      <div class="row">
+        <div class="col-lg-12">
+
+          <div class="card">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="card-title">管理者一覧</h5>
+                <a href="{{ url_for('admin_user.register_user') }}" class="btn btn-success">
+                  <i class="bi bi-plus-circle me-1"></i>新規管理者登録
+                </a>
+              </div>
+
+              <!-- Admin Users Table -->
+              <div class="table-responsive">
+                <table class="table table-striped">
+                  <thead>
+                    <tr>
+                      <th scope="col">ID</th>
+                      <th scope="col">Name</th>
+                      <th scope="col">Email</th>
+                      <th scope="col">アクション</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for admin_user in admin_users %}
+                      <tr>
+                        <td>{{ admin_user["id"] }}</td>
+                        <td>{{ admin_user["name"] }}</td>
+                        <td>{{ admin_user["email"] }}</td>
+                        <td>
+                          <button value="{{ admin_user.id }}" type="button" class="delete_user_btn btn btn-outline-danger btn-sm">
+                            <i class="bi bi-trash me-1"></i>削除
+                          </button>
+                        </td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Pagination -->
+              <nav aria-label="管理者ページネーション">
+                <ul class="pagination justify-content-center">
+                  <li class="page-item {{ 'disabled' if admin_page == 1 }}">
+                    <a class="page-link" href="/admin/admin-users?page={{ admin_page - 1 }}">前へ</a>
+                  </li>
+                  {% for i in range(admin_users_block) %}
+                    <li class="page-item {{ 'active' if i + 1 == admin_page }}">
+                      <a class="page-link" href="/admin/admin-users?page={{ i + 1 }}">{{ i + 1 }}</a>
+                    </li>
+                  {% endfor %}
+                  <li class="page-item {{ 'disabled' if admin_page == admin_users_block }}">
+                    <a class="page-link" href="/admin/admin-users?page={{ admin_page + 1 }}">次へ</a>
+                  </li>
+                </ul>
+              </nav>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+</main><!-- End #main -->
+
+<script>
+    document.querySelectorAll(".delete_user_btn").forEach((ele) => {
+        ele.addEventListener("click", (event) => {
+            const admin_user_id = event.target.value;
+            if (window.confirm(`ID: ${admin_user_id}の管理者ユーザーを削除します。よろしいですか？`)) {
+                showLoadingOverlay();
+                event.target.disabled = true;
+                post("/admin/delete_user", {admin_user_id});
+            }
+        });
+    });
+</script>
+
+{% endblock %}

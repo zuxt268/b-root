@@ -24,6 +24,7 @@ class Customer:
         instagram_token_status=None,
         delete_hash=0,
         payment_type="none",
+        type=0,
     ):
         self.id = id
         self.name = name
@@ -37,6 +38,7 @@ class Customer:
         self.instagram_token_status = instagram_token_status
         self.payment_type = payment_type
         self.delete_hash = delete_hash
+        self.type = type
 
     def set_wordpress_url(self, _wordpress_url):
         wordpress_url = _wordpress_url
@@ -72,6 +74,8 @@ class Customer:
             result["wordpress_url"] = self.wordpress_url
         if self.payment_type is not None:
             result["payment_type"] = self.payment_type
+        if self.type is not None:
+            result["type"] = self.type
         return result
 
     def formatted_date(self):

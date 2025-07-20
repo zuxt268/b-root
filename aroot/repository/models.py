@@ -47,6 +47,7 @@ class CustomersModel(Base):
     )  # Changed to SmallInteger
     delete_hash = Column(Boolean, default=False)
     payment_type = Column(String(255), nullable=False)
+    type = Column(Integer, nullable=False, default=0)
 
     def dict(self):
         return {
@@ -62,6 +63,7 @@ class CustomersModel(Base):
             "instagram_token_status": self.instagram_token_status,
             "delete_hash": self.delete_hash,
             "payment_type": self.payment_type,
+            "type": self.type,
         }
 
 

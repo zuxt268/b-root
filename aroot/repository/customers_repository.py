@@ -62,3 +62,18 @@ class CustomersRepository:
 
     def count(self) -> int:
         return self.session.query(func.count(CustomersModel.id)).scalar()
+
+    def search_by_name(self, name: str, page: int, limit: int) -> List[Customer]:
+        query = self.session.query(CustomersModel)
+        offset = (page - 1) * limit
+        records = query.filter(
+            CustomersModel.name.ilike(f"%{name}%")
+        ).limit(limit).offset(offset).all()
+        return [Customer(**record.dict()) for record in records]
+
+    def search_count(self, name: str, limit: int) -> int:
+        query = self.session.query(func.count(CustomersModel.id))
+        total_count = query.filter(
+            CustomersModel.name.ilike(f"%{name}%")
+        ).scalar()
+        return (total_count + limit - 1) // limit

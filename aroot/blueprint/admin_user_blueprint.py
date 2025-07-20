@@ -127,23 +127,6 @@ def logout():
 @bp.route("/admin")
 @admin_login_required
 def index():
-    admin_page = request.args.get("admin_page")
-
-    if admin_page is None:
-        admin_page = 1
-    elif str(admin_page).isdecimal() is False:
-        admin_page = 1
-    else:
-        admin_page = int(admin_page)
-
-    customer_page = request.args.get("customer_page")
-    if customer_page is None:
-        customer_page = 1
-    elif str(customer_page).isdecimal() is False:
-        customer_page = 1
-    else:
-        customer_page = int(customer_page)
-
     admin_user_id = session.get("admin_user_id")
     with UnitOfWork() as unit_of_work:
         admin_user_repo = AdminUserRepository(unit_of_work.session)
@@ -153,22 +136,74 @@ def index():
         customer_service = CustomersService(customers_repo)
         posts_repo = PostsRepository(unit_of_work.session)
         posts_service = PostsService(posts_repo)
-        admin_users = admin_user_service.find_all(admin_page)
-        customers = customer_service.find_all(customer_page)
-        admin_users_block = admin_user_service.block_count()
-        customers_block = customer_service.block_count()
-        posts_block = posts_service.block_count()
+        
+        # Get total counts for dashboard
+        total_customers = len(customer_service.find_all(1))  # Get all customers
+        total_admin_users = len(admin_user_service.find_all(1))  # Get all admin users
+        total_posts = posts_service.block_count()
+        
         unit_of_work.commit()
     return render_template(
         "admin_user/index.html",
+        login_name=admin_user.name,
+        total_customers=total_customers,
+        total_admin_users=total_admin_users,
+        total_posts=total_posts,
+    )
+
+
+@bp.route("/admin/customers")
+@admin_login_required
+def customers_list():
+    customer_page = request.args.get("page", 1, type=int)
+    search_query = request.args.get("search", "").strip()
+    
+    admin_user_id = session.get("admin_user_id")
+    with UnitOfWork() as unit_of_work:
+        admin_user_repo = AdminUserRepository(unit_of_work.session)
+        admin_user_service = AdminUsersService(admin_user_repo)
+        admin_user = admin_user_service.find_by_id(admin_user_id)
+        customers_repo = CustomersRepository(unit_of_work.session)
+        customer_service = CustomersService(customers_repo)
+        
+        if search_query:
+            customers = customer_service.search_by_name(search_query, customer_page)
+            customers_block = customer_service.search_block_count(search_query)
+        else:
+            customers = customer_service.find_all(customer_page)
+            customers_block = customer_service.block_count()
+        
+        unit_of_work.commit()
+    return render_template(
+        "admin_user/customers_list.html",
         customers=customers,
+        login_name=admin_user.name,
+        customers_block=customers_block,
+        customer_page=customer_page,
+    )
+
+
+@bp.route("/admin/admin-users")
+@admin_login_required
+def admin_users_list():
+    admin_page = request.args.get("page", 1, type=int)
+    
+    admin_user_id = session.get("admin_user_id")
+    with UnitOfWork() as unit_of_work:
+        admin_user_repo = AdminUserRepository(unit_of_work.session)
+        admin_user_service = AdminUsersService(admin_user_repo)
+        admin_user = admin_user_service.find_by_id(admin_user_id)
+        
+        admin_users = admin_user_service.find_all(admin_page)
+        admin_users_block = admin_user_service.block_count()
+        
+        unit_of_work.commit()
+    return render_template(
+        "admin_user/admin_users_list.html",
         admin_users=admin_users,
         login_name=admin_user.name,
         admin_users_block=admin_users_block,
-        customers_block=customers_block,
-        posts_block=posts_block,
         admin_page=admin_page,
-        customer_page=customer_page,
     )
 
 
@@ -216,6 +251,7 @@ def register_customer():
                 new_customer.set_wordpress_url(request.form["wordpress_url"])
                 new_customer.password = request.form["password"]
                 new_customer.delete_hash = request.form["delete_hash"]
+                new_customer.type = int(request.form.get("type", 0))
                 CustomerValidator.validate(new_customer)
                 new_customer.generate_hash_password()
                 customers_repo = CustomersRepository(unit_of_work.session)
@@ -256,6 +292,20 @@ def change_delete_hash():
             customer_service.set_delete_hash(customer_id)
         else:
             customer_service.remove_delete_hash(customer_id)
+        unit_of_work.commit()
+    return redirect("/admin/customers/" + customer_id)
+
+
+@bp.route("/admin/customer/type", methods=("POST",))
+@admin_login_required
+def change_customer_type():
+    customer_id = request.form["customer_id"]
+    customer_type = int(request.form["customer_type"])
+    
+    with UnitOfWork() as unit_of_work:
+        customer_repo = CustomersRepository(unit_of_work.session)
+        customer_service = CustomersService(customer_repo)
+        customer_service.update_customer_type(customer_id, customer_type)
         unit_of_work.commit()
     return redirect("/admin/customers/" + customer_id)
 

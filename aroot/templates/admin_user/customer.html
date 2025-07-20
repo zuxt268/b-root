@@ -1,210 +1,338 @@
 {% extends 'admin.html' %}
 
-
 {% block content %}
-<div class="container">
+<main id="main" class="main">
 
-    <h1 class="h3 mb-2 text-gray-800">顧客詳細</h1>
+  <div class="pagetitle">
+    <h1>顧客詳細</h1>
+    <nav>
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/admin">Home</a></li>
+        <li class="breadcrumb-item"><a href="/admin/customers">顧客一覧</a></li>
+        <li class="breadcrumb-item active">顧客詳細 (#{{ customer.id }})</li>
+      </ol>
+    </nav>
+  </div><!-- End Page Title -->
 
-    <div class="card shadow mb-4">
-        <div class="card-header py-3">
-            <div class="row">
-                <h6 class="col m-0 font-weight-bold text-primary">
-                    Detail
-                </h6>
+  <section class="section profile">
+    <div class="row">
+      <div class="col-xl-8">
+
+        <div class="card">
+          <div class="card-body pt-3">
+
+            <div class="d-flex align-items-center justify-content-between">
+              <h5 class="card-title">顧客情報</h5>
+              <div class="customer-id-badge">
+                <span class="badge bg-primary fs-6">ID: {{ customer.id }}</span>
+              </div>
             </div>
-        </div>
-        <div class="card-body text-black-50">
-            <div class="table-responsive">
-                <table class="table" id="customerTables">
-                    <tbody>
-                        <input type="hidden" id="customer_id" value="{{ customer.id }}" >
-                        <tr>
-                            <td class="w-25">名前</td>
-                            <td>{{ customer["name"] }}</td>
-                        </tr>
-                        <tr>
-                            <td>Eメールアドレス</td>
-                            <td>{{ customer["email"] }}</td>
-                        </tr>
-                        <tr>
-                            <td>インスタグラムアカウント</td>
-                            <td>
-                                {% if customer["instagram_business_account_name"] == None %}
-                                    -
-                                {% else %}
-                                    <a target="_blank" href="https://www.instagram.com/{{ customer.instagram_business_account_name }}">
-                                        {{ customer.instagram_business_account_name }}
-                                    </a>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>Wordpress</td>
-                            <td>
-                                <a target="_blank" href="https://{{ customer["wordpress_url"] }}">
-                                    {{ customer["wordpress_url"] }}
-                                </a>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>認証ステータス</td>
-                            <td>
-                                {% if not customer.facebook_token %}
-                                    <span class="p-2 badge bg-secondary"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-x" viewBox="2 2 16 16">
-<path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
-</svg>未連携</span>
-                                {% else %}
-                                    <span class="p-2 badge bg-primary"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check" viewBox="2 2 16 16">
-<path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/>
-</svg>連携済</span>
-                                {% endif %}
-                                {% if customer.instagram_token_status == 2  %}
-                                    <svg class="my-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="red" width="25" height="25">
-                                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
-                                    </svg>
-                                    <span style="color: red;">期限切れ</span>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% if customer.facebook_token %}
-                        <tr>
-                            <td>連携開始日</td>
-                            <td>
-                                <div class="col-4">
-                                    <input title="start_date" id="start_date" value="{{ customer.formatted_date() }}" type="datetime-local" class="form-control" name="start_date">
-                                </div>
-                            </td>
-                        </tr>
-                        {% endif %}
-                        <tr>
-                            <td>“#”削除設定</td>
-                            <td>
-                                {% if customer.delete_hash == False %}
-                                    <button value="{{ customer.id }}" type="button" style="width: 6rem;" class="delete_hash_change_true btn btn-outline-secondary btn-sm">通常</button>
-                                {% else %}
-                                    <button value="{{ customer.id }}" type="button" style="width: 6rem;" class="delete_hash_change_false btn btn-outline-success btn-sm">＃削除中</button>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>認証</td>
-                            <td>
-                                {% if customer.facebook_token %}
-                                    <button value="{{ customer.id }}" type="button" style="width: 6rem;" class="reset_customer_btn btn btn-outline-warning btn-sm">認証Reset</button>
-                                {% else %}
-                                    <button value="{{ customer.id }}" type="button" style="width: 6rem;" class="btn btn-outline-warning btn-sm" disabled>認証Reset</button>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>アカウント削除</td>
-                            <td>
-                                <button value="{{ customer.id }}" type="button" style="width: 6rem;" class="delete_customer_btn btn btn-outline-danger btn-sm">削除</button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+
+            <input type="hidden" id="customer_id" value="{{ customer.id }}">
+
+            <div class="row mb-3 border-bottom pb-2">
+              <div class="col-lg-3 col-md-4">
+                <strong class="text-muted">
+                  <i class="bi bi-person me-2"></i>名前
+                </strong>
+              </div>
+              <div class="col-lg-9 col-md-8">
+                <span class="fw-semibold">{{ customer.name }}</span>
+              </div>
             </div>
+
+            <div class="row mb-3 border-bottom pb-2">
+              <div class="col-lg-3 col-md-4">
+                <strong class="text-muted">
+                  <i class="bi bi-envelope me-2"></i>メールアドレス
+                </strong>
+              </div>
+              <div class="col-lg-9 col-md-8">
+                <span class="fw-semibold">{{ customer.email }}</span>
+              </div>
+            </div>
+
+            <div class="row mb-3 border-bottom pb-2">
+              <div class="col-lg-3 col-md-4">
+                <strong class="text-muted">
+                  <i class="bi bi-tag me-2"></i>顧客種別
+                </strong>
+              </div>
+              <div class="col-lg-9 col-md-8">
+                {% if customer.type == 1 %}
+                  <span class="badge bg-info fs-6">
+                    <i class="bi bi-briefcase me-1"></i>アウトソーシング
+                  </span>
+                {% else %}
+                  <span class="badge bg-secondary fs-6">
+                    <i class="bi bi-person me-1"></i>普通
+                  </span>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="row mb-3 border-bottom pb-2">
+              <div class="col-lg-3 col-md-4">
+                <strong class="text-muted">
+                  <i class="bi bi-instagram me-2"></i>Instagramアカウント
+                </strong>
+              </div>
+              <div class="col-lg-9 col-md-8">
+                {% if customer.instagram_business_account_name == None %}
+                  <span class="text-muted fst-italic">未設定</span>
+                {% else %}
+                  <a target="_blank" href="https://www.instagram.com/{{ customer.instagram_business_account_name }}" class="text-decoration-none fw-semibold">
+                    <i class="bi bi-instagram me-1 text-primary"></i>{{ customer.instagram_business_account_name }}
+                    <i class="bi bi-box-arrow-up-right ms-1 small text-muted"></i>
+                  </a>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="row mb-3 border-bottom pb-2">
+              <div class="col-lg-3 col-md-4">
+                <strong class="text-muted">
+                  <i class="bi bi-globe me-2"></i>WordPress URL
+                </strong>
+              </div>
+              <div class="col-lg-9 col-md-8">
+                <a target="_blank" href="https://{{ customer.wordpress_url }}" class="text-decoration-none fw-semibold">
+                  <i class="bi bi-globe me-1 text-primary"></i>{{ customer.wordpress_url }}
+                  <i class="bi bi-box-arrow-up-right ms-1 small text-muted"></i>
+                </a>
+              </div>
+            </div>
+
+            <div class="row mb-3 border-bottom pb-2">
+              <div class="col-lg-3 col-md-4">
+                <strong class="text-muted">
+                  <i class="bi bi-shield-check me-2"></i>認証ステータス
+                </strong>
+              </div>
+              <div class="col-lg-9 col-md-8">
+                {% if not customer.facebook_token %}
+                  <span class="badge bg-secondary fs-6">
+                    <i class="bi bi-x-circle me-1"></i>未連携
+                  </span>
+                {% else %}
+                  <span class="badge bg-success fs-6">
+                    <i class="bi bi-check-circle me-1"></i>連携済
+                  </span>
+                {% endif %}
+                {% if customer.instagram_token_status == 2 %}
+                  <div class="mt-2">
+                    <span class="badge bg-warning text-dark fs-6">
+                      <i class="bi bi-exclamation-triangle me-1"></i>トークン期限切れ
+                    </span>
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+
+            {% if customer.facebook_token %}
+            <div class="row mb-3">
+              <div class="col-lg-3 col-md-4">
+                <strong class="text-muted">
+                  <i class="bi bi-calendar-event me-2"></i>連携開始日
+                </strong>
+              </div>
+              <div class="col-lg-9 col-md-8">
+                <input title="start_date" id="start_date_main" value="{{ customer.formatted_date() }}" type="datetime-local" class="form-control" name="start_date" style="max-width: 250px;">
+                <small class="text-muted mt-1 d-block">
+                  <i class="bi bi-info-circle me-1"></i>この日時以降のInstagram投稿が同期対象になります
+                </small>
+              </div>
+            </div>
+            {% endif %}
+
+          </div>
         </div>
+
+      </div>
+
+      <div class="col-xl-4">
+        <div class="card">
+          <div class="card-body pt-3">
+            <h5 class="card-title">管理アクション</h5>
+
+            <div class="d-grid gap-2">
+
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="fw-bold">顧客種別変更</span>
+                <div class="d-flex align-items-center">
+                  <select id="customer_type_select" class="form-select form-select-sm me-2" style="width: 120px;">
+                    <option value="0" {{ 'selected' if customer.type == 0 else '' }}>普通</option>
+                    <option value="1" {{ 'selected' if customer.type == 1 else '' }}>アウトソーシング</option>
+                  </select>
+                  <button id="update_customer_type_btn" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-check-circle me-1"></i>変更
+                  </button>
+                </div>
+              </div>
+
+              <hr>
+
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="fw-bold">ハッシュタグ設定</span>
+                {% if customer.delete_hash == False %}
+                  <button value="{{ customer.id }}" type="button" class="delete_hash_change_true btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-hash me-1"></i>通常
+                  </button>
+                {% else %}
+                  <button value="{{ customer.id }}" type="button" class="delete_hash_change_false btn btn-success btn-sm">
+                    <i class="bi bi-hash me-1"></i>削除中
+                  </button>
+                {% endif %}
+              </div>
+
+              <hr>
+
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="fw-bold">認証リセット</span>
+                {% if customer.facebook_token %}
+                  <button value="{{ customer.id }}" type="button" class="reset_customer_btn btn btn-outline-warning btn-sm">
+                    <i class="bi bi-arrow-clockwise me-1"></i>リセット
+                  </button>
+                {% else %}
+                  <button value="{{ customer.id }}" type="button" class="btn btn-outline-warning btn-sm" disabled>
+                    <i class="bi bi-arrow-clockwise me-1"></i>リセット
+                  </button>
+                {% endif %}
+              </div>
+
+              <hr>
+
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="fw-bold text-danger">アカウント削除</span>
+                <button value="{{ customer.id }}" type="button" class="delete_customer_btn btn btn-outline-danger btn-sm">
+                  <i class="bi bi-trash me-1"></i>削除
+                </button>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+      </div>
+
     </div>
+  </section>
 
-    <div class="card shadow mb-4">
-        <div class="card-header py-3">
-            <div class="row">
-                <h6 class="col m-0 font-weight-bold text-primary">
-                    Log
-                </h6>
-            </div>
-        </div>
-        <div class="card-body">
+  <!-- Posts Section -->
+  <section class="section">
+    <div class="row">
+      <div class="col-lg-12">
+
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">投稿履歴</h5>
+
             <div class="table-responsive">
-                <table class="table" id="customerTables">
-                    <thead>
-                    <tr>
-                        <th>連携日時</th>
-                        <th>インスタグラムメディアID</th>
-                        <th>インスタグラムURL</th>
-                        <th>Wordpress投稿URL</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                        {% for post in posts %}
-                            {% if post["timestamp"] is not none %}
-                                <tr>
-                            <td>{{ post["timestamp"] }}</td>
-                            <td>{{ post["media_id"] }}</td>
-                            <td>
-                                {% if post["permalink"] %}
-                                    <a target="_blank" href="{{ post["permalink"] }}">
-                                        {{ post.get_permalink() }}
-                                    </a>
-                                {% endif %}
-                            </td>
-                            <td>
-                                <a target="_blank" href="{{ post["wordpress_link"] }}">
-                                    {{ post.get_wordpress_link() }}
-                                </a>
-                            </td>
-                        </tr>
-                            {% endif %}
-                        {% endfor %}
-                    </tbody>
-                </table>
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th scope="col">連携日時</th>
+                    <th scope="col">メディアID</th>
+                    <th scope="col">Instagram</th>
+                    <th scope="col">WordPress</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for post in posts %}
+                    {% if post["timestamp"] is not none %}
+                      <tr>
+                        <td>{{ post["timestamp"] }}</td>
+                        <td>{{ post["media_id"] }}</td>
+                        <td>
+                          {% if post["permalink"] %}
+                            <a target="_blank" href="{{ post["permalink"] }}">
+                              {{ post.get_permalink() }}
+                            </a>
+                          {% endif %}
+                        </td>
+                        <td>
+                          <a target="_blank" href="{{ post["wordpress_link"] }}">
+                            {{ post.get_wordpress_link() }}
+                          </a>
+                        </td>
+                      </tr>
+                    {% endif %}
+                  {% endfor %}
+                </tbody>
+              </table>
             </div>
+
+          </div>
         </div>
+
+      </div>
     </div>
-</div>
+  </section>
+
+</main>
 
 <script>
-    document.querySelectorAll(".reset_customer_btn").forEach((ele) => {
-   ele.addEventListener("click", (event) => {
-       const customer_id = event.target.value;
-       if (window.confirm(`ID: ${customer_id}、Facebookの連携をリセットします。よろしいですか？`)) {
-           showLoadingOverlay();
-           event.target.disabled = true;
-           post("/admin/reset_customer", {customer_id});
-       }
-   })
-});
-    document.querySelectorAll(".delete_customer_btn").forEach((ele) => {
-        ele.addEventListener("click", (event) => {
-            const customer_id = event.target.value;
-            if (window.confirm(`ID: ${customer_id}の顧客を削除します。よろしいですか？`)) {
-                showLoadingOverlay();
-                event.target.disabled = true;
-                post("/admin/delete_customer", {customer_id});
-            }
-        });
+(function() {
+  function attachClick(className, handler) {
+    document.querySelectorAll(className).forEach((el) => {
+      el.addEventListener("click", handler);
     });
-    document.querySelectorAll(".delete_hash_change_true").forEach((ele) => {
-        ele.addEventListener("click", (event) => {
-            const customer_id = event.target.value;
-            if (window.confirm(`ID: ${customer_id} ハッシュタグを削除するように設定します`)) {
-                showLoadingOverlay();
-                event.target.disabled = true;
-                post("/admin/customer/delete_hash", {customer_id, "delete_hash": true});
-            }
-        });
+  }
+
+  function disableAndPost(target, url, payload, confirmMessage) {
+    if (window.confirm(confirmMessage)) {
+      showLoadingOverlay();
+      target.disabled = true;
+      post(url, payload);
+    }
+  }
+
+  attachClick(".reset_customer_btn", (event) => {
+    const customerId = event.currentTarget.value;
+    disableAndPost(event.currentTarget, "/admin/reset_customer", { customer_id: customerId }, `ID: ${customerId} のFacebook連携をリセットします。よろしいですか？`);
+  });
+
+  attachClick(".delete_customer_btn", (event) => {
+    const customerId = event.currentTarget.value;
+    disableAndPost(event.currentTarget, "/admin/delete_customer", { customer_id: customerId }, `ID: ${customerId} の顧客を削除します。よろしいですか？`);
+  });
+
+  attachClick(".delete_hash_change_true", (event) => {
+    const customerId = event.currentTarget.value;
+    disableAndPost(event.currentTarget, "/admin/customer/delete_hash", { customer_id: customerId, delete_hash: true }, `ID: ${customerId} ハッシュタグを削除するように設定します。`);
+  });
+
+  attachClick(".delete_hash_change_false", (event) => {
+    const customerId = event.currentTarget.value;
+    disableAndPost(event.currentTarget, "/admin/customer/delete_hash", { customer_id: customerId, delete_hash: false }, `ID: ${customerId} ハッシュタグ削除設定を解除します。`);
+  });
+
+  const startDateInput = document.getElementById("start_date_main");
+  if (startDateInput) {
+    startDateInput.addEventListener("blur", (event) => {
+      const startDate = event.target.value;
+      const customerId = document.getElementById("customer_id").value;
+      if (confirm(`連携開始日時を変更します \nID: ${customerId} \n日本時間: ${startDate}`)) {
+        showLoadingOverlay();
+        post("/admin/start_date", { start_date: startDate, customer_id: customerId });
+      }
     });
-    document.querySelectorAll(".delete_hash_change_false").forEach((ele) => {
-        ele.addEventListener("click", (event) => {
-            const customer_id = event.target.value;
-            if (window.confirm(`ID: ${customer_id} ハッシュタグを削除を解除します`)) {
-                showLoadingOverlay();
-                event.target.disabled = true;
-                post("/admin/customer/delete_hash", {customer_id, "delete_hash": false});
-            }
-        });
+  }
+
+  const updateCustomerTypeBtn = document.getElementById("update_customer_type_btn");
+  if (updateCustomerTypeBtn) {
+    updateCustomerTypeBtn.addEventListener("click", (event) => {
+      const customerId = document.getElementById("customer_id").value;
+      const customerType = document.getElementById("customer_type_select").value;
+      const typeText = customerType === "1" ? "アウトソーシング" : "普通";
+      if (confirm(`顧客種別を「${typeText}」に変更します。よろしいですか？ \nID: ${customerId}`)) {
+        showLoadingOverlay();
+        event.target.disabled = true;
+        post("/admin/customer/type", { customer_id: customerId, customer_type: customerType });
+      }
     });
-    document.getElementById("start_date").addEventListener("blur", (event) => {
-        const start_date = event.target.value;
-        const customer_id = document.getElementById("customer_id").value;
-        if (confirm(`連携対象の開始日時を変更します \nID: ${customer_id} \n日本時間: ${start_date}`)) {
-            showLoadingOverlay();
-            post("/admin/start_date", {start_date, customer_id});
-        }
-    });
+  }
+})();
 </script>
 
 {% endblock %}
