@@ -42,7 +42,7 @@ def send_support_team(customer: Customer):
             data=json.dumps(
                 {
                     "username": "池澤勇輝",
-                    "text": f"<@U04NMFJSL80>\n{msg}",
+                    "text": f"<@U04NMGHEHEC>\n{msg}",
                 }
             ),
             headers={"Content-Type": "application/json"},
