@@ -62,10 +62,17 @@ def handle_customer(customer: Customer):
             unit_of_work.commit()
 
         except MetaApiError as e:
-            if str(e.error_subcode) == "463" or str(e.error_subcode) == "460":
+            if str(e.error_subcode) == "463":
                 customer_repository.update(customer.id, instagram_token_status=EXPIRED)
                 SlackService().send_alert(
-                    f"トークンの期限が切れました: {customer.name}"
+                    f"463_認証切れ: {customer.name} ```{e.message}```"
+                )
+                send_support_team(customer)
+                unit_of_work.commit()
+            elif str(e.error_subcode) == "460":
+                customer_repository.update(customer.id, instagram_token_status=EXPIRED)
+                SlackService().send_alert(
+                    f"460_パスワードが変更されました: {customer.name} ```{e.message}```"
                 )
                 send_support_team(customer)
                 unit_of_work.commit()
