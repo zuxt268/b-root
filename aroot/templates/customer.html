@@ -91,3 +91,72 @@
 
   </aside><!-- End Sidebar-->
 {% endblock %}
+
+{% block scripts %}
+<script>
+// 共通のFacebook認証処理関数
+function initializeFacebookAuth() {
+    const fb_btn = document.getElementById("facebook_btn");
+    if (fb_btn) {
+        fb_btn.addEventListener("click", (event) => {
+            try {
+                console.log('Facebook button clicked');
+                document.getElementById("facebook_btn").disabled = true;
+                
+                if (typeof FB === 'undefined') {
+                    throw new Error('Facebook SDK not loaded');
+                }
+                
+                console.log('Starting FB.login...');
+                FB.login(function(response){
+                    try {
+                        console.log('FB.login callback executed');
+                        console.log('Response status:', response.status);
+                        console.log('Full response:', response);
+                        
+                        if (response.status === "connected" && response.authResponse && response.authResponse.accessToken) {
+                            console.log('Login successful, processing auth...');
+                            console.log('Access token:', response.authResponse.accessToken);
+                            
+                            if (typeof showLoadingOverlay === 'function') {
+                                console.log('Showing loading overlay');
+                                showLoadingOverlay();
+                            } else {
+                                console.log('showLoadingOverlay function not available');
+                            }
+                            
+                            const accessToken = response.authResponse.accessToken;
+                            console.log('Sending POST request to /facebook/auth');
+                            post("/facebook/auth", {"access_token": accessToken}).catch(error => {
+                                console.error('Post request failed:', error);
+                                document.getElementById("facebook_btn").disabled = false;
+                                alert('認証処理中にエラーが発生しました。再度お試しください。');
+                            });
+                        } else {
+                            console.log('Login not successful');
+                            console.log('Status:', response.status);
+                            console.log('Auth response:', response.authResponse);
+                            document.getElementById("facebook_btn").disabled = false;
+                        }
+                    } catch (error) {
+                        console.error('FB.login callback error:', error);
+                        console.error('Error details:', error.message, error.stack);
+                        document.getElementById("facebook_btn").disabled = false;
+                        alert('認証処理中にエラーが発生しました。');
+                    }
+                }, {scope: 'public_profile, pages_show_list, business_management, instagram_basic'});
+            } catch (error) {
+                console.error('FB.login setup error:', error);
+                document.getElementById("facebook_btn").disabled = false;
+                alert('Facebook認証の初期化に失敗しました。ページを再読み込みしてください。');
+            }
+        });
+    }
+}
+
+// ページ読み込み時に初期化
+document.addEventListener('DOMContentLoaded', function() {
+    initializeFacebookAuth();
+});
+</script>
+{% endblock %}

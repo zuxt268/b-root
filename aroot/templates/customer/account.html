@@ -145,6 +145,10 @@
 
 </main><!-- End #main -->
 
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
 <script>
     function togglePassword() {
     const input = document.getElementById("secretInput");
@@ -154,22 +158,6 @@
     input.type = isPassword ? "text" : "password";
     icon.classList.toggle("bi-eye", !isPassword);
     icon.classList.toggle("bi-eye-slash", isPassword);
-    }
-
-    const fb_btn = document.getElementById("facebook_btn");
-    if (fb_btn) {
-        fb_btn.addEventListener("click", (event) => {
-            document.getElementById("facebook_btn").disabled = true;
-            FB.login(function(response){
-                if (response.status === "connected") {
-                    showLoadingOverlay()
-                    const accessToken = response.authResponse.accessToken;
-                    post("/facebook/auth", {"access_token": accessToken})
-                } else {
-                    document.getElementById("facebook_btn").disabled = false;
-                }
-            }, {scope: 'public_profile, pages_show_list, business_management, instagram_basic'});
-        })
     }
 
     const start_date = document.getElementById("start_date");
@@ -306,6 +294,5 @@
     }
 
 </script>
-
 {% endblock %}
 
