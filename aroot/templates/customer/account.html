@@ -52,8 +52,7 @@
                     <div class="row mb-3">
                       <label for="startDate" class="col-md-4 col-lg-3 col-form-label">連携開始日</label>
                       <div class="col-12 col-md-8 col-lg-9 col-xl-3">
-                        <input title="start_date" id="start_date" value="{{ customer.formatted_date() }}" type="datetime-local" class="form-control" name="start_date">
-
+                        <input style="min-width: 200px; max-width: 350px" title="start_date" id="start_date" value="{{ customer.formatted_date() }}" type="datetime-local" class="form-control" name="start_date">
                       </div>
                     </div>
 
@@ -70,12 +69,12 @@
 
                     <div class="row mb-3">
                       <label for="secretInput" class="col-md-4 col-lg-3 col-form-label">シークレットフレーズ</label>
-                      <div class="col-md-8 col-lg-9 d-flex align-items-center">
-                        <input type="password" id="secretInput" class="form-control me-2" value="{{ customer.get_secret_phrase() }}" readonly style="min-width: 350px;">
-                        <button type="button" class="btn btn-sm btn-outline-secondary me-2" onclick="togglePassword()" style="line-height:1;">
+                      <div class="col-12 col-md-8 col-lg-9 d-flex align-items-center">
+                        <input type="password" id="secretInput" class="form-control me-2 flex-grow-1" value="{{ customer.get_secret_phrase() }}" readonly style="min-width: 200px; max-width: 350px;">
+                        <button type="button" class="btn btn-sm btn-outline-secondary me-2 flex-shrink-0" onclick="togglePassword()" style="line-height:1;">
                           <i id="eye-icon" class="bi bi-eye"></i>
                         </button>
-                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="copySecretPhrase()" style="line-height:1;">
+                        <button type="button" class="btn btn-sm btn-outline-primary flex-shrink-0" onclick="copySecretPhrase()" style="line-height:1;">
                           <i class="bi bi-clipboard"></i>
                         </button>
                       </div>
