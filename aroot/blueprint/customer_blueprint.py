@@ -355,22 +355,23 @@ def start_date():
 @bp.route("/facebook/auth", methods=("POST",))
 @login_required
 def facebook_auth():
-    SlackService().send_message("facebook auth is invoked")
-    print("facebook_auth is invoked")
     customer_id = session.get("customer_id")
     access_token = request.form["access_token"]
     try:
         with UnitOfWork() as unit_of_work:
             customers_repo = CustomersRepository(unit_of_work.session)
             customer_service = CustomersService(customers_repo)
+            customer = customer_service.get_customer_by_id(customer_id)
+            SlackService().send_message(
+                f"```[認証]\nID:{customer_id}, 名前: {customer.name}```"
+            )
             meta_service = MetaService()
-            SlackService().send_message(access_token)
             long_token = meta_service.get_long_term_token(access_token)
+            SlackService().send_message(f"```[トークン]\n{long_token}```")
             instagram = meta_service.get_instagram_account(access_token)
             customer_service.update_customer_after_login(
                 customer_id, long_token, instagram["id"], instagram["username"]
             )
-            SlackService().send_message("更新")
             unit_of_work.commit()
             flash(
                 message="インスタグラムアカウントとの連携に成功しました",
@@ -398,7 +399,12 @@ def facebook_auth():
             category="warning",
         )
         set_dashboard_status(session, DashboardStatus.AUTH_ERROR_INSTAGRAM.value)
-    SlackService().send_message("リダイレクト")
+    except Exception as e:
+        send_alert(e)
+        flash(
+            message=f"予期せぬエラーが発生しました: {str(e)}",
+            category="danger",
+        )
     return redirect(url_for("customer.index"))
 
 
@@ -852,9 +858,7 @@ def get_dashboard_status(session_mixin: SessionMixin) -> Optional[DashboardStatu
     return None
 
 
-def set_dashboard_status(
-    session_mixin: SessionMixin, dashboard_status: DashboardStatus
-):
+def set_dashboard_status(session_mixin: SessionMixin, dashboard_status: str):
     session_mixin["dashboard_status"] = dashboard_status
     session_mixin["dashboard_status_timestamp"] = datetime.now()
 

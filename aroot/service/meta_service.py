@@ -6,7 +6,7 @@ from domain.instagram_media import InstagramMedia
 
 class MetaService:
     def __init__(self):
-        self.base_url = "https://graph.facebook.com/v20.0"
+        self.base_url = "https://graph.facebook.com/v23.0"
         self.client_id = os.getenv("META_CLIENT_ID")
         self.client_secret = os.getenv("META_CLIENT_SECRET")
 
