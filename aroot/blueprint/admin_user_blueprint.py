@@ -138,9 +138,9 @@ def index():
         posts_service = PostsService(posts_repo)
         
         # Get total counts for dashboard
-        total_customers = len(customer_service.find_all(1))  # Get all customers
-        total_admin_users = len(admin_user_service.find_all(1))  # Get all admin users
-        total_posts = posts_service.block_count()
+        total_customers = customers_repo.count()  # Get total customer count
+        total_admin_users = admin_user_repo.count()  # Get total admin user count
+        total_posts = posts_repo.count()  # Get total posts count
         
         unit_of_work.commit()
     return render_template(
