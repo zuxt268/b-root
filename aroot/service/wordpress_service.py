@@ -88,7 +88,7 @@ class WordpressService:
         return results
 
     def upload_image(self, image_path) -> WordPressSource:
-        data = {"email": self.admin_email, "api_key": self.api_key}
+        data = {"email": self.admin_email}
         with open(image_path, "rb") as img:
             files = {"file": (image_path, img, "image/jpeg")}
             response = requests.post(
