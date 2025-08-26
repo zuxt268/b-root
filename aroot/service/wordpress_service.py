@@ -88,7 +88,7 @@ class WordpressService:
         return results
 
     def upload_image(self, image_path) -> WordPressSource:
-        data = {"email": self.admin_email}
+        data = {"email": self.admin_email, "api_key": self.api_key}
         with open(image_path, "rb") as img:
             files = {"file": (image_path, img, "image/jpeg")}
             response = requests.post(
@@ -162,7 +162,10 @@ class WordpressService:
 
     def create_post(self, title: str, content: str, media_id: int):
         title = self.get_title(title)
-        headers = {"Content-Type": "application/json", "X-Api-Key": self.api_key}
+        headers = {
+            "Content-Type": "application/json",
+            "X-Api-Key": self.api_key,
+        }
         data = {
             "email": self.admin_email,
             "title": title,
