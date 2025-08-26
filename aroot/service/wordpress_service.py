@@ -87,37 +87,17 @@ class WordpressService:
                 )
         return results
 
-    def ping(self):
-        try:
-            data = {
-                "api_key": self.api_key,
-                "email": self.admin_email,
-            }
-            response = requests.post(
-                f"https://{self.wordpress_url}?rest_route=/rodut/v1/ping", json=data
-            )
-            response.raise_for_status()
-        except Exception as e:
-            raise WordpressAuthError("Wordpressの疎通に失敗")
-
-    def get_wordpress_posts(self):
-        params = {"per_page": 1, "page": 1}
-        try:
-            response = requests.get(
-                f"https://{self.wordpress_url}/wp-json/wp/v2/posts", params=params
-            )
-            response.raise_for_status()  # HTTPエラーチェック
-        except requests.exceptions.RequestException as e:
-            raise WordpressAuthError("Wordpressの疎通に失敗")
-
     def upload_image(self, image_path) -> WordPressSource:
-        data = {"api_key": self.api_key, "email": self.admin_email}
+        data = {"email": self.admin_email}
         with open(image_path, "rb") as img:
             files = {"file": (image_path, img, "image/jpeg")}
             response = requests.post(
                 f"https://{self.wordpress_url}?rest_route=/rodut/v1/upload-media",
                 data=data,
                 files=files,
+                headers={
+                    "X-Api-Key": self.api_key,
+                },
             )
             if 200 <= response.status_code < 300:
                 return WordPressSource(
@@ -127,7 +107,6 @@ class WordpressService:
 
     def upload_video(self, video_path):
         data = {
-            "api_key": self.api_key,
             "email": self.admin_email,
         }
         with open(video_path, "rb") as img:
@@ -136,6 +115,9 @@ class WordpressService:
                 f"https://{self.wordpress_url}?rest_route=/rodut/v1/upload-media",
                 data=data,
                 files=files,
+                headers={
+                    "X-Api-Key": self.api_key,
+                },
             )
             if 200 <= response.status_code < 300:
                 return WordPressSource(
@@ -180,9 +162,8 @@ class WordpressService:
 
     def create_post(self, title: str, content: str, media_id: int):
         title = self.get_title(title)
-        headers = {"Content-Type": "application/json"}
+        headers = {"Content-Type": "application/json", "X-Api-Key": self.api_key}
         data = {
-            "api_key": self.api_key,
             "email": self.admin_email,
             "title": title,
             "content": content,
