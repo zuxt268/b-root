@@ -86,19 +86,6 @@ class WordpressServiceStripe:
                 )
         return results
 
-    def ping(self):
-        try:
-            data = {
-                "api_key": self.secret_phrase,
-                "email": "stripe@a-root.com",
-            }
-            response = requests.post(
-                f"https://{self.wordpress_url}?rest_route=/rodut/v1/ping", json=data
-            )
-            response.raise_for_status()
-        except Exception as e:
-            raise WordpressStripeAuthError("Wordpressの疎通に失敗")
-
     def get_wordpress_posts(self):
         params = {"per_page": 1, "page": 1}
         try:
