@@ -340,7 +340,7 @@ def start_date():
     customer_id = session.get("customer_id")
     new_start_date = request.form.get("start_date")
     if new_start_date:
-        utc_time = datetime.strptime(new_start_date, "%Y-%m-%dT%H:%M") - timedelta(
+        utc_time = datetime.strptime(new_start_date, "%Y-%m-%dT%H:%M:%S") - timedelta(
             hours=9
         )
         with UnitOfWork() as unit_of_work:
